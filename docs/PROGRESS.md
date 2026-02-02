@@ -79,7 +79,7 @@ After making any change, provide:
 
 ## Next: task breakdown
 
-Ready to create tasks to get started. Suggested order:
+Suggested order:
 
 1. **robots.txt** – Add `Disallow: /admin/master` (and any host disallow if desired).
 2. **Host auth** – `/host/login`, protected layout for `/host/*`.
@@ -93,4 +93,24 @@ Reference (design only): `trip-page/client` (admin branch) – AdminLayout, Admi
 
 ---
 
-_Last updated: PRD v1.7; architecture and Phase 1 scope; robots.txt requirement; ready for tasks._
+## Current work: Host login (in progress)
+
+**Backend (existing):** `POST /api/v1/auth/login` – body `{ email, password }`; returns `{ data: { token, user: { id, name, username, email } } }`. Validation: email, password min 6 chars.
+
+**Client (done):**
+
+- **shadcn:** Added `button`, `input`, `card`, `label`, `form` (design reference: `trip-page/client` AdminLogin; rewritten with shadcn).
+- **lib/api-client.ts** – `getApiBaseUrl()` (uses `NEXT_PUBLIC_API_URL`, default `http://localhost:3001/api/v1`).
+- **lib/auth-client.ts** – `login(email, password)` calls backend, returns `LoginResult`; throws on error.
+- **store/auth-store.ts** – Zustand store with `token`, `user`, `setAuth`, `clearAuth`; persisted to localStorage (`supersquad-host-auth`).
+- **app/host/login/page.tsx** – Host login page; renders `HostLoginForm`.
+- **components/host/HostLoginForm.tsx** – Client form: email, password; react-hook-form + zod; on success `setAuth` + `router.replace("/host/dashboard")`; Card + Form + Input + Button; error state; mobile-friendly (centered, max-width, padding).
+- **app/host/dashboard/page.tsx** – Placeholder dashboard so login redirect does not 404.
+
+**Env:** `NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1` in `.env` (client).
+
+**Next:** Protected layout for `/host/*` (except `/host/login`): if no token, redirect to `/host/login`. Then host layout (sidebar, nav).
+
+---
+
+_Last updated: Host login page implemented; PROGRESS updated; next: protected layout._
