@@ -1,27 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import HostShell from "@/components/host/HostShell";
 import { useAuthStore } from "@/store/auth-store";
 
 const LOGIN_PATH = "/host/login";
 const DASHBOARD_PATH = "/host/dashboard";
 
-export default function HostLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const HostLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const router = useRouter();
 
   const token = useAuthStore((s) => s.token);
   const [mounted, setMounted] = useState(false);
 
-  console.log("rendered auth layout -- protection guard");
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
+    // Mark client-mounted so we can safely read persisted auth (avoids redirect before rehydration)
+    const t = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
@@ -56,5 +54,8 @@ export default function HostLayout({
     );
   }
 
-  return <>{children}</>;
-}
+  // Protected routes: wrap in shell (sidebar on desktop, bottom bar on mobile in Task 3)
+  return <HostShell>{children}</HostShell>;
+};
+
+export default HostLayout;

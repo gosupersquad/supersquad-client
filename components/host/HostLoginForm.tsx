@@ -47,7 +47,7 @@ const requiredMark = (
   </span>
 );
 
-export function HostLoginForm() {
+const HostLoginForm = () => {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
 
@@ -175,4 +175,6 @@ export function HostLoginForm() {
       </Card>
     </div>
   );
-}
+};
+
+export default HostLoginForm;

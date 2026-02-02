@@ -1,10 +1,12 @@
-import { HostLoginForm } from "@/components/host/HostLoginForm";
+import HostLoginForm from "@/components/host/HostLoginForm";
 
 export const metadata = {
   title: "Host login",
   description: "Sign in to your Supersquad host dashboard",
 };
 
-export default function HostLoginPage() {
+const HostLoginPage = () => {
   return <HostLoginForm />;
-}
+};
+
+export default HostLoginPage;

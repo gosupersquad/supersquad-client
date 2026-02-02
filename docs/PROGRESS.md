@@ -26,6 +26,8 @@ After making any change, provide:
 
 **Single app domain:** **app.gosupersquad.com** (one frontend; no separate main vs admin subdomains).
 
+**App folder grouping (for clarity):** Host routes live in `app/host/`. Admin routes will live in `app/admin/`. Public routes (landing, event landing) can live in `app/(public-routes)/` so the three areas stay clearly separated. No requirement to move existing files; use this convention for new routes.
+
 ### Public routes
 
 | Route                                  | Renders                          |
@@ -89,7 +91,7 @@ After making any change, provide:
 ## Host layout – short tasks
 
 1. **Task 1: Protected host layout** ✅ – Auth guard: `/host/*` except `/host/login` require token; else redirect to `/host/login`. One layout wraps all host routes; login route renders no shell. **Done:** `app/host/layout.tsx` (client): pathname check, token check after mount, redirect if no token; login path renders children only; protected paths show "Loading…" until mounted + token.
-2. **Task 2: Desktop sidebar** – Sidebar with "Supersquad Admin", nav (Experiences, later Bookings/Coupons), logout. Wraps main content; visible on `md+`.
+2. **Task 2: Desktop sidebar** ✅ – Sidebar with "Supersquad Admin", nav (Experiences, later Bookings/Coupons), logout. Wraps main content; visible on `md+`. **Done:** `HostShell.tsx` (desktop sidebar, fixed left, hidden on mobile); layout wraps protected children in `HostShell`; placeholder `/host/experiences` page.
 3. **Task 3: Mobile bottom bar** – Bottom bar with Experiences, Account (logout inside; future: edit host). Visible on `< md`.
 4. **Task 4: Dashboard welcome** – Dashboard page: welcome + quick links (or redirect to `/host/experiences` if PO prefers).
 5. **Task 5: Active nav state** – Style active nav item (classy: e.g. bg-muted + border or pill).
@@ -98,7 +100,7 @@ Reference (design only): `trip-page/client` (admin branch) – AdminLayout.
 
 ---
 
-## Current work: Host layout Task 2 (desktop sidebar) next
+## Current work: Host layout Task 3 (mobile bottom bar) next
 
 **Backend (existing):** `POST /api/v1/auth/login` – body `{ email, password }`; returns `{ data: { token, user: { id, name, username, email } } }`. Validation: email, password min 6 chars.
 
@@ -114,8 +116,8 @@ Reference (design only): `trip-page/client` (admin branch) – AdminLayout.
 
 **Env:** `NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1` in `.env` (client).
 
-**Next:** Task 2 (desktop sidebar).
+**Next:** Task 3 (mobile bottom bar).
 
 ---
 
-_Last updated: Wireframe + short tasks; Task 1 (protected host layout) done._
+_Last updated: Task 2 (desktop sidebar) done; route groups note added._

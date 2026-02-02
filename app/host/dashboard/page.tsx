@@ -3,7 +3,7 @@ export const metadata = {
   description: "Host dashboard",
 };
 
-export default function HostDashboardPage() {
+const HostDashboardPage = () => {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
@@ -13,4 +13,6 @@ export default function HostDashboardPage() {
       </p>
     </div>
   );
-}
+};
+
+export default HostDashboardPage;
