@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import ThemeToggle from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
 
@@ -43,8 +44,10 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar: fixed left, hidden on mobile */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-border bg-background md:flex">
-        <div className="flex h-14 items-center border-b border-border px-4">
+        <div className="flex h-14 items-center justify-between border-b border-border px-4">
           <span className="font-semibold text-foreground">{SIDEBAR_TITLE}</span>
+
+          <ThemeToggle variant="ghost" size="icon-sm" />
         </div>
 
         <nav className="flex-1 space-y-1 p-3">

@@ -94,13 +94,20 @@ After making any change, provide:
 2. **Task 2: Desktop sidebar** ✅ – Sidebar with "Supersquad Admin", nav (Experiences, later Bookings/Coupons), logout. Wraps main content; visible on `md+`. **Done:** `HostShell.tsx` (desktop sidebar, fixed left, hidden on mobile); layout wraps protected children in `HostShell`; placeholder `/host/experiences` page.
 3. **Task 3: Mobile bottom bar** ✅ – Bottom bar with Experiences, Account (logout on Account page; future: edit host). Visible on `< md`. **Done:** `HostShell.tsx` mobile nav (fixed bottom, `md:hidden`), two items with active state; `main` has `pb-16` on mobile; `/host/account` page with Logout (and user name/email; future: edit profile).
 4. **Task 4: Dashboard welcome** ✅ – Dashboard page: welcome + quick links (or redirect to `/host/experiences` if PO prefers). **Done:** `app/host/dashboard/page.tsx` (client): welcome with user name from store; quick links to Experiences, More, Account; note that redirect can be added later. `app/host/dashboard/layout.tsx` for metadata (title/description).
-5. **Task 5: Active nav state** – Style active nav item (classy: e.g. bg-muted + border or pill).
+5. **Task 5: Active nav state** – Skipped; current styles are fine.
+6. **Task 6: Theme toggle** ✅ – Dark/light toggle. **Done:** `next-themes` + `ThemeProvider` (root layout, default dark); `ThemeToggle` component (Sun/Moon icon); desktop: right end of sidebar title "Supersquad Admin"; mobile: Account page tile "Appearance" with toggle.
 
 Reference (design only): `trip-page/client` (admin branch) – AdminLayout.
 
 ---
 
-## Current work: Host layout Task 5 (active nav state) next
+## Component format (preferred)
+
+Use `const ComponentName = () => {}` and `export default ComponentName` for components.
+
+---
+
+## Current work: Host layout tasks done; next as needed
 
 **Backend (existing):** `POST /api/v1/auth/login` – body `{ email, password }`; returns `{ data: { token, user: { id, name, username, email } } }`. Validation: email, password min 6 chars.
 
@@ -116,7 +123,7 @@ Reference (design only): `trip-page/client` (admin branch) – AdminLayout.
 
 **Env:** `NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1` in `.env` (client).
 
-**Next:** Task 5 (active nav state).
+**Next:** As needed (e.g. Experiences table, event create/edit).
 
 ---
 
@@ -134,4 +141,4 @@ Reference (design only): `trip-page/client` (admin branch) – AdminLayout.
 
 ---
 
-_Last updated: Task 4 (dashboard welcome) done._
+_Last updated: Task 5 skipped; Task 6 (theme toggle) done; component format noted._

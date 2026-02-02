@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useAuthStore } from "@/store/auth-store";
 
 const HostAccountPage = () => {
@@ -29,7 +30,14 @@ const HostAccountPage = () => {
         </p>
       )}
 
-      <div className="mt-6">
+      {/* Theme toggle tile (mobile-friendly; desktop has toggle in sidebar) */}
+      <div className="mt-6 flex flex-col gap-3">
+        <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
+          <span className="text-sm font-medium">Appearance</span>
+
+          <ThemeToggle variant="outline" size="icon-sm" />
+        </div>
+
         <Button variant="outline" className="gap-2" onClick={handleLogout}>
           <LogOut className="size-4" />
           Logout
