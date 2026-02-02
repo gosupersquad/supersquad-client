@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 import HostShell from "@/components/host/HostShell";
 import { useAuthStore } from "@/store/auth-store";
@@ -28,8 +29,9 @@ const HostLayout = ({ children }: { children: React.ReactNode }) => {
     const isLoginPage = pathname === LOGIN_PATH;
     const isAuthenticated = Boolean(token);
 
-    // 🚫 Unauthenticated user on protected route
+    // 🚫 Unauthenticated user on protected route → toast + redirect
     if (!isAuthenticated && !isLoginPage) {
+      toast("Please sign in to continue", { icon: "🔐" });
       router.replace(LOGIN_PATH);
       return;
     }

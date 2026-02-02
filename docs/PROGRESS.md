@@ -120,4 +120,18 @@ Reference (design only): `trip-page/client` (admin branch) – AdminLayout.
 
 ---
 
-_Last updated: Task 3 (mobile bottom bar) done._
+## Toasts (react-hot-toast)
+
+- **Unauthenticated on protected route:** "Please sign in to continue" (host layout, before redirect).
+- **Login success:** "Signed in successfully" (HostLoginForm, after setAuth). Kept to one success toast to avoid spam.
+- Toaster in root layout (`top-center`, 4s duration).
+
+---
+
+## Mobile "More" tab
+
+- Bottom bar has **Experiences**, **More**, **Account**. **More** → `/host/more` page with links to Leads, Coupons (placeholder "coming soon"), etc. Keeps the bar to 3 tabs; extra items live under More. Add more links on the More page as features ship.
+
+---
+
+_Last updated: Toasts, filled active icon, More tab._

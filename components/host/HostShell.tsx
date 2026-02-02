@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, LogOut, Map, User } from "lucide-react";
+import { FileText, LayoutGrid, LogOut, Map, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -22,9 +22,10 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Leads", href: "/host/leads", icon: FileText },
 ];
 
-// Mobile bottom bar: Experiences + Account (logout lives on Account page; future: edit host)
+// Mobile bottom bar: Experiences, More (Leads/Coupons etc), Account
 const MOBILE_NAV_ITEMS: NavItem[] = [
   { label: "Experiences", href: "/host/experiences", icon: Map },
+  { label: "More", href: "/host/more", icon: LayoutGrid },
   { label: "Account", href: "/host/account", icon: User },
 ];
 
@@ -89,10 +90,17 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
         className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-background md:hidden"
         aria-label="Mobile navigation"
       >
-        <div className="grid w-full grid-cols-2 gap-px bg-border">
+        <div className="grid w-full grid-cols-3 gap-px bg-border">
           {MOBILE_NAV_ITEMS.map(({ label, href, icon: Icon }) => {
             const isActive =
               pathname === href || pathname.startsWith(href + "/");
+            // Active tab: filled/heavier look (primary color + fill where icon supports it)
+            const iconClass = cn(
+              "size-5 transition-colors",
+              isActive
+                ? "fill-primary text-primary stroke-[2.5]"
+                : "text-muted-foreground",
+            );
 
             return (
               <Button
@@ -108,8 +116,7 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
                   href={href}
                   className="flex flex-col items-center justify-center gap-1"
                 >
-                  <Icon className="size-5" />
-
+                  <Icon className={iconClass} aria-hidden />
                   <span className="text-xs">{label}</span>
                 </Link>
               </Button>

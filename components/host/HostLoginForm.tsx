@@ -5,6 +5,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -64,6 +65,7 @@ const HostLoginForm = () => {
     try {
       const result = await login(data.email, data.password);
       setAuth(result.token, result.user);
+      toast.success("Signed in successfully");
       router.replace("/host/dashboard");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Invalid email or password");
