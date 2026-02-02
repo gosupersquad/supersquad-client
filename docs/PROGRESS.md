@@ -77,23 +77,28 @@ After making any change, provide:
 
 ---
 
-## Next: task breakdown
+## Host layout wireframe (agreed)
 
-Suggested order:
-
-1. **robots.txt** – Add `Disallow: /admin/master` (and any host disallow if desired).
-2. **Host auth** – `/host/login`, protected layout for `/host/*`.
-3. **Host layout** – `/host/dashboard` with sidebar (Experiences default), mobile-friendly.
-4. **Experiences table** – `/host/experiences?type=event` (event-only for Phase 1), responsive.
-5. **Event create/edit** – `/host/experiences/new?type=event`, `/host/experiences/[id]/edit?type=event`.
-6. **Host edit** – Host profile/settings (route TBD, e.g. `/host/settings`).
-7. **Event landing page** – `/hosts/[username]/events/[eventSlug]` (public, SSR, mobile-friendly).
-
-Reference (design only): `trip-page/client` (admin branch) – AdminLayout, AdminTrips, AdminHosts, etc.
+- **Desktop:** Sidebar (fixed left). Title: "Supersquad Admin". Nav: Experiences (default), later Bookings/Coupons. Logout at bottom of sidebar.
+- **Mobile:** Bottom bar. Two items: **Experiences**, **Account** (logout inside; future: edit host personal info).
+- **First page:** Dashboard = welcome + quick links. If product owner prefers, can redirect `/host/dashboard` → `/host/experiences`.
+- **Active state:** Classy (e.g. subtle bg + border or pill).
 
 ---
 
-## Current work: Host login (in progress)
+## Host layout – short tasks
+
+1. **Task 1: Protected host layout** ✅ – Auth guard: `/host/*` except `/host/login` require token; else redirect to `/host/login`. One layout wraps all host routes; login route renders no shell. **Done:** `app/host/layout.tsx` (client): pathname check, token check after mount, redirect if no token; login path renders children only; protected paths show "Loading…" until mounted + token.
+2. **Task 2: Desktop sidebar** – Sidebar with "Supersquad Admin", nav (Experiences, later Bookings/Coupons), logout. Wraps main content; visible on `md+`.
+3. **Task 3: Mobile bottom bar** – Bottom bar with Experiences, Account (logout inside; future: edit host). Visible on `< md`.
+4. **Task 4: Dashboard welcome** – Dashboard page: welcome + quick links (or redirect to `/host/experiences` if PO prefers).
+5. **Task 5: Active nav state** – Style active nav item (classy: e.g. bg-muted + border or pill).
+
+Reference (design only): `trip-page/client` (admin branch) – AdminLayout.
+
+---
+
+## Current work: Host layout Task 2 (desktop sidebar) next
 
 **Backend (existing):** `POST /api/v1/auth/login` – body `{ email, password }`; returns `{ data: { token, user: { id, name, username, email } } }`. Validation: email, password min 6 chars.
 
@@ -109,8 +114,8 @@ Reference (design only): `trip-page/client` (admin branch) – AdminLayout, Admi
 
 **Env:** `NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1` in `.env` (client).
 
-**Next:** Protected layout for `/host/*` (except `/host/login`): if no token, redirect to `/host/login`. Then host layout (sidebar, nav).
+**Next:** Task 2 (desktop sidebar).
 
 ---
 
-_Last updated: Host login page implemented; PROGRESS updated; next: protected layout._
+_Last updated: Wireframe + short tasks; Task 1 (protected host layout) done._
