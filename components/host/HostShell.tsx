@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, LogOut, Map } from "lucide-react";
+import { FileText, LogOut, Map, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -16,11 +16,17 @@ type NavItem = {
   icon: React.ElementType;
 };
 
-// Phase 1: Experiences only; add Bookings, Coupons when in scope
+// Desktop sidebar nav (Phase 1: Experiences, Leads; add Bookings, Coupons when in scope)
 const NAV_ITEMS: NavItem[] = [
   { label: "Experiences", href: "/host/experiences", icon: Map },
   { label: "Leads", href: "/host/leads", icon: FileText },
-] as const;
+];
+
+// Mobile bottom bar: Experiences + Account (logout lives on Account page; future: edit host)
+const MOBILE_NAV_ITEMS: NavItem[] = [
+  { label: "Experiences", href: "/host/experiences", icon: Map },
+  { label: "Account", href: "/host/account", icon: User },
+];
 
 const HostShell = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -34,7 +40,7 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Desktop sidebar: fixed left, hidden on mobile (Task 3 adds bottom bar) */}
+      {/* Desktop sidebar: fixed left, hidden on mobile */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-border bg-background md:flex">
         <div className="flex h-14 items-center border-b border-border px-4">
           <span className="font-semibold text-foreground">{SIDEBAR_TITLE}</span>
@@ -75,8 +81,42 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
         </div>
       </aside>
 
-      {/* Main content: full width on mobile, offset by sidebar on desktop */}
-      <main className="flex-1 md:ml-72">{children}</main>
+      {/* Main content: full width on mobile (pb for bottom bar), offset by sidebar on desktop */}
+      <main className="flex-1 pb-16 md:ml-72 md:pb-0">{children}</main>
+
+      {/* Mobile bottom bar: Experiences, Account (logout on Account page; future: edit host) */}
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-background md:hidden"
+        aria-label="Mobile navigation"
+      >
+        <div className="grid w-full grid-cols-2 gap-px bg-border">
+          {MOBILE_NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+            const isActive =
+              pathname === href || pathname.startsWith(href + "/");
+
+            return (
+              <Button
+                key={href}
+                variant="ghost"
+                className={cn(
+                  "h-16 w-full flex-col gap-1 rounded-none",
+                  isActive && "bg-muted font-medium",
+                )}
+                asChild
+              >
+                <Link
+                  href={href}
+                  className="flex flex-col items-center justify-center gap-1"
+                >
+                  <Icon className="size-5" />
+
+                  <span className="text-xs">{label}</span>
+                </Link>
+              </Button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 };
