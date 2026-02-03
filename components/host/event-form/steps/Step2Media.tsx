@@ -1,7 +1,9 @@
 "use client";
 
+import { Upload } from "lucide-react";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useCallback, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
@@ -11,53 +13,43 @@ import { useAuthStore } from "@/store/auth-store";
 import { useEventFormStore } from "@/store/event-form-store";
 import type { MediaItem } from "@/types";
 
+const ACCEPT = {
+  "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
+  "video/*": [".mp4", ".webm", ".mov"],
+};
+
 const Step2Media = () => {
   const token = useAuthStore((s) => s.token);
-
   const { media, setMedia, nextStep, prevStep } = useEventFormStore();
   const [isUploading, setIsUploading] = useState(false);
 
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (!acceptedFiles.length || !token) return;
+      setIsUploading(true);
 
-  const handleAddImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files?.length || !token) return;
+      try {
+        const { items } = await uploadMedia(acceptedFiles, token);
+        const current = useEventFormStore.getState().media;
 
-    e.target.value = "";
-    setIsUploading(true);
+        setMedia([...current, ...items]);
+        toast.success(`Added ${items.length} file(s)`);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Upload failed");
+      } finally {
+        setIsUploading(false);
+      }
+    },
 
-    try {
-      const fileList = Array.from(files);
-      const { items } = await uploadMedia(fileList, token);
+    [token, setMedia],
+  );
 
-      setMedia([...media, ...items]);
-      toast.success(`Added ${items.length} file(s)`);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleAddVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !token) return;
-
-    e.target.value = "";
-    setIsUploading(true);
-
-    try {
-      const { items } = await uploadMedia([file], token);
-      setMedia([...media, ...items]);
-
-      toast.success("Video added");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: ACCEPT,
+    multiple: true,
+    disabled: isUploading || !token,
+  });
 
   const removeItem = (index: number) => {
     setMedia(media.filter((_, i) => i !== index));
@@ -66,11 +58,11 @@ const Step2Media = () => {
   return (
     <div className="space-y-6">
       <FieldGroup className="gap-4">
-        <FieldLabel>Media (images &amp; video)</FieldLabel>
+        <FieldLabel>Media</FieldLabel>
 
         <p className="text-muted-foreground text-sm">
-          Add images and optionally one video. Order is preserved. You can skip
-          this step and add media later.
+          Add images and videos. Order is preserved. You can skip this step and
+          add media later.
         </p>
 
         {media.length > 0 && (
@@ -85,45 +77,27 @@ const Step2Media = () => {
           </ul>
         )}
 
-        <div className="flex flex-wrap gap-2">
-          <input
-            ref={imageInputRef}
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
-            multiple
-            className="hidden"
-            onChange={handleAddImages}
-            disabled={isUploading || !token}
-          />
+        <div
+          {...getRootProps()}
+          className={`flex min-h-[180px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition-colors ${
+            isDragActive
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 bg-muted/30 hover:border-muted-foreground/50 hover:bg-muted/50"
+          } ${isUploading || !token ? "pointer-events-none opacity-60" : ""}`}
+        >
+          <input {...getInputProps()} />
 
-          <input
-            ref={videoInputRef}
-            type="file"
-            accept="video/*"
-            className="hidden"
-            onChange={handleAddVideo}
-            disabled={isUploading || !token}
-          />
+          <Upload className="size-10 text-muted-foreground" aria-hidden />
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => imageInputRef.current?.click()}
-            disabled={isUploading || !token}
-          >
-            {isUploading ? "Uploading…" : "Add images"}
-          </Button>
+          <p className="text-center text-sm font-medium text-foreground">
+            {isUploading
+              ? "Uploading…"
+              : "Drag & drop files here, or click to select"}
+          </p>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => videoInputRef.current?.click()}
-            disabled={isUploading || !token}
-          >
-            Add video
-          </Button>
+          <p className="text-muted-foreground text-center text-xs">
+            Supports images (JPG, PNG, GIF, WebP) and videos (MP4, WebM, MOV)
+          </p>
         </div>
 
         {!token && (
@@ -157,12 +131,13 @@ const MediaRow = ({
     <li className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
       <div className="size-14 shrink-0 overflow-hidden rounded-md bg-muted">
         {item.type === "image" ? (
+          // <img src={item.url} alt="" className="size-full object-cover" />
           <Image
             src={item.url}
-            alt=""
+            alt="image"
             className="size-full object-cover"
-            width={100}
-            height={100}
+            width={60}
+            height={60}
           />
         ) : (
           <div className="flex size-full items-center justify-center text-muted-foreground">
@@ -175,7 +150,6 @@ const MediaRow = ({
         <span className="text-muted-foreground text-xs font-medium uppercase">
           {item.type}
         </span>
-
         <p className="truncate text-sm">{item.url}</p>
       </div>
 

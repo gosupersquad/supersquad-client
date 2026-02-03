@@ -30,7 +30,6 @@ export async function uploadMedia(
     {
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
       },
     }
   );

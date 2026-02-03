@@ -1,8 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { addDays } from "date-fns";
+import DatePicker from "react-datepicker";
 import type { Resolver } from "react-hook-form";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import RequiredMark from "@/components/custom/required-mark";
@@ -15,19 +17,44 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDateToISO, parseISOToDate, startOfToday } from "@/lib/utils";
 import { useEventFormStore } from "@/store/event-form-store";
 
-const step1Schema = z.object({
-  title: z.string().min(1, "Title is required"),
-  slug: z.string().optional(),
-  location: z.string().min(1, "Location is required"),
-  description: z.string().min(1, "Description is required"),
-  spotsAvailable: z.coerce.number().int().min(0, "Must be 0 or more"),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().min(1, "End date is required"),
-  dateDisplayText: z.string().optional(),
-  isActive: z.boolean(),
-});
+import "react-datepicker/dist/react-datepicker.css";
+
+const step1Schema = z
+  .object({
+    title: z.string().min(1, "Title is required"),
+    slug: z.string().optional(),
+    location: z.string().min(1, "Location is required"),
+    description: z.string().min(1, "Description is required"),
+    spotsAvailable: z.coerce.number().int().min(0, "Must be 0 or more"),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().min(1, "End date is required"),
+    dateDisplayText: z.string().optional(),
+    isActive: z.boolean(),
+  })
+  .refine(
+    (data) => {
+      const start = parseISOToDate(data.startDate);
+      return start !== null && start >= startOfToday();
+    },
+    {
+      message: "Start date cannot be in the past",
+      path: ["startDate"],
+    },
+  )
+  .refine(
+    (data) => {
+      const start = parseISOToDate(data.startDate);
+      const end = parseISOToDate(data.endDate);
+      return start !== null && end !== null && end > start;
+    },
+    {
+      message: "End date must be after start date",
+      path: ["endDate"],
+    },
+  );
 
 type Step1Values = z.infer<typeof step1Schema>;
 
@@ -48,6 +75,12 @@ const Step1Basics = () => {
       dateDisplayText: basics.dateDisplayText,
       isActive: basics.isActive,
     },
+  });
+
+  const startDate = useWatch({
+    control: form.control,
+    name: "startDate",
+    defaultValue: "",
   });
 
   const onSubmit = (data: Step1Values) => {
@@ -190,11 +223,17 @@ const Step1Basics = () => {
                   Start date <RequiredMark />
                 </FieldLabel>
 
-                <Input
-                  {...field}
+                <DatePicker
                   id="event-start"
-                  type="date"
-                  aria-invalid={fieldState.invalid}
+                  selected={field.value ? parseISOToDate(field.value) : null}
+                  onChange={(date: Date | null) =>
+                    field.onChange(date ? formatDateToISO(date) : "")
+                  }
+                  minDate={startOfToday()}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="DD/MM/YYYY"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-invalid={fieldState.invalid ? "true" : "false"}
                 />
 
                 {fieldState.invalid && (
@@ -206,24 +245,36 @@ const Step1Basics = () => {
           <Controller
             name="endDate"
             control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="event-end">
-                  End date <RequiredMark />
-                </FieldLabel>
+            render={({ field, fieldState }) => {
+              const startParsed = startDate ? parseISOToDate(startDate) : null;
+              const minEnd = startParsed
+                ? addDays(startParsed, 1)
+                : startOfToday();
+              return (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="event-end">
+                    End date <RequiredMark />
+                  </FieldLabel>
 
-                <Input
-                  {...field}
-                  id="event-end"
-                  type="date"
-                  aria-invalid={fieldState.invalid}
-                />
+                  <DatePicker
+                    id="event-end"
+                    selected={field.value ? parseISOToDate(field.value) : null}
+                    onChange={(date: Date | null) =>
+                      field.onChange(date ? formatDateToISO(date) : "")
+                    }
+                    minDate={minEnd}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="DD/MM/YYYY"
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-invalid={fieldState.invalid ? "true" : "false"}
+                  />
 
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              );
+            }}
           />
         </div>
 

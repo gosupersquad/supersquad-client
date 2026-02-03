@@ -154,9 +154,9 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 **Implementation order (suggested):** 1) Route + shell (new page with step state). 2) Step 1 (Basics) + Zustand store with persist + client validation. 3) Step 4 (Pricing) so we can build full payload. 4) Step 2 (Media) + upload. 5) Step 3 (FAQs). 6) Wire create (useMutation + lib createEvent); then edit mode + prefill.
 
-**Step 1 done:** Route `/host/experiences/new?type=event`, `EventFormShell` (stepper, Cancel, Step X of 4), `Step1Basics` (title, slug, location, description, spots, start/end date, dateDisplayText, isActive). Zustand `event-form-store` with persist (localStorage). `lib/experiences-client.ts` has `createEvent(payload, token)`. Server fix: `media: payload.media ?? []`. Types in `types/event.ts`. "Create event" button on experiences page.
+**Step 1 done:** Route `/host/experiences/new?type=event`, `EventFormShell` (stepper, Cancel, Step X of 4), `Step1Basics` (title, slug, location, description, spots, start/end date in **DD/MM/YYYY** format, dateDisplayText, isActive). Validation: start date cannot be in the past; end date must be after start date. Store/API still use YYYY-MM-DD; display/input use DD/MM/YYYY. Zustand `event-form-store` with persist (localStorage). `lib/experiences-client.ts` has `createEvent(payload, token)`. "Create event" button on experiences page.
 
-**Step 2 done:** `Step2Media` (Media step). `lib/upload-client.ts`: only `uploadMedia` (multipart to `/api/v1/upload/media?folder=events`). Step shows current media list (thumbnail + type + remove), "Add images" and "Add video"; uploads then appends to store; Back/Next. Toasts on success/error.
+**Step 2 done:** `Step2Media` (Media step). Single **drag-and-drop** area via `react-dropzone`: "Drag & drop files here, or click to select"; supports images (JPG, PNG, GIF, WebP) and videos (MP4, WebM, MOV). `lib/upload-client.ts`: only `uploadMedia`; **no `Content-Type` header** so axios sets `multipart/form-data` with boundary (fixes "No files uploaded"). Step shows current media list (thumbnail + type + remove); Back/Next. Toasts on success/error.
 
 **Step 3 done:** `Step3Faqs` (FAQs step). List of FAQ rows (question + answer); Add FAQ, Remove per row. Validation on Next: if any row has empty question or answer, toast error; else nextStep(). Back/Next. Store: faqs, setFaqs.
 
@@ -185,4 +185,4 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
-_Last updated: Create flow wired — Step4Pricing useMutation, buildPayload, reset + redirect + invalidate; QueryProvider in layout._
+_Last updated: Step 1 date validation (start not past, end after start) + DD/MM/YYYY; Step 2 react-dropzone + upload Content-Type fix._
