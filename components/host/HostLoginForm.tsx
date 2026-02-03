@@ -23,6 +23,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import RequiredMark from "@/components/custom/required-mark";
 import {
   InputGroup,
   InputGroupAddon,
@@ -41,12 +42,6 @@ const loginSchema = z.object({
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
-
-const requiredMark = (
-  <span className="text-destructive" aria-hidden>
-    *
-  </span>
-);
 
 const HostLoginForm = () => {
   const router = useRouter();
@@ -94,7 +89,7 @@ const HostLoginForm = () => {
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="host-login-email">
-                      Email {requiredMark}
+                      Email <RequiredMark />
                     </FieldLabel>
 
                     <Input
@@ -119,7 +114,7 @@ const HostLoginForm = () => {
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="host-login-password">
-                      Password {requiredMark}
+                      Password <RequiredMark />
                     </FieldLabel>
 
                     <InputGroup>

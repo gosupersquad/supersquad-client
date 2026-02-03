@@ -123,7 +123,40 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 **Env:** `NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1` in `.env` (client).
 
-**Next:** As needed (e.g. Experiences table, event create/edit).
+**Next:** Event create (multi-step form) → Experiences table.
+
+---
+
+## Event creation: multi-step form (planned)
+
+**Route:** `/host/experiences/new?type=event`. Same form component used for edit at `/host/experiences/[id]/edit?type=event` with `mode: "create" | "edit"` (edit pre-fill later).
+
+**Host:** No host selection step; host = logged-in user (`hostId` from auth). Backend uses `req.userId` for `hostId`.
+
+**Steps (4 steps, one per screen on mobile; Next/Back + progress indicator):**
+
+| Step  | Name        | Fields                                                                                                                                                                                                                                                                                                | Notes                                                            |
+| ----- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **1** | **Basics**  | Title (required), Slug (optional; server auto-generates from title if empty), Location (required), Description (required, textarea), Spots available (number ≥ 0), Start date, End date, Date display text (optional, e.g. "March 15–17"), Active (boolean; default true; or "Save as draft" = false) | Single scrollable step on mobile; keep fields in one column.     |
+| **2** | **Media**   | Event images (multiple, ordered; upload → get URLs), Optional event video (one; upload → URL). Backend expects `media: { url, type: 'image' \| 'video' }[]`.                                                                                                                                          | Upload UI; add/remove/reorder; then pass URLs in create payload. |
+| **3** | **FAQs**    | Q&A pairs: question + answer (both required). Add/remove pairs; default 0. Backend: `faqs: { question, answer }[]`.                                                                                                                                                                                   | Simple list: add row, remove row; no need for many at once.      |
+| **4** | **Pricing** | Price (number ≥ 0, required), Currency: INR (fixed for MVP). Checkout banner image = future.                                                                                                                                                                                                          | Single small step.                                               |
+
+**Mobile-friendly:** One step per view on small screens; stepper/progress (e.g. "Step 2 of 4"); Next and Back; optional "Save draft" at end (sets `isActive: false`) or leave always active. No single long page to reduce overwhelm and bounces.
+
+**Form component:** One combined form that accepts `mode: "create" | "edit"`. Create: submit to `POST /api/v1/experiences` (auth = host). Edit: prefill from event (later), submit to `PUT /api/v1/experiences/:id`. Shared validation and step logic.
+
+**Persistence (mobile-friendly):** Use Zustand for step + form state, with **persist** (localStorage). Each step saves to the store so refresh or leaving the page doesn’t lose data. On the **final step** we POST the full payload to the backend; no per-step API calls.
+
+**POST / create:** Use **TanStack Query’s useMutation** for create (and later update). Why: loading/error state out of the box, and we can invalidate the experiences list query on success so the table updates. The actual HTTP call stays in **lib** (axios) for consistency with auth-client: e.g. `lib/experiences-client.ts` has `createEvent(payload)` that does `axios.post(..., payload)` with `Authorization: Bearer <token>`. Component calls `useMutation({ mutationFn: createEvent, onSuccess: () => { queryClient.invalidateQueries(...); router.push(...); } })`. **Fetch list:** useQuery for the experiences table (dashboard) as planned.
+
+**Backend reference:** Routes: `GET /`, `GET /:id`, `POST /`, `PUT /:id`, `PUT /:id/toggle-status` (all under `/api/v1/experiences`, requireAuth). Validation: createEventSchema (title, slug optional, location, description, spotsAvailable, startDate, endDate, dateDisplayText optional, media array, faqs array, pricing). Server fixes slug from title if slug empty; media is `{ url, type: 'image'|'video' }[]`.
+
+**Implementation order (suggested):** 1) Route + shell (new page with step state). 2) Step 1 (Basics) + Zustand store with persist + client validation. 3) Step 4 (Pricing) so we can build full payload. 4) Step 2 (Media) + upload. 5) Step 3 (FAQs). 6) Wire create (useMutation + lib createEvent); then edit mode + prefill.
+
+**Step 1 done:** Route `/host/experiences/new?type=event`, `EventFormShell` (stepper, Cancel, Step X of 4), `Step1Basics` (title, slug, location, description, spots, start/end date, dateDisplayText, isActive). Zustand `event-form-store` with persist (localStorage). `lib/experiences-client.ts` has `createEvent(payload, token)`. Server fix: `media: payload.media ?? []`. Types in `types/event.ts`. "Create event" button on experiences page.
+
+**Step 2 done:** `Step2Media` (Media step). `lib/upload-client.ts`: `uploadImage`, `uploadVideo`, `uploadMedia` (multipart to `/api/v1/upload/image`, `/video`, `/media?folder=events`). Step shows current media list (thumbnail + type + remove), "Add images" (multiple) and "Add video" (single); uploads then appends to store; Back/Next. Toasts on success/error. Reorder left for later if needed.
 
 ---
 
@@ -135,10 +168,17 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
+## Conventions
+
+- **Custom components:** Any new custom components go in `components/custom/`, not `components/ui/` (ui is reserved for shadcn). Only `required-mark` lives in custom; form fields are inlined in Step1Basics (no form-field-input / form-field-textarea).
+- **Upload:** Client uses only `POST /api/v1/upload/media` (field `files`, array). Server single-image and single-video routes are commented out; only `/media` is active.
+
+---
+
 ## Mobile "More" tab
 
 - Bottom bar has **Experiences**, **More**, **Account**. **More** → `/host/more` page with links to Leads, Coupons (placeholder "coming soon"), etc. Keeps the bar to 3 tabs; extra items live under More. Add more links on the More page as features ship.
 
 ---
 
-_Last updated: Task 5 skipped; Task 6 (theme toggle) done; component format noted._
+_Last updated: Step 1 & 2 finalized — upload media-only, Step1Basics resolver fix + reusable form fields from custom/, HostLoginForm uses RequiredMark from custom._
