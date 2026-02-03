@@ -68,7 +68,12 @@ const ExperiencesTable = ({
 
           return (
             <TableRow key={event._id}>
-              <TableCell className="font-medium">{event.title}</TableCell>
+              <TableCell
+                className="max-w-[200px] truncate font-medium"
+                title={event.title}
+              >
+                {event.title}
+              </TableCell>
 
               <TableCell>
                 <div className="flex items-center gap-2">
