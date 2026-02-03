@@ -35,6 +35,10 @@ const CreateEventForm = () => {
     },
   });
 
+  useEffect(() => {
+    reset();
+  }, [reset]);
+
   return (
     <EventFormBase
       onSubmit={(payload) => mutation.mutate(payload)}
