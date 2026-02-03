@@ -156,7 +156,9 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 **Step 1 done:** Route `/host/experiences/new?type=event`, `EventFormShell` (stepper, Cancel, Step X of 4), `Step1Basics` (title, slug, location, description, spots, start/end date, dateDisplayText, isActive). Zustand `event-form-store` with persist (localStorage). `lib/experiences-client.ts` has `createEvent(payload, token)`. Server fix: `media: payload.media ?? []`. Types in `types/event.ts`. "Create event" button on experiences page.
 
-**Step 2 done:** `Step2Media` (Media step). `lib/upload-client.ts`: `uploadImage`, `uploadVideo`, `uploadMedia` (multipart to `/api/v1/upload/image`, `/video`, `/media?folder=events`). Step shows current media list (thumbnail + type + remove), "Add images" (multiple) and "Add video" (single); uploads then appends to store; Back/Next. Toasts on success/error. Reorder left for later if needed.
+**Step 2 done:** `Step2Media` (Media step). `lib/upload-client.ts`: only `uploadMedia` (multipart to `/api/v1/upload/media?folder=events`). Step shows current media list (thumbnail + type + remove), "Add images" and "Add video"; uploads then appends to store; Back/Next. Toasts on success/error.
+
+**Step 3 done:** `Step3Faqs` (FAQs step). List of FAQ rows (question + answer); Add FAQ, Remove per row. Validation on Next: if any row has empty question or answer, toast error; else nextStep(). Back/Next. Store: faqs, setFaqs.
 
 ---
 
@@ -181,4 +183,4 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
-_Last updated: Step 1 & 2 finalized — upload media-only, Step1Basics resolver fix + reusable form fields from custom/, HostLoginForm uses RequiredMark from custom._
+_Last updated: Step 3 (FAQs) done — Step3Faqs with add/remove rows, validate on Next._

@@ -8,6 +8,7 @@ import { TOTAL_STEPS, useEventFormStore } from "@/store/event-form-store";
 
 import Step1Basics from "./steps/Step1Basics";
 import Step2Media from "./steps/Step2Media";
+import Step3Faqs from "./steps/Step3Faqs";
 
 const STEP_NAMES = ["Basics", "Media", "FAQs", "Pricing"] as const;
 
@@ -42,11 +43,7 @@ const EventFormShell = () => {
 
         {step === 2 && <Step2Media />}
 
-        {step === 3 && (
-          <p className="text-muted-foreground py-8 text-center">
-            FAQs step — coming next.
-          </p>
-        )}
+        {step === 3 && <Step3Faqs />}
 
         {step === 4 && (
           <p className="text-muted-foreground py-8 text-center">
