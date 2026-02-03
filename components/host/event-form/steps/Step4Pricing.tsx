@@ -1,15 +1,11 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import RequiredMark from "@/components/custom/required-mark";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { createEvent } from "@/lib/experiences-client";
-import { useAuthStore } from "@/store/auth-store";
 import { useEventFormStore } from "@/store/event-form-store";
 import type {
   CreateEventPayload,
@@ -19,7 +15,7 @@ import type {
   MediaItem,
 } from "@/types";
 
-const buildEventCreatePayload = (
+export const buildEventCreatePayload = (
   basics: EventFormBasics,
   media: MediaItem[],
   faqs: ExperienceFAQ[],
@@ -45,41 +41,30 @@ const buildEventCreatePayload = (
   pricing,
 });
 
-const Step4Pricing = () => {
-  const router = useRouter();
-  const queryClient = useQueryClient();
+export interface Step4PricingProps {
+  onSubmit: (payload: CreateEventPayload) => void;
+  submitLabel: string;
+  submitLoadingLabel: string;
+  isSubmitting: boolean;
+}
 
-  const token = useAuthStore((s) => s.token);
-  const { basics, media, faqs, pricing, setPricing, prevStep, reset } =
+const Step4Pricing = ({
+  onSubmit,
+  submitLabel,
+  submitLoadingLabel,
+  isSubmitting,
+}: Step4PricingProps) => {
+  const { basics, media, faqs, pricing, setPricing, prevStep } =
     useEventFormStore();
 
-  const mutation = useMutation({
-    mutationFn: async () => {
-      if (!token) throw new Error("Not signed in");
+  const handleSubmit = () => {
+    if (typeof pricing.price !== "number" || pricing.price < 0) {
+      toast.error("Please enter a valid price (0 or more).");
+      return;
+    }
 
-      const payload = buildEventCreatePayload(basics, media, faqs, pricing);
-      return createEvent(payload, token);
-    },
-
-    onSuccess: () => {
-      reset();
-      queryClient.invalidateQueries({ queryKey: ["experiences"] });
-      router.push("/host/experiences");
-      toast.success("Event created");
-    },
-
-    onError: (err) => {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to create event",
-      );
-    },
-  });
-
-  const handleCreate = () => {
-    if (typeof pricing.price !== "number" || pricing.price < 0)
-      return toast.error("Please enter a valid price (0 or more).");
-
-    mutation.mutate();
+    const payload = buildEventCreatePayload(basics, media, faqs, pricing);
+    onSubmit(payload);
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,7 +94,7 @@ const Step4Pricing = () => {
             placeholder="0"
             value={pricing.price === 0 ? "" : pricing.price}
             onChange={handlePriceChange}
-            disabled={mutation.isPending}
+            disabled={isSubmitting}
           />
         </Field>
 
@@ -121,17 +106,13 @@ const Step4Pricing = () => {
           type="button"
           variant="outline"
           onClick={prevStep}
-          disabled={mutation.isPending}
+          disabled={isSubmitting}
         >
           Back
         </Button>
 
-        <Button
-          type="button"
-          onClick={handleCreate}
-          disabled={mutation.isPending}
-        >
-          {mutation.isPending ? "Creating…" : "Create event"}
+        <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting ? submitLoadingLabel : submitLabel}
         </Button>
       </div>
     </div>

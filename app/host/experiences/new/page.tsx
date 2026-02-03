@@ -1,9 +1,9 @@
 "use client";
 
-import EventFormShell from "@/components/host/event-form/EventFormShell";
+import CreateEventForm from "@/components/host/event-form/CreateEventForm";
 
 const NewExperiencePage = () => {
-  return <EventFormShell />;
+  return <CreateEventForm />;
 };
 
 export default NewExperiencePage;

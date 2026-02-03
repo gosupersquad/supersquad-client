@@ -170,13 +170,13 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 **API (existing):** `GET /api/v1/admin/experiences` (list by host), `PUT /api/v1/admin/experiences/:id/toggle-status`. Base path: `getApiBaseUrl() + '/admin/experiences'`.
 
-| Step  | Task                                                                                                                                                                                                                 | Status  |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| **1** | Extend `lib/experiences-client.ts`: add `listEvents(token)` (GET), add `toggleEventStatus(id, token)` (PUT). Ensure `createEvent` uses `${base}/admin/experiences` (already correct).                                | Done    |
-| **2** | Add shadcn UI: `table`, `switch`, `tooltip`. Install `fuse.js` for client-side fuzzy search.                                                                                                                         | Done    |
-| **3** | Build `ExperiencesTable` component: columns Title, Status (Switch + badge), Spots, Dates, Duration, Actions (Edit). Use date-fns for dates; duration helper (X days or "-").                                         | Done    |
-| **4** | Convert `app/host/experiences/page.tsx` to client: `useQuery` listEvents, search state + Fuse (title, slug), loading/empty states, render ExperiencesTable; toggle status `useMutation` + invalidateQueries + toast. | Done    |
-| **5** | (Optional) Edit link → `/host/experiences/[id]/edit?type=event`; add placeholder edit page if needed. View live link if API returns host username later.                                                             | Pending |
+| Step  | Task                                                                                                                                                                                                                                                                                                                                        | Status |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| **1** | Extend `lib/experiences-client.ts`: add `listEvents(token)` (GET), add `toggleEventStatus(id, token)` (PUT). Ensure `createEvent` uses `${base}/admin/experiences` (already correct).                                                                                                                                                       | Done   |
+| **2** | Add shadcn UI: `table`, `switch`, `tooltip`. Install `fuse.js` for client-side fuzzy search.                                                                                                                                                                                                                                                | Done   |
+| **3** | Build `ExperiencesTable` component: columns Title, Status (Switch + badge), Spots, Dates, Duration, Actions (Edit). Use date-fns for dates; duration helper (X days or "-").                                                                                                                                                                | Done   |
+| **4** | Convert `app/host/experiences/page.tsx` to client: `useQuery` listEvents, search state + Fuse (title, slug), loading/empty states, render ExperiencesTable; toggle status `useMutation` + invalidateQueries + toast.                                                                                                                        | Done   |
+| **5** | Edit feature: `getEvent(id, token)` and `updateEvent(id, payload, token)` in experiences-client; `EventFormShell` accepts `mode: "create" \| "edit"` and `eventId`; Step4Pricing creates or updates by mode; edit page at `/host/experiences/[id]/edit` fetches event, prefills store, then renders shell with `mode="edit"` and `eventId`. | Done   |
 
 **Future: trips + combined list (not implemented yet).** Keep two separate list functions: `listEvents(token)` and later `listTrips(token)` — two collections, different logic; no `listExperiences(type)`. Combined view: fetch both in parallel (`Promise.all([listEvents, listTrips])`), normalize with discriminator (e.g. `kind: 'event' | 'trip'`), sort by `updatedAt` desc, render one table. URL: `?type=event` (events only), `?type=trip` (trips only), `?type=event,trip` (combined). Current work: events-only flow only.
 
@@ -203,4 +203,4 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
-_Last updated: Experiences list Step 4 done — experiences page with useQuery, Fuse search, ExperiencesTable, toggle mutation + toast._
+_Last updated: Step 5 (edit) — getEvent/updateEvent, EventFormShell mode+eventId, edit page prefill + shell reuse._

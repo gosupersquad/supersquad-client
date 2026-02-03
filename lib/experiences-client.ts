@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { CreateEventPayload } from "@/types";
+import type { CreateEventPayload, UpdateEventPayload } from "@/types";
 import { getApiBaseUrl } from "./api-client";
 
 /** Server returns { statusCode, data, message, success }. */
@@ -70,6 +70,51 @@ export async function toggleEventStatus(
     throw new Error("Invalid response from server");
   }
 
+  return data.data;
+}
+
+/**
+ * Get one event by id. Token required.
+ */
+export const getEvent = async (
+  id: string,
+  token: string
+): Promise<EventResponse> => {
+  const { data } = await axios.get<ApiResponse<EventResponse>>(
+    `${EXPERIENCES_BASE()}/${id}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+
+  if (!data.data) {
+    throw new Error("Invalid response from server");
+  }
+  return data.data;
+}
+
+/**
+ * Update event. Token required. Payload is partial (only sent fields are updated).
+ */
+export async function updateEvent(
+  id: string,
+  payload: UpdateEventPayload,
+  token: string
+): Promise<EventResponse> {
+  const { data } = await axios.put<ApiResponse<EventResponse>>(
+    `${EXPERIENCES_BASE()}/${id}`,
+    payload,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!data.data) {
+    throw new Error("Invalid response from server");
+  }
   return data.data;
 }
 

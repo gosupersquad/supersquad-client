@@ -15,7 +15,7 @@ export interface ExperiencePricing {
   currency: "INR";
 }
 
-/** Payload for POST /api/v1/experiences (create). */
+/** Payload for POST /api/v1/admin/experiences (create). */
 export interface CreateEventPayload {
   title: string;
   slug?: string;
@@ -29,6 +29,9 @@ export interface CreateEventPayload {
   faqs: ExperienceFAQ[];
   pricing: ExperiencePricing;
 }
+
+/** Payload for PUT /api/v1/admin/experiences/:id (update). Partial of create. */
+export type UpdateEventPayload = Partial<CreateEventPayload>;
 
 /** Step 1 form values (basics). */
 export interface EventFormBasics {

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { TOTAL_STEPS, useEventFormStore } from "@/store/event-form-store";
+import type { CreateEventPayload } from "@/types";
 
 import Step1Basics from "./steps/Step1Basics";
 import Step2Media from "./steps/Step2Media";
@@ -13,7 +14,19 @@ import Step4Pricing from "./steps/Step4Pricing";
 
 const STEP_NAMES = ["Basics", "Media", "FAQs", "Pricing"] as const;
 
-const EventFormShell = () => {
+export interface EventFormBaseProps {
+  onSubmit: (payload: CreateEventPayload) => void;
+  submitLabel: string;
+  submitLoadingLabel: string;
+  isSubmitting: boolean;
+}
+
+const EventFormBase = ({
+  onSubmit,
+  submitLabel,
+  submitLoadingLabel,
+  isSubmitting,
+}: EventFormBaseProps) => {
   const router = useRouter();
   const { step } = useEventFormStore();
 
@@ -46,10 +59,17 @@ const EventFormShell = () => {
 
         {step === 3 && <Step3Faqs />}
 
-        {step === 4 && <Step4Pricing />}
+        {step === 4 && (
+          <Step4Pricing
+            onSubmit={onSubmit}
+            submitLabel={submitLabel}
+            submitLoadingLabel={submitLoadingLabel}
+            isSubmitting={isSubmitting}
+          />
+        )}
       </div>
     </div>
   );
 };
 
-export default EventFormShell;
+export default EventFormBase;
