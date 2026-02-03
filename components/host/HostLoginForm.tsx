@@ -57,9 +57,11 @@ const HostLoginForm = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     setError(null);
+
     try {
       const result = await login(data.email, data.password);
       setAuth(result.token, result.user);
+
       toast.success("Signed in successfully");
       router.replace("/host/dashboard");
     } catch (e) {

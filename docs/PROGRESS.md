@@ -182,14 +182,14 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
-## Experiences list – mobile & view live (next)
+## Experiences list – mobile & view live
 
-| #   | Task                                                                                                                                                                                                          | Status      |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| 1   | **Cards view for mobile** – On viewport \< md, show event list as cards instead of table (table stays for md+). Same data: title, status toggle, spots, dates, duration, actions. Reuse for trips list later. | In progress |
-| 2   | **Open link button** – Same pattern as old code: button that opens the public event URL in a new tab (reference: `trip-page/client` AdminTrips, ExternalLink + getLiveUrl).                                   | Pending     |
-| 3   | **JWT: include host slug** – Auth service: include host username/slug in the JWT payload so frontend can build public URLs (e.g. `/hosts/[username]/events/[eventSlug]`) without an extra API call.           | Pending     |
-| 4   | **View live button** – In table and cards: add "View live" (or icon) that opens the event on the public route `/hosts/[username]/events/[eventSlug]` (new tab). Depends on host username from JWT (task 3).   | Pending     |
+| #   | Task                                                                                                                                                                                         | Status |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 1   | **Cards view for mobile** – On viewport \< md, show event list as cards (image, title, location, dates, Edit + View live). Table on md+.                                                     | Done   |
+| 2   | **Open link button** – Button that opens the public event URL in a new tab (ExternalLink icon).                                                                                              | Done   |
+| 3   | **Host username for view live** – No backend change: login response already returns `user.username`; saved in auth store. Frontend builds `/hosts/[username]/events/[eventSlug]` from store. | Done   |
+| 4   | **View live button** – In table and cards: ExternalLink opens `/hosts/[username]/events/[eventSlug]` (new tab). Uses `useAuthStore` for username.                                            | Done   |
 
 ---
 
@@ -214,4 +214,4 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
-_Last updated: Next tasks — mobile cards (1), open link (2), JWT slug (3), view live (4)._
+_Last updated: Mobile cards + view live done; username from login/store, no JWT change._

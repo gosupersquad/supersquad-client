@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Calendar, Pencil } from "lucide-react";
+import { Calendar, ExternalLink, Pencil } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/tooltip";
 import type { EventResponse } from "@/lib/experiences-client";
 import { getEventDuration } from "@/lib/utils";
+import { useAuthStore } from "@/store/auth-store";
 
 interface ExperiencesTableProps {
   events: EventResponse[];
@@ -33,6 +34,8 @@ const ExperiencesTable = ({
   onToggleStatus,
   isTogglingId,
 }: ExperiencesTableProps) => {
+  const user = useAuthStore((s) => s.user);
+
   return (
     <Table>
       <TableHeader>
@@ -65,6 +68,11 @@ const ExperiencesTable = ({
             startFormatted && endFormatted
               ? `${startFormatted} – ${endFormatted}`
               : "No dates";
+
+          const viewLiveHref =
+            user?.username && event.slug
+              ? `/hosts/${user.username}/events/${event.slug}`
+              : null;
 
           return (
             <TableRow key={event._id}>
@@ -120,21 +128,43 @@ const ExperiencesTable = ({
               <TableCell>{duration ?? "–"}</TableCell>
 
               <TableCell>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link
-                        href={`/host/experiences/${event._id}/edit?type=event`}
-                      >
-                        <Pencil className="size-4" />
-                      </Link>
-                    </Button>
-                  </TooltipTrigger>
+                <div className="flex items-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link
+                          href={`/host/experiences/${event._id}/edit?type=event`}
+                        >
+                          <Pencil className="size-4" />
+                        </Link>
+                      </Button>
+                    </TooltipTrigger>
 
-                  <TooltipContent>
-                    <p>Edit event</p>
-                  </TooltipContent>
-                </Tooltip>
+                    <TooltipContent>
+                      <p>Edit event</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {viewLiveHref && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link
+                            href={viewLiveHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="size-4" />
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+
+                      <TooltipContent>
+                        <p>View live</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
               </TableCell>
             </TableRow>
           );
