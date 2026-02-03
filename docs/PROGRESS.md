@@ -164,6 +164,22 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
+## Experiences list table (step-by-step checklist)
+
+**Scope:** `/host/experiences` – list current host’s events only (events only, no trips). Design reference: `trip-page/client` AdminTrips. Same behaviour: search (fuzzy), table (Title, Status toggle, Spots, Dates, Duration, Actions Edit), loading/empty states, toggle status → API + invalidate + toast.
+
+**API (existing):** `GET /api/v1/admin/experiences` (list by host), `PUT /api/v1/admin/experiences/:id/toggle-status`. Base path: `getApiBaseUrl() + '/admin/experiences'`.
+
+| Step  | Task                                                                                                                                                                                                                 | Status  |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **1** | Extend `lib/experiences-client.ts`: add `listEvents(token)` (GET), add `toggleEventStatus(id, token)` (PUT). Ensure `createEvent` uses `${base}/admin/experiences` (already correct).                                | Done    |
+| **2** | Add shadcn UI: `table`, `switch`, `tooltip`. Install `fuse.js` for client-side fuzzy search.                                                                                                                         | Pending |
+| **3** | Build `ExperiencesTable` component: columns Title, Status (Switch + badge), Spots, Dates, Duration, Actions (Edit). Use date-fns for dates; duration helper (X days or "-").                                         | Pending |
+| **4** | Convert `app/host/experiences/page.tsx` to client: `useQuery` listEvents, search state + Fuse (title, slug), loading/empty states, render ExperiencesTable; toggle status `useMutation` + invalidateQueries + toast. | Pending |
+| **5** | (Optional) Edit link → `/host/experiences/[id]/edit?type=event`; add placeholder edit page if needed. View live link if API returns host username later.                                                             | Pending |
+
+---
+
 ## Toasts (react-hot-toast)
 
 - **Unauthenticated on protected route:** "Please sign in to continue" (host layout, before redirect).
@@ -185,4 +201,4 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
-_Last updated: Step 1 date validation (start not past, end after start) + DD/MM/YYYY; Step 2 react-dropzone + upload Content-Type fix._
+_Last updated: Experiences list Step 1 done — listEvents + toggleEventStatus in experiences-client._

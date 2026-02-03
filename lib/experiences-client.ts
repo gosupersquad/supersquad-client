@@ -29,6 +29,50 @@ export interface EventResponse {
   updatedAt: string;
 }
 
+const EXPERIENCES_BASE = () => `${getApiBaseUrl()}/admin/experiences`;
+
+/**
+ * List current host's events. Token required.
+ * Use with useQuery: queryFn: () => listEvents(getToken())
+ */
+export async function listEvents(token: string): Promise<EventResponse[]> {
+  const { data } = await axios.get<ApiResponse<EventResponse[]>>(
+    EXPERIENCES_BASE(),
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+
+  if (!Array.isArray(data.data)) {
+    throw new Error("Invalid response from server");
+  }
+
+  return data.data;
+}
+
+/**
+ * Toggle event active status. Token required.
+ * Use with useMutation; onSuccess invalidate experiences query.
+ */
+export async function toggleEventStatus(
+  id: string,
+  token: string
+): Promise<EventResponse> {
+  const { data } = await axios.put<ApiResponse<EventResponse>>(
+    `${EXPERIENCES_BASE()}/${id}/toggle-status`,
+    {},
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+
+  if (!data.data) {
+    throw new Error("Invalid response from server");
+  }
+
+  return data.data;
+}
+
 /**
  * Create event. Token required (caller passes it so lib stays pure).
  * Use with useMutation: mutationFn: (payload) => createEvent(payload, getToken())
@@ -37,10 +81,8 @@ export async function createEvent(
   payload: CreateEventPayload,
   token: string
 ): Promise<EventResponse> {
-  const base = getApiBaseUrl();
-
   const { data } = await axios.post<ApiResponse<EventResponse>>(
-    `${base}/admin/experiences`,
+    EXPERIENCES_BASE(),
     payload,
     {
       headers: {
