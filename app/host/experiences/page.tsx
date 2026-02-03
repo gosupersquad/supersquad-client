@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
+import ExperiencesCards from "@/components/host/ExperiencesCards";
 import ExperiencesTable from "@/components/host/ExperiencesTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -144,15 +145,23 @@ const HostExperiencesPage = () => {
             : "No events match your search."}
         </div>
       ) : (
-        <ExperiencesTable
-          events={filteredEvents}
-          onToggleStatus={handleToggleStatus}
-          isTogglingId={
-            mutation.isPending && mutation.variables
-              ? mutation.variables.id
-              : null
-          }
-        />
+        <>
+          <div className="md:hidden">
+            <ExperiencesCards events={filteredEvents} />
+          </div>
+
+          <div className="hidden md:block">
+            <ExperiencesTable
+              events={filteredEvents}
+              onToggleStatus={handleToggleStatus}
+              isTogglingId={
+                mutation.isPending && mutation.variables
+                  ? mutation.variables.id
+                  : null
+              }
+            />
+          </div>
+        </>
       )}
     </div>
   );
