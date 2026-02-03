@@ -40,7 +40,7 @@ export async function createEvent(
   const base = getApiBaseUrl();
 
   const { data } = await axios.post<ApiResponse<EventResponse>>(
-    `${base}/experiences`,
+    `${base}/admin/experiences`,
     payload,
     {
       headers: {

@@ -160,7 +160,7 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 **Step 3 done:** `Step3Faqs` (FAQs step). List of FAQ rows (question + answer); Add FAQ, Remove per row. Validation on Next: if any row has empty question or answer, toast error; else nextStep(). Back/Next. Store: faqs, setFaqs.
 
-**Step 4 done:** `Step4Pricing` (Pricing step). Price (number ≥ 0, required), Currency: INR (fixed, displayed as text). Validation on Next: price must be number and ≥ 0; else toast. Back/Next. Store: pricing, setPricing. (Submit/create not yet wired — Next on step 4 just validates and advances; create flow next.)
+**Step 4 done:** `Step4Pricing` (Pricing step). Price (number ≥ 0, required), Currency: INR (fixed). **Create flow wired:** "Create event" button uses `useMutation`; payload built from store (basics, media, faqs, pricing) via `buildPayload`; `createEvent(payload, token)` from `lib/experiences-client`. On success: `reset()` store, `queryClient.invalidateQueries({ queryKey: ['experiences'] })`, `router.push('/host/experiences')`, toast "Event created". On error: toast. `QueryProvider` (TanStack Query) wraps app in root layout.
 
 ---
 
@@ -185,4 +185,4 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
-_Last updated: Step 4 (Pricing) done — Step4Pricing with price + INR; create flow not yet wired._
+_Last updated: Create flow wired — Step4Pricing useMutation, buildPayload, reset + redirect + invalidate; QueryProvider in layout._

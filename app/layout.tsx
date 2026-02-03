@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "react-hot-toast";
 
+import QueryProvider from "@/components/QueryProvider";
 import ThemeProvider from "@/components/ThemeProvider";
 
 import "./globals.css";
@@ -31,10 +33,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
-          {children}
-          <Toaster position="top-center" toastOptions={{ duration: 4000 }} />
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster position="top-center" toastOptions={{ duration: 4000 }} />
+          </ThemeProvider>
+
+          {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+        </QueryProvider>
       </body>
     </html>
   );
