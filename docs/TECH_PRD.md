@@ -77,7 +77,7 @@ There are **two distinct domain entities**:
 **Planned (unchanged):**
 
 ```
-/[hostSlug]/
+/[hostUsername]/
 ├── /events/[eventSlug]/         # Event landing (SSR) — implemented as /hosts/[username]/events/[eventSlug]
 │   └── /checkout                # Event checkout (later)
 └── /trips/[tripSlug]/           # Trip landing + checkout (later)
@@ -142,10 +142,10 @@ _(admin.gosupersquad.com and gosupersquad.com as separate frontends are not used
 
 **Infrastructure**
 
-- Hetzner VPS (single instance)
+- Azure VM
 - Nginx
 - PM2
-- Cloudflare R2 (media)
+- Cloudflare
 - Cashfree (payments)
 
 ---
@@ -412,7 +412,7 @@ Flow:
 
 ---
 
-## 11. Timeline (REALISTIC & LOCKED)
+## 11. Timeline (REALISTIC & LOCKED) // outdated, new timeline to be updated
 
 **Day 1**
 
