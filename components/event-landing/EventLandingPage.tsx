@@ -23,24 +23,26 @@ const EventLandingPage = ({ event }: EventLandingPageProps) => {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <EventHeader />
 
-      <div className="max-w-6xl mx-auto px-4 md:px-6 pb-4">
+      <div className="max-w-6xl mx-auto md:px-6 pb-4">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr,340px] gap-8 lg:gap-10">
           <main className="min-w-0 pb-6 md:py-8 space-y-10">
             <EventHero title={event.title} media={event.media} />
 
-            <EventInfo host={host} />
+            <div className="px-4 md:px-0 space-y-10">
+              <EventInfo host={host} />
 
-            <EventDetails
-              location={event.location}
-              startDate={event.startDate}
-              endDate={event.endDate}
-              dateDisplayText={event.dateDisplayText}
-              description={event.description}
-            />
+              <EventDetails
+                location={event.location}
+                startDate={event.startDate}
+                endDate={event.endDate}
+                dateDisplayText={event.dateDisplayText}
+                description={event.description}
+              />
 
-            <EventFaqs faqs={event.faqs} />
+              <EventFaqs faqs={event.faqs} />
 
-            <EventFooter />
+              <EventFooter />
+            </div>
           </main>
 
           <aside className="hidden lg:block lg:pt-8">

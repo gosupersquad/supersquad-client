@@ -74,9 +74,61 @@ const EventHero = ({
 
   return (
     <div className="space-y-4">
-      {/* Desktop: title + share above carousel */}
-      <div className="hidden md:flex items-start justify-between gap-4">
-        <h1 className="text-2xl md:text-4xl font-semibold tracking-tight">
+      {/* Carousel first */}
+      <div className="w-full h-[75vh] md:h-auto">
+        <div className="relative w-full h-full">
+          <Carousel setApi={setApi} className="w-full h-full md:h-auto">
+            <CarouselContent className="ml-0 h-full md:h-auto">
+              {media.map((item, index) => (
+                <CarouselItem
+                  key={`${item.url}-${index}`}
+                  className="pl-0 h-full md:h-auto"
+                >
+                  <div className="h-[75vh] w-full overflow-hidden md:h-auto md:aspect-16/10 md:rounded-2xl bg-muted">
+                    {item.type === "video" ? (
+                      <video
+                        src={item.url}
+                        className="w-full h-full object-cover"
+                        controls
+                        playsInline
+                        muted
+                        loop
+                        preload="metadata"
+                      />
+                    ) : (
+                      <img
+                        src={item.url}
+                        alt="event media"
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            {media.length > 1 && (
+              <div className="absolute bottom-4 left-4 flex gap-1.5 z-10 md:relative md:bottom-0 md:left-0 md:justify-center md:mt-3">
+                {media.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-label={`Slide ${i + 1}`}
+                    className={cn(
+                      "size-2 rounded-full transition-colors",
+                      i === selected ? "bg-white" : "bg-white/40",
+                    )}
+                    onClick={() => api?.scrollTo(i)}
+                  />
+                ))}
+              </div>
+            )}
+          </Carousel>
+        </div>
+      </div>
+
+      {/* Event title + Share: after carousel, above host info */}
+      <div className="flex items-center justify-between gap-4 pt-4">
+        <h1 className="px-4 md:px-0 text-2xl md:text-4xl font-semibold tracking-tight">
           {title}
         </h1>
 
@@ -89,73 +141,6 @@ const EventHero = ({
           <Share2 className="size-4" />
           Share
         </Button>
-      </div>
-
-      {/* Mobile: full-bleed 65vh, no padding. Desktop: contained, rounded. */}
-      <div className="relative w-screen max-w-none left-1/2 -translate-x-1/2 md:w-full md:left-0 md:translate-x-0 h-[65vh] md:h-auto">
-        <Carousel setApi={setApi} className="w-full h-full md:h-auto">
-          <CarouselContent className="ml-0 h-full md:h-auto">
-            {media.map((item, index) => (
-              <CarouselItem
-                key={`${item.url}-${index}`}
-                className="pl-0 h-full md:h-auto"
-              >
-                <div className="h-[65vh] w-full overflow-hidden md:h-auto md:aspect-16/10 md:rounded-2xl bg-muted">
-                  {item.type === "video" ? (
-                    <video
-                      src={item.url}
-                      className="w-full h-full object-cover"
-                      controls
-                      playsInline
-                      muted
-                      loop
-                      preload="metadata"
-                    />
-                  ) : (
-                    <img
-                      src={item.url}
-                      alt="event media"
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          {/* Mobile: title + share over image (above dots) */}
-          <div className="flex md:hidden absolute bottom-12 left-4 right-4 z-10 pointer-events-none">
-            <h1 className="text-2xl font-semibold tracking-tight text-white drop-shadow-md">
-              {title}
-            </h1>
-            <div className="pointer-events-auto ml-auto">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="shrink-0 bg-white/20 hover:bg-white/30 text-white border-0"
-                onClick={handleShare}
-              >
-                <Share2 className="size-4" />
-                Share
-              </Button>
-            </div>
-          </div>
-          {media.length > 1 && (
-            <div className="absolute bottom-4 left-4 flex gap-1.5 z-10 md:relative md:bottom-0 md:left-0 md:justify-center md:mt-3">
-              {media.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  aria-label={`Slide ${i + 1}`}
-                  className={cn(
-                    "size-2 rounded-full transition-colors",
-                    i === selected ? "bg-white" : "bg-white/40",
-                  )}
-                  onClick={() => api?.scrollTo(i)}
-                />
-              ))}
-            </div>
-          )}
-        </Carousel>
       </div>
     </div>
   );
