@@ -14,6 +14,7 @@ const EventFaqs = ({ faqs }: { faqs: ExperienceFAQ[] }) => {
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold">FAQs</h2>
+
       <Accordion type="single" collapsible className="w-full">
         {faqs.map((faq, index) => (
           <AccordionItem
@@ -23,6 +24,7 @@ const EventFaqs = ({ faqs }: { faqs: ExperienceFAQ[] }) => {
             <AccordionTrigger className="text-left py-4">
               {faq.question}
             </AccordionTrigger>
+
             <AccordionContent className="text-muted-foreground pb-4">
               {faq.answer}
             </AccordionContent>

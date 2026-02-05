@@ -70,7 +70,6 @@ const EventHero = ({
 
           <Button variant="outline" size="sm" onClick={handleShare}>
             <Share2 className="size-4" />
-            Share
           </Button>
         </div>
 
@@ -96,7 +95,6 @@ const EventHero = ({
           onClick={handleShare}
         >
           <Share2 className="size-4" />
-          Share
         </Button>
       </div>
 
@@ -136,6 +134,7 @@ const EventHero = ({
                 </CarouselItem>
               ))}
             </CarouselContent>
+
             {media.length > 1 && (
               <div className="absolute bottom-4 left-4 flex gap-1.5 z-10 md:relative md:bottom-0 md:left-0 md:justify-center md:mt-3">
                 {media.map((_, i) => (
@@ -157,8 +156,11 @@ const EventHero = ({
       </div>
 
       {/* Mobile only: title + Share after carousel, above host info */}
-      <div className="flex md:hidden items-center justify-between gap-4 pt-4">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+      <div className="flex md:hidden items-center justify-between gap-2 pt-4">
+        <h1 className="px-4 md:px-0 text-xl font-semibold tracking-tight">
+          {title}
+        </h1>
+
         <Button
           variant="outline"
           size="sm"
@@ -166,7 +168,6 @@ const EventHero = ({
           onClick={handleShare}
         >
           <Share2 className="size-4" />
-          Share
         </Button>
       </div>
     </div>
