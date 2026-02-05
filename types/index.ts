@@ -45,3 +45,31 @@ export interface EventFormBasics {
   dateDisplayText: string;
   isActive: boolean;
 }
+
+/** Host as returned by public event API (populated hostId). */
+export interface PublicEventHost {
+  _id: string;
+  name: string;
+  username: string;
+  image?: string;
+  bio?: string;
+  instagram?: { url?: string; followerCount?: number };
+}
+
+/** Public event for landing page (event + populated host). */
+export interface PublicEvent {
+  _id: string;
+  hostId: PublicEventHost;
+  title: string;
+  slug: string;
+  location: string;
+  description: string;
+  spotsAvailable: number;
+  startDate: string;
+  endDate: string;
+  dateDisplayText?: string;
+  media: MediaItem[];
+  faqs: ExperienceFAQ[];
+  pricing: ExperiencePricing;
+  isActive: boolean;
+}

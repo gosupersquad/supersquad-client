@@ -193,6 +193,35 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
+## Event Landing Page (public, customer-facing)
+
+**Route:** `/hosts/[username]/events/[eventSlug]` — SSR where possible; single responsive layout (no separate desktop/mobile components).
+
+**PRD – components (in order):**
+
+1. **Hero** – Image + optional video; scrollable media (shadcn Carousel). Carousel is content-agnostic; use `<img>` or `<video>` per item.
+2. **Event Information** – Event title; host name + display picture; host bio and Instagram link (in modal); Share button alongside host details.
+3. **Event Details** – Location; date & time; event description (long-form).
+4. **FAQs** – Simple Q&A list (single unified list; no categories).
+5. **Pricing & Booking CTA** – Single ticket type → show price; multiple (future) → “Starting from ₹X”. CTA opens ticket selector in a bottom drawer (half-screen).
+6. **Footer** – “Powered by Supersquad”; secondary “Host your event” (small text).
+
+**Removed from old trip-page:** Category, itinerary, amenities, accommodation, spots-left as a separate block, etc. Keep only the above.
+
+**Tech:** shadcn Carousel (Embla); one page composes small components (Hero, EventInfo, EventDetails, EventFaqs, PricingCta, Footer). Best practices: componentize where appropriate; avoid one long file.
+
+**API:** `GET /api/v1/hosts/:username/events/:eventSlug` — returns event with populated host (name, username, image, bio, instagram). Response shape: `{ success, data }`, `data` = event doc with `hostId` populated.
+
+| #   | Task                                                             | Status |
+| --- | ---------------------------------------------------------------- | ------ |
+| 1   | PRD in PROGRESS.md                                               | Done   |
+| 2   | Add shadcn carousel; route + fetch public event                  | Done   |
+| 3   | EventHero (carousel: image + video support)                      | Done   |
+| 4   | EventInfo, EventDetails, EventFaqs, EventPricingCta, EventFooter | Done   |
+| 5   | Single page layout, loading/error/not-found                      | Done   |
+
+---
+
 ## Toasts (react-hot-toast)
 
 - **Unauthenticated on protected route:** "Please sign in to continue" (host layout, before redirect).
@@ -214,4 +243,4 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
-_Last updated: Mobile cards + view live done; username from login/store, no JWT change._
+_Last updated: Event landing page – PRD recorded; implementation in progress (carousel, route, components)._
