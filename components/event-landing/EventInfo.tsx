@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { PublicEventHost } from "@/types";
-import Image from "next/image";
 
 const EventInfo = ({ host }: { host: PublicEventHost }) => {
   const [hostModalOpen, setHostModalOpen] = useState(false);
@@ -55,12 +54,10 @@ const EventInfo = ({ host }: { host: PublicEventHost }) => {
           <div className="space-y-3">
             {host.image && (
               <div className="flex justify-center">
-                <Image
+                <img
                   src={host.image}
                   alt="host image"
-                  className="rounded-full object-cover"
-                  width={200}
-                  height={200}
+                  className="mah-[50vh] aspect-square w-full rounded-full object-cover"
                 />
               </div>
             )}
