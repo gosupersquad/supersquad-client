@@ -35,6 +35,15 @@ const EventHero = ({
     api.on("select", () => setSelected(api.selectedScrollSnap()));
   }, [api]);
 
+  // Auto-advance when multiple slides (only if loop is enabled)
+  useEffect(() => {
+    if (!api || media.length <= 1) return;
+    const interval = setInterval(() => {
+      api.scrollNext();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [api, media.length]);
+
   const handleShare = useCallback(() => {
     if (typeof navigator !== "undefined" && navigator.share) {
       navigator
@@ -74,10 +83,31 @@ const EventHero = ({
 
   return (
     <div className="space-y-4">
-      {/* Carousel first */}
+      {/* Desktop: title + share above carousel */}
+      <div className="hidden md:flex items-start justify-between gap-4">
+        <h1 className="text-2xl md:text-4xl font-semibold tracking-tight">
+          {title}
+        </h1>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          onClick={handleShare}
+        >
+          <Share2 className="size-4" />
+          Share
+        </Button>
+      </div>
+
+      {/* Carousel */}
       <div className="w-full h-[75vh] md:h-auto">
         <div className="relative w-full h-full">
-          <Carousel setApi={setApi} className="w-full h-full md:h-auto">
+          <Carousel
+            setApi={setApi}
+            opts={{ loop: media.length > 1 }}
+            className="w-full h-full md:h-auto"
+          >
             <CarouselContent className="ml-0 h-full md:h-auto">
               {media.map((item, index) => (
                 <CarouselItem
@@ -126,12 +156,9 @@ const EventHero = ({
         </div>
       </div>
 
-      {/* Event title + Share: after carousel, above host info */}
-      <div className="flex items-center justify-between gap-4 pt-4">
-        <h1 className="px-4 md:px-0 text-2xl md:text-4xl font-semibold tracking-tight">
-          {title}
-        </h1>
-
+      {/* Mobile only: title + Share after carousel, above host info */}
+      <div className="flex md:hidden items-center justify-between gap-4 pt-4">
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         <Button
           variant="outline"
           size="sm"
