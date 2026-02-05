@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { MapPin, Calendar } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { Calendar, MapPin } from "lucide-react";
+import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import type { PublicEventHost } from "@/types";
-import type { ExperiencePricing } from "@/types";
+import type { ExperiencePricing, PublicEventHost } from "@/types";
 
 const EventPricingSidebar = ({
   host,
@@ -32,13 +32,16 @@ const EventPricingSidebar = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
+
   const price = pricing?.price ?? 0;
   const total = price * quantity;
+
   const formatted = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
   }).format(price);
+
   const totalFormatted = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
@@ -46,10 +49,12 @@ const EventPricingSidebar = ({
   }).format(total);
 
   let dateLabel = dateDisplayText?.trim();
+
   if (!dateLabel) {
     try {
       const start = parseISO(startDate.slice(0, 10));
       const end = parseISO(endDate.slice(0, 10));
+
       if (start.getTime() === end.getTime()) {
         dateLabel = format(start, "d MMMM ''yy");
       } else {
@@ -67,42 +72,47 @@ const EventPricingSidebar = ({
 
   return (
     <>
-      <div className="rounded-2xl border border-border bg-card p-5 space-y-4 sticky top-24">
+      <div className="border-border bg-card sticky top-24 space-y-4 rounded-2xl border p-5">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-full bg-muted overflow-hidden shrink-0">
+          <div className="bg-muted size-10 shrink-0 overflow-hidden rounded-full">
             {host.image ? (
               <img
                 src={host.image}
                 alt=""
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
               />
             ) : (
-              <span className="w-full h-full flex items-center justify-center text-muted-foreground text-sm font-medium">
+              <span className="text-muted-foreground flex h-full w-full items-center justify-center text-sm font-medium">
                 {host.name.slice(0, 1).toUpperCase()}
               </span>
             )}
           </div>
+
           <div className="min-w-0 text-sm">
-            <p className="font-medium truncate">{host.name}</p>
+            <p className="truncate font-medium">{host.name}</p>
             <p className="text-muted-foreground truncate">{location}</p>
           </div>
         </div>
-        <div className="space-y-2 text-sm text-muted-foreground">
+
+        <div className="text-muted-foreground space-y-2 text-sm">
           <p className="flex items-center gap-2">
             <MapPin className="size-4 shrink-0" />
             {location}
           </p>
+
           <p className="flex items-center gap-2">
             <Calendar className="size-4 shrink-0" />
             {dateLabel}
           </p>
         </div>
-        <div className="border-t border-border pt-4 flex items-center justify-between gap-4">
-          <span className="text-sm text-muted-foreground">Total Price</span>
+
+        <div className="border-border flex items-center justify-between gap-4 border-t pt-4">
+          <span className="text-muted-foreground text-sm">Total Price</span>
           <span className="text-xl font-semibold">{formatted}</span>
         </div>
+
         <Button
-          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-medium"
+          className="w-full bg-emerald-500 font-medium text-white hover:bg-emerald-600"
           size="lg"
           onClick={() => setOpen(true)}
         >
@@ -113,14 +123,16 @@ const EventPricingSidebar = ({
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="bottom"
-          className="h-[50vh] rounded-t-2xl flex flex-col"
+          className="flex h-[50vh] flex-col rounded-t-2xl"
         >
           <SheetHeader>
             <SheetTitle>Select tickets</SheetTitle>
           </SheetHeader>
-          <div className="flex-1 overflow-auto py-4 space-y-4">
+
+          <div className="flex-1 space-y-4 overflow-auto py-4">
             <div className="flex items-center justify-between gap-4">
-              <span className="text-sm text-muted-foreground">Quantity</span>
+              <span className="text-muted-foreground text-sm">Quantity</span>
+
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -129,7 +141,9 @@ const EventPricingSidebar = ({
                 >
                   −
                 </Button>
+
                 <span className="w-8 text-center font-medium">{quantity}</span>
+
                 <Button
                   variant="outline"
                   size="icon"
@@ -145,12 +159,14 @@ const EventPricingSidebar = ({
                 </Button>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">
+
+            <p className="text-muted-foreground text-sm">
               Total: {totalFormatted}
             </p>
           </div>
+
           <Button
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
+            className="w-full bg-emerald-500 text-white hover:bg-emerald-600"
             size="lg"
             onClick={onReserve}
           >

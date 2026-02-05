@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ExperiencePricing } from "@/types";
 
@@ -24,13 +25,16 @@ const EventPricingBar = ({
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [showBar, setShowBar] = useState(false);
+
   const price = pricing?.price ?? 0;
   const total = price * quantity;
+
   const formatted = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
   }).format(price);
+
   const totalFormatted = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
@@ -43,8 +47,10 @@ const EventPricingBar = ({
         typeof window !== "undefined" && window.scrollY > SCROLL_THRESHOLD_PX,
       );
     };
+
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
+
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -57,13 +63,14 @@ const EventPricingBar = ({
     <>
       <div
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-40 md:hidden border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-3 flex items-center justify-between gap-4 safe-area-pb transition-transform duration-300 ease-out",
+          "border-border bg-background/95 supports-backdrop-filter:bg-background/80 safe-area-pb fixed right-0 bottom-0 left-0 z-40 flex items-center justify-between gap-4 border-t px-4 py-3 backdrop-blur transition-transform duration-300 ease-out md:hidden",
           showBar ? "translate-y-0" : "translate-y-full",
         )}
       >
         <span className="text-xl font-semibold">{formatted}</span>
+
         <Button
-          className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium shrink-0"
+          className="shrink-0 bg-emerald-500 font-medium text-white hover:bg-emerald-600"
           size="lg"
           onClick={() => setOpen(true)}
         >
@@ -74,14 +81,16 @@ const EventPricingBar = ({
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="bottom"
-          className="h-[50vh] rounded-t-2xl flex flex-col"
+          className="flex h-[50vh] flex-col rounded-t-2xl"
         >
           <SheetHeader>
             <SheetTitle>Select tickets</SheetTitle>
           </SheetHeader>
-          <div className="flex-1 overflow-auto py-4 space-y-4">
+
+          <div className="flex-1 space-y-4 overflow-auto py-4">
             <div className="flex items-center justify-between gap-4">
-              <span className="text-sm text-muted-foreground">Quantity</span>
+              <span className="text-muted-foreground text-sm">Quantity</span>
+
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -90,7 +99,9 @@ const EventPricingBar = ({
                 >
                   −
                 </Button>
+
                 <span className="w-8 text-center font-medium">{quantity}</span>
+
                 <Button
                   variant="outline"
                   size="icon"
@@ -106,12 +117,14 @@ const EventPricingBar = ({
                 </Button>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">
+
+            <p className="text-muted-foreground text-sm">
               Total: {totalFormatted}
             </p>
           </div>
+
           <Button
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
+            className="w-full bg-emerald-500 text-white hover:bg-emerald-600"
             size="lg"
             onClick={onReserve}
           >

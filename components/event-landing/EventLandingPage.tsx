@@ -20,15 +20,15 @@ const EventLandingPage = ({ event }: EventLandingPageProps) => {
   const host = event.hostId;
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="bg-background text-foreground min-h-screen overflow-x-hidden">
       <EventHeader />
 
-      <div className="max-w-6xl mx-auto md:px-6 pb-4">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr,340px] gap-8 lg:gap-10">
-          <main className="min-w-0 pb-6 md:py-8 space-y-10">
+      <div className="mx-auto max-w-6xl pb-4 md:px-6">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr,340px] lg:gap-10">
+          <main className="min-w-0 space-y-10 pb-6 md:py-8 lg:pb-0">
             <EventHero title={event.title} media={event.media} />
 
-            <div className="px-4 md:px-0 space-y-10">
+            <div className="space-y-10 px-4 md:px-0">
               <EventInfo host={host} />
 
               <EventDetails
@@ -45,7 +45,7 @@ const EventLandingPage = ({ event }: EventLandingPageProps) => {
             </div>
           </main>
 
-          <aside className="hidden lg:block lg:pt-8">
+          <aside className="hidden lg:block lg:pt-0">
             <EventPricingSidebar
               host={host}
               location={event.location}
