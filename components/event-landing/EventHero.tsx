@@ -111,6 +111,16 @@ const EventHero = ({ title, media }: { title: string; media: MediaItem[] }) => {
               </div>
             )}
           </Carousel>
+
+          {/* Gradient overlay: fades to page bg #121212 */}
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-[1]"
+            style={{
+              height: "50%",
+              background:
+                "linear-gradient(180deg, transparent 0%, rgba(18, 18, 18, 0.5) 60%, #121212 100%)",
+            }}
+          />
         </div>
       </div>
 
