@@ -80,13 +80,14 @@ const EventPricingBar = ({ pricing, spotsAvailable }: EventPricingBarProps) => {
         <Button
           className="shrink-0 bg-emerald-500 text-base font-semibold text-white hover:bg-emerald-600 md:px-8 md:py-6 md:text-lg"
           size="lg"
-          onClick={() => setOpen(true)}
+          // onClick={() => setOpen(true)}
+          onClick={onReserve}
         >
           Reserve a spot
         </Button>
       </div>
 
-      <Sheet open={open} onOpenChange={setOpen}>
+      {/* <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="bottom"
           className="flex h-[50vh] flex-col rounded-t-2xl"
@@ -143,7 +144,7 @@ const EventPricingBar = ({ pricing, spotsAvailable }: EventPricingBarProps) => {
             </Button>
           </div>
         </SheetContent>
-      </Sheet>
+      </Sheet> */}
     </>
   );
 };

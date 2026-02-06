@@ -22,7 +22,7 @@ const EventLandingPage = ({ event }: EventLandingPageProps) => {
       <EventHeader />
 
       <div className="mx-auto max-w-6xl pb-4 md:px-6">
-        <main className="min-w-0 space-y-10 pb-24 md:py-8 md:pb-24">
+        <main className="min-w-0 space-y-10 pb-24 md:py-8 md:pb-16">
           <EventHero title={event.title} media={event.media} />
 
           <div className="space-y-10 px-4 md:px-0">

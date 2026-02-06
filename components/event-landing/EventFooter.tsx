@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const EventFooter = () => {
   return (
-    <footer className="border-t border-border pt-6 pb-24 md:pb-8 mt-10 text-center text-sm text-muted-foreground space-y-2">
+    <footer className="border-border text-muted-foreground mt-16 space-y-2 border-t pt-6 pb-10 text-center text-sm md:pb-8">
       <p>
         Powered by <span className="font-extrabold">Supersquad</span>
       </p>
