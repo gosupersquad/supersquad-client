@@ -1,9 +1,7 @@
 "use client";
 
-import { Share2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import {
   Carousel,
   CarouselContent,
@@ -13,15 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { MediaItem } from "@/types";
 
-const EventHero = ({
-  title,
-  media,
-  onShare,
-}: {
-  title: string;
-  media: MediaItem[];
-  onShare?: () => void;
-}) => {
+const EventHero = ({ title, media }: { title: string; media: MediaItem[] }) => {
   const [api, setApi] = useState<CarouselApi | null>(null);
   const [selected, setSelected] = useState(0);
 
@@ -44,36 +34,14 @@ const EventHero = ({
     return () => clearInterval(interval);
   }, [api, media.length]);
 
-  const handleShare = useCallback(() => {
-    if (typeof navigator !== "undefined" && navigator.share) {
-      navigator
-        .share({
-          title,
-          url: typeof window !== "undefined" ? window.location.href : "",
-          text: title,
-        })
-        .catch(() => {});
-    } else if (typeof window !== "undefined") {
-      void navigator.clipboard?.writeText(window.location.href);
-    }
-
-    onShare?.();
-  }, [title, onShare]);
-
   if (!media?.length) {
     return (
       <div className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <h1 className="text-2xl md:text-4xl font-semibold tracking-tight">
-            {title}
-          </h1>
+        <h1 className="text-2xl font-semibold tracking-tight md:text-4xl">
+          {title}
+        </h1>
 
-          <Button variant="outline" size="sm" onClick={handleShare}>
-            <Share2 className="size-4" />
-          </Button>
-        </div>
-
-        <div className="aspect-4/3 w-full rounded-2xl bg-muted flex items-center justify-center text-muted-foreground">
+        <div className="bg-muted text-muted-foreground flex aspect-4/3 w-full items-center justify-center rounded-2xl">
           No media
         </div>
       </div>
@@ -82,41 +50,32 @@ const EventHero = ({
 
   return (
     <div className="space-y-4">
-      {/* Desktop: title + share above carousel */}
-      <div className="hidden md:flex items-start justify-between gap-4">
-        <h1 className="text-2xl md:text-4xl font-semibold tracking-tight">
+      {/* Desktop: title above carousel */}
+      <div className="hidden md:block">
+        <h1 className="text-2xl font-semibold tracking-tight md:text-4xl">
           {title}
         </h1>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0"
-          onClick={handleShare}
-        >
-          <Share2 className="size-4" />
-        </Button>
       </div>
 
       {/* Carousel */}
-      <div className="w-full h-[75vh] md:h-auto">
-        <div className="relative w-full h-full">
+      <div className="h-[75vh] w-full md:h-auto">
+        <div className="relative h-full w-full">
           <Carousel
             setApi={setApi}
             opts={{ loop: media.length > 1 }}
-            className="w-full h-full md:h-auto"
+            className="h-full w-full md:h-auto"
           >
             <CarouselContent className="ml-0 h-full md:h-auto">
               {media.map((item, index) => (
                 <CarouselItem
                   key={`${item.url}-${index}`}
-                  className="pl-0 h-full md:h-auto"
+                  className="h-full pl-0 md:h-auto"
                 >
-                  <div className="h-[75vh] w-full overflow-hidden md:h-auto md:aspect-16/10 md:rounded-2xl bg-muted">
+                  <div className="bg-muted h-[75vh] w-full overflow-hidden md:aspect-16/10 md:h-auto md:rounded-2xl">
                     {item.type === "video" ? (
                       <video
                         src={item.url}
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                         controls
                         playsInline
                         muted
@@ -127,7 +86,7 @@ const EventHero = ({
                       <img
                         src={item.url}
                         alt="event media"
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                       />
                     )}
                   </div>
@@ -136,7 +95,7 @@ const EventHero = ({
             </CarouselContent>
 
             {media.length > 1 && (
-              <div className="absolute bottom-4 left-4 flex gap-1.5 z-10 md:relative md:bottom-0 md:left-0 md:justify-center md:mt-3">
+              <div className="absolute bottom-4 left-4 z-10 flex gap-1.5 md:relative md:bottom-0 md:left-0 md:mt-3 md:justify-center">
                 {media.map((_, i) => (
                   <button
                     key={i}
@@ -155,20 +114,9 @@ const EventHero = ({
         </div>
       </div>
 
-      {/* Mobile only: title + Share after carousel, above host info */}
-      <div className="flex md:hidden items-center justify-between gap-2 pt-4">
-        <h1 className="px-4 md:px-0 text-xl font-semibold tracking-tight">
-          {title}
-        </h1>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0"
-          onClick={handleShare}
-        >
-          <Share2 className="size-4" />
-        </Button>
+      {/* Mobile only: title after carousel, above host info */}
+      <div className="flex px-4 pt-4 md:hidden md:px-0">
+        <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
       </div>
     </div>
   );

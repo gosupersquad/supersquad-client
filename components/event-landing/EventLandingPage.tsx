@@ -7,7 +7,7 @@ import EventFaqs from "./EventFaqs";
 import EventFooter from "./EventFooter";
 import EventHeader from "./EventHeader";
 import EventHero from "./EventHero";
-import EventInfo from "./EventInfo";
+import EventHostInfo from "./EventHostInfo";
 import EventPricingBar from "./EventPricingBar";
 import EventPricingSidebar from "./EventPricingSidebar";
 
@@ -16,7 +16,6 @@ interface EventLandingPageProps {
 }
 
 const EventLandingPage = ({ event }: EventLandingPageProps) => {
-  console.log("🚀 ~ EventLandingPage ~ event:", event);
   const host = event.hostId;
 
   return (
@@ -29,7 +28,7 @@ const EventLandingPage = ({ event }: EventLandingPageProps) => {
             <EventHero title={event.title} media={event.media} />
 
             <div className="space-y-10 px-4 md:px-0">
-              <EventInfo host={host} />
+              <EventHostInfo host={host} shareTitle={event.title} />
 
               <EventDetails
                 location={event.location}
