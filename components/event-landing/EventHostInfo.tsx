@@ -71,7 +71,7 @@ const EventHostInfo = ({
       <Button
         variant="outline"
         size="sm"
-        className="shrink-0"
+        className="shrink-0 cursor-pointer"
         onClick={handleShare}
       >
         <Share2 className="size-4" />

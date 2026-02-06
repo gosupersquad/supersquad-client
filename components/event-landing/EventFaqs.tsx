@@ -21,7 +21,7 @@ const EventFaqs = ({ faqs }: { faqs: ExperienceFAQ[] }) => {
             key={`${faq.question}-${index}`}
             value={`faq-${index}`}
           >
-            <AccordionTrigger className="text-left py-4">
+            <AccordionTrigger className="cursor-pointer py-4 text-left">
               {faq.question}
             </AccordionTrigger>
 
