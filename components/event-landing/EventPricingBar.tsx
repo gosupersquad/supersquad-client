@@ -1,5 +1,6 @@
 "use client";
 
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -14,17 +15,24 @@ import type { ExperiencePricing } from "@/types";
 
 const SCROLL_THRESHOLD_PX = 80;
 
-/** Fixed bottom bar on mobile: visible only after scrolling down; slide in/out animation. */
-const EventPricingBar = ({
-  pricing,
-  spotsAvailable,
-}: {
+interface EventPricingBarProps {
   pricing: ExperiencePricing;
   spotsAvailable: number;
-}) => {
+}
+
+type Params = {
+  username: string;
+  eventSlug: string;
+};
+
+/** Fixed bottom bar on mobile: visible only after scrolling down; slide in/out animation. */
+const EventPricingBar = ({ pricing, spotsAvailable }: EventPricingBarProps) => {
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [showBar, setShowBar] = useState(false);
+
+  const router = useRouter();
+  const { username: hostUsername, eventSlug } = useParams<Params>();
 
   const price = pricing?.price ?? 0;
   const total = price * quantity;
@@ -56,7 +64,7 @@ const EventPricingBar = ({
 
   const onReserve = () => {
     setOpen(false);
-    // TODO: checkout
+    router.push(`/hosts/${hostUsername}/events/${eventSlug}/checkout`);
   };
 
   return (
