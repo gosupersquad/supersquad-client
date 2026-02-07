@@ -12,6 +12,14 @@ import {
 } from "@/components/ui/dialog";
 import type { PublicEventHost } from "@/types";
 
+const getShareUrl = () => {
+  if (typeof window === "undefined") return "";
+
+  // remove '/checkout' or '/checkout/' from the pathname
+  const cleanPathname = window.location.href.replace(/checkout\/?$/, "");
+  return cleanPathname;
+};
+
 const EventHostInfo = ({
   host,
   shareTitle,
@@ -27,12 +35,12 @@ const EventHostInfo = ({
       navigator
         .share({
           title: shareTitle ?? "",
-          url: typeof window !== "undefined" ? window.location.href : "",
+          url: getShareUrl(),
           text: shareTitle ?? "",
         })
         .catch(() => {});
     } else if (typeof window !== "undefined") {
-      void navigator.clipboard?.writeText(window.location.href);
+      void navigator.clipboard?.writeText(getShareUrl());
     }
   }, [shareTitle]);
 
