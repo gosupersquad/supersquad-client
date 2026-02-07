@@ -1,13 +1,15 @@
 ---
 ---
 
-**Version:** 1.6 (FINAL – LOCKED)
+**Version:** 1.7 (FINAL – LOCKED)
 
-**Date:** January 2026
+**Date:** February 2026
 
 **Status:** APPROVED FOR IMPLEMENTATION
 
 **Stage:** 0 → 1
+
+_(v1.7: Event multi-ticket + customQuestions, Booking snapshot/attendees, DiscountCode schema aligned with server.)_
 
 ---
 
@@ -217,7 +219,13 @@ Event {
   dateDisplayText?,
   media: { url, type: 'image' | 'video' }[],
   faqs: { question, answer }[],
-  pricing: { price, currency: 'INR' },
+  tickets: {
+    code,      // system-generated at creation, not user-facing; used for linking in bookings
+    label,     // user-facing; host edits this (e.g. "Standard", "Premium")
+    price,
+    currency: 'INR'
+  }[],
+  customQuestions: { label, required }[],   // host-defined extras; fixed fields (name, email, phone, instagram) are on BookingAttendee only
   isActive,
   createdAt,
   updatedAt
@@ -225,6 +233,8 @@ Event {
 ```
 
 **Index:** unique `(hostId, slug)`
+
+**Notes:** At least one ticket required. No per-ticket capacity in v1 (event-level `spotsAvailable` only).
 
 ---
 
@@ -263,9 +273,7 @@ EventSchema.index({ hostId: 1, slug: 1 }, { unique: true });
 ```tsx
 Booking {
   _id,
-
   hostId,
-
   experienceType: 'event' | 'trip',
   experienceId,
 
@@ -277,54 +285,68 @@ Booking {
     endDate,
     location?,
     itinerary?,
-    images,
-    price,
-    currency
+    media: { url, type: 'image' | 'video' }[],
+    tickets: { code, label, price, currency }[],
+    customQuestions: { label, required }[]
   },
 
-  customer: {
+  ticketBreakdown: { code, quantity, unitPrice }[],
+  attendees: {
+    ticketCode,
     name,
     email,
     phone,
-    instagram?
-  },
+    instagram?,
+    customAnswers: Record<string, string>   // [question label]: answer
+  }[],
 
-  quantity,
-
-  pricing: {
-    unitPrice,
-    discountAmount?,
-    totalAmount
-  },
+  totalQuantity,
+  totalAmount,
+  discountAmount?,
 
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded',
-  orderId,
+  paymentProvider?,
+  orderId?,
+  transactionId?,
+  discountCodeId?,
 
-  createdAt
+  createdAt,
+  updatedAt
 }
 ```
 
 Rules:
 
-- Snapshot is server-generated
-- Booking data is immutable
-- No recomputation after payment
+- Snapshot is server-generated at booking time (no reference to live Event)
+- Fixed attendee fields (name, email, phone, instagram) live on each attendee; customAnswers keyed by question label
+- One attendee per ticket; ticketBreakdown matches selection; totalAmount server-calculated
+- Booking data is immutable; no recomputation after payment
 
 ---
 
-### DiscountCode (Optional MVP)
+### DiscountCode (as implemented – v1)
 
 ```tsx
 DiscountCode {
   _id,
   code,
+  type: 'percentage' | 'flat',
   amount,
+  currency: 'INR',
   experienceType?,
   experienceId?,
+  hostId,
+  count?,        // max uses; unlimited if omitted
+  usedCount?,   // default 0
+  startsAt?,
+  expiresAt?,
   isActive,
-  expiryDate
+  createdAt,
+  updatedAt
 }
 ```
+
+**Index:** unique `(hostId, code)`
 
 ---
 
@@ -365,7 +387,7 @@ POST /api/v1/auth/login   # Body: { email, password }. Returns { data: { token, 
 ```ruby
 GET    /api/v1/admin/experiences              # List current host's events
 GET    /api/v1/admin/experiences/:id          # One event
-POST   /api/v1/admin/experiences              # Create event
+POST   /api/v1/admin/experiences              # Create event (body: tickets[], customQuestions[], no pricing)
 PUT    /api/v1/admin/experiences/:id          # Update event
 PUT    /api/v1/admin/experiences/:id/toggle-status   # Toggle isActive
 ```
@@ -399,16 +421,17 @@ GET  /api/admin/master/experiences
 Entry:
 
 ```ruby
-/[hostSlug]/events/[eventSlug]/checkout
-/[hostSlug]/trips/[tripSlug]/checkout
+/hosts/[username]/events/[eventSlug]          # Landing: hero, details, pricing bar, "Reserve a spot"
+/hosts/[username]/events/[eventSlug]/checkout # Checkout page
 ```
 
 Flow:
 
-1. Customer details
-2. Server-side pricing + discount validation
-3. Cashfree redirect
-4. Payment verification → booking update
+1. **Landing:** Event details, pricing bar (single ticket → min price + "From X onwards" if multiple). CTA: "Reserve a spot".
+2. **Ticket selection:** If one ticket type → go straight to checkout. If multiple → bottom drawer: choose quantity per ticket type, then "Reserve a spot".
+3. **Checkout page:** Event summary (hero, title, host, location), coupon apply/list, **number of attendees** = total tickets selected. For each attendee: ticket type label + fixed fields (name, email, phone, instagram) + host customQuestions (answers stored as [label]: answer in customAnswers).
+4. **Pay & Reserve:** Frontend sends eventId + ticket breakdown + attendees (+ optional coupon). Backend validates, builds snapshot, computes total (and discount), creates Booking (pending), creates Cashfree order, returns redirect. No price from frontend.
+5. **Cashfree redirect** → payment → webhook: verify signature, find booking by orderId, set paymentStatus = paid, store transactionId.
 
 ---
 
@@ -459,7 +482,7 @@ Flow:
 - Customer dashboard
 - Analytics dashboards
 - SEO customization
-- Multi-ticket pricing
+- Per-ticket capacity (event-level spotsAvailable only in v1)
 - CI/CD
 - Scaling concerns
 
