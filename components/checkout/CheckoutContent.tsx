@@ -2,7 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import toast from "react-hot-toast";
 
 import EventHostInfo from "@/components/event-landing/EventHostInfo";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import type { PublicEvent } from "@/types";
 
 import CheckoutAttendeeBlock, {
   type AttendeeFormData,
+  type CheckoutAttendeeBlockHandle,
 } from "./CheckoutAttendeeBlock";
 import CheckoutExclusiveOffers from "./CheckoutExclusiveOffers";
 import CheckoutHero from "./CheckoutHero";
@@ -98,6 +100,7 @@ const CheckoutContentInner = ({
   );
 
   const [couponModalOpen, setCouponModalOpen] = useState(false);
+  const attendeeBlockRefs = useRef<(CheckoutAttendeeBlockHandle | null)[]>([]);
 
   const slots = useMemo(
     () => expandBreakdownToAttendeeSlots(breakdown),
@@ -137,9 +140,21 @@ const CheckoutContentInner = ({
     void code;
   }, []);
 
-  const handlePayAndReserve = useCallback(() => {
+  const handlePayAndReserve = useCallback(async () => {
+    const refs = attendeeBlockRefs.current
+      .slice(0, slots.length)
+      .filter(Boolean) as CheckoutAttendeeBlockHandle[];
+
+    if (refs.length === 0) return;
+    const results = await Promise.all(refs.map((r) => r.validate()));
+
+    const allValid = results.every(Boolean);
+    if (!allValid) {
+      toast.error("Please fix the errors in the attendee details below.");
+      return;
+    }
     // Stubbed for later payment wiring
-  }, []);
+  }, [slots.length]);
 
   const host = event.hostId;
   const tickets = event.tickets ?? [];
@@ -172,10 +187,13 @@ const CheckoutContentInner = ({
             </section>
 
             {slots.length > 0 && (
-              <section className="space-y-4">
+              <section className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4">
                 {slots.map((slot, i) => (
                   <CheckoutAttendeeBlock
                     key={`${slot.code}-${i}`}
+                    ref={(el) => {
+                      attendeeBlockRefs.current[i] = el;
+                    }}
                     index={i}
                     ticketLabel={slot.label}
                     customQuestions={customQuestions}
