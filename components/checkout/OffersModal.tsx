@@ -38,7 +38,7 @@ const OffersModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="flex h-full max-h-dvh flex-col gap-0 p-0 sm:h-auto sm:max-h-[85vh] sm:max-w-lg sm:rounded-lg sm:p-6"
+        className="fixed inset-0 flex h-full max-h-dvh w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 p-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-lg sm:border sm:p-6"
       >
         <DialogHeader className="border-border flex flex-row items-center gap-3 border-b px-4 py-3 sm:border-0 sm:px-0 sm:pt-0 sm:pb-4">
           <Button
