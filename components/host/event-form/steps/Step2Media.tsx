@@ -87,9 +87,9 @@ const Step2Media = () => {
         >
           <input {...getInputProps()} />
 
-          <Upload className="size-10 text-muted-foreground" aria-hidden />
+          <Upload className="text-muted-foreground size-10" aria-hidden />
 
-          <p className="text-center text-sm font-medium text-foreground">
+          <p className="text-foreground text-center text-sm font-medium">
             {isUploading
               ? "Uploading…"
               : "Drag & drop files here, or click to select"}
@@ -107,7 +107,7 @@ const Step2Media = () => {
         )}
       </FieldGroup>
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="outline" onClick={prevStep}>
           Back
         </Button>
@@ -128,8 +128,8 @@ const MediaRow = ({
   onRemove: () => void;
 }) => {
   return (
-    <li className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
-      <div className="size-14 shrink-0 overflow-hidden rounded-md bg-muted">
+    <li className="border-border bg-card flex items-center gap-3 rounded-lg border p-3">
+      <div className="bg-muted size-14 shrink-0 overflow-hidden rounded-md">
         {item.type === "image" ? (
           // <img src={item.url} alt="" className="size-full object-cover" />
           <Image
@@ -140,7 +140,7 @@ const MediaRow = ({
             height={60}
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-muted-foreground">
+          <div className="text-muted-foreground flex size-full items-center justify-center">
             <span className="text-xs font-medium">Video</span>
           </div>
         )}

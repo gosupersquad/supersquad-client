@@ -73,7 +73,7 @@ const Step3Faqs = () => {
         </Button>
       </FieldGroup>
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="outline" onClick={prevStep}>
           Back
         </Button>
@@ -102,7 +102,7 @@ const FaqRow = ({
   onRemove: () => void;
 }) => {
   return (
-    <li className="rounded-lg border border-border bg-card p-4">
+    <li className="border-border bg-card rounded-lg border p-4">
       <div className="flex items-start justify-between gap-2">
         <span className="text-muted-foreground text-sm font-medium">
           FAQ {index + 1}

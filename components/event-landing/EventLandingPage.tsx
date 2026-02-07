@@ -44,7 +44,7 @@ const EventLandingPage = ({ event }: EventLandingPageProps) => {
       </div>
 
       <EventPricingBar
-        pricing={event.pricing}
+        tickets={event.tickets}
         spotsAvailable={event.spotsAvailable}
       />
     </div>

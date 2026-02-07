@@ -1,5 +1,10 @@
 import axios from "axios";
-import type { CreateEventPayload, UpdateEventPayload } from "@/types";
+import type {
+  CreateEventPayload,
+  EventQuestion,
+  EventTicket,
+  UpdateEventPayload,
+} from "@/types";
 import { getApiBaseUrl } from "./api-client";
 
 /** Server returns { statusCode, data, message, success }. */
@@ -23,7 +28,8 @@ export interface EventResponse {
   dateDisplayText?: string;
   media: { url: string; type: "image" | "video" }[];
   faqs: { question: string; answer: string }[];
-  pricing: { price: number; currency: string };
+  tickets: EventTicket[];
+  customQuestions?: EventQuestion[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

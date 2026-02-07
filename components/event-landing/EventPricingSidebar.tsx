@@ -11,7 +11,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import type { ExperiencePricing, PublicEventHost } from "@/types";
+import type { EventTicket, PublicEventHost } from "@/types";
 
 const EventPricingSidebar = ({
   host,
@@ -19,7 +19,7 @@ const EventPricingSidebar = ({
   startDate,
   endDate,
   dateDisplayText,
-  pricing,
+  tickets,
   spotsAvailable,
 }: {
   host: PublicEventHost;
@@ -27,20 +27,24 @@ const EventPricingSidebar = ({
   startDate: string;
   endDate: string;
   dateDisplayText?: string;
-  pricing: ExperiencePricing;
+  tickets: EventTicket[];
   spotsAvailable: number;
 }) => {
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
-  const price = pricing?.price ?? 0;
-  const total = price * quantity;
+  const minPrice =
+    tickets?.length > 0 ? Math.min(...tickets.map((t) => t.price ?? 0)) : 0;
+  const total = minPrice * quantity;
 
-  const formatted = new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(price);
+  const formatted =
+    tickets?.length > 1
+      ? `From ${new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(minPrice)}`
+      : new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0,
+        }).format(minPrice);
 
   const totalFormatted = new Intl.NumberFormat("en-IN", {
     style: "currency",

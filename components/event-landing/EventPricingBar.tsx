@@ -11,12 +11,12 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import type { ExperiencePricing } from "@/types";
+import type { EventTicket } from "@/types";
 
 const SCROLL_THRESHOLD_PX = 80;
 
 interface EventPricingBarProps {
-  pricing: ExperiencePricing;
+  tickets: EventTicket[];
   spotsAvailable: number;
 }
 
@@ -26,7 +26,7 @@ type Params = {
 };
 
 /** Fixed bottom bar on mobile: visible only after scrolling down; slide in/out animation. */
-const EventPricingBar = ({ pricing, spotsAvailable }: EventPricingBarProps) => {
+const EventPricingBar = ({ tickets, spotsAvailable }: EventPricingBarProps) => {
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [showBar, setShowBar] = useState(false);
@@ -34,14 +34,18 @@ const EventPricingBar = ({ pricing, spotsAvailable }: EventPricingBarProps) => {
   const router = useRouter();
   const { username: hostUsername, eventSlug } = useParams<Params>();
 
-  const price = pricing?.price ?? 0;
-  const total = price * quantity;
+  const minPrice =
+    tickets?.length > 0 ? Math.min(...tickets.map((t) => t.price ?? 0)) : 0;
+  const total = minPrice * quantity;
 
-  const formatted = new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(price);
+  const formatted =
+    tickets?.length > 1
+      ? `From ${new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(minPrice)}`
+      : new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0,
+        }).format(minPrice);
 
   const totalFormatted = new Intl.NumberFormat("en-IN", {
     style: "currency",

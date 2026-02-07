@@ -232,7 +232,7 @@ const Step1Basics = () => {
                   minDate={startOfToday()}
                   dateFormat="dd/MM/yyyy"
                   placeholderText="DD/MM/YYYY"
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                   aria-invalid={fieldState.invalid ? "true" : "false"}
                 />
 
@@ -265,7 +265,7 @@ const Step1Basics = () => {
                     minDate={minEnd}
                     dateFormat="dd/MM/yyyy"
                     placeholderText="DD/MM/YYYY"
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     aria-invalid={fieldState.invalid ? "true" : "false"}
                   />
 
@@ -309,7 +309,7 @@ const Step1Basics = () => {
                 id="event-active"
                 checked={field.value}
                 onChange={(e) => field.onChange(e.target.checked)}
-                className="size-4 rounded border-border"
+                className="border-border size-4 rounded"
               />
 
               <FieldLabel htmlFor="event-active" className="font-normal">
@@ -319,7 +319,7 @@ const Step1Basics = () => {
           )}
         />
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex justify-end gap-3 pt-2">
           {!isFirstStep && (
             <Button type="button" variant="outline" onClick={prevStep}>
               Back

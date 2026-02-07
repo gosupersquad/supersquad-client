@@ -22,8 +22,15 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
   const [prefilled, setPrefilled] = useState(false);
 
   const token = useAuthStore((s) => s.token);
-  const { setBasics, setMedia, setFaqs, setPricing, setStep, reset } =
-    useEventFormStore();
+  const {
+    setBasics,
+    setMedia,
+    setFaqs,
+    setTickets,
+    setCustomQuestions,
+    setStep,
+    reset,
+  } = useEventFormStore();
 
   const {
     data: event,
@@ -62,13 +69,23 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
     });
     setMedia(event.media ?? []);
     setFaqs(event.faqs ?? []);
-    setPricing({
-      price: event.pricing?.price ?? 0,
-      currency: "INR",
-    });
+    setTickets(
+      event.tickets?.length
+        ? event.tickets
+        : [{ code: "standard", label: "Standard", price: 0, currency: "INR" }],
+    );
+    setCustomQuestions(event.customQuestions ?? []);
     setStep(1);
     setTimeout(() => setPrefilled(true), 100);
-  }, [event, setBasics, setMedia, setFaqs, setPricing, setStep]);
+  }, [
+    event,
+    setBasics,
+    setMedia,
+    setFaqs,
+    setTickets,
+    setCustomQuestions,
+    setStep,
+  ]);
 
   const mutation = useMutation({
     mutationFn: (payload: CreateEventPayload) => {
@@ -90,7 +107,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
   if (isLoading) {
     return (
       <div className="flex min-h-[200px] items-center justify-center p-6">
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-2">
           <Loader2 className="size-4 animate-spin" />
           <span>Loading event…</span>
         </div>
@@ -111,7 +128,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
   if (!prefilled) {
     return (
       <div className="flex min-h-[200px] items-center justify-center p-6">
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-2">
           <Loader2 className="size-4 animate-spin" />
           <span>Loading event…</span>
         </div>

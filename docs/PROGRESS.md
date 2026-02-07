@@ -140,7 +140,7 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 | **1** | **Basics**  | Title (required), Slug (optional; server auto-generates from title if empty), Location (required), Description (required, textarea), Spots available (number ≥ 0), Start date, End date, Date display text (optional, e.g. "March 15–17"), Active (boolean; default true; or "Save as draft" = false) | Single scrollable step on mobile; keep fields in one column.     |
 | **2** | **Media**   | Event images (multiple, ordered; upload → get URLs), Optional event video (one; upload → URL). Backend expects `media: { url, type: 'image' \| 'video' }[]`.                                                                                                                                          | Upload UI; add/remove/reorder; then pass URLs in create payload. |
 | **3** | **FAQs**    | Q&A pairs: question + answer (both required). Add/remove pairs; default 0. Backend: `faqs: { question, answer }[]`.                                                                                                                                                                                   | Simple list: add row, remove row; no need for many at once.      |
-| **4** | **Pricing** | Price (number ≥ 0, required), Currency: INR (fixed for MVP). Checkout banner image = future.                                                                                                                                                                                                          | Single small step.                                               |
+| **4** | **Pricing** | **Ticket-level:** at least one ticket type (label + price, currency INR). Optional custom questions for attendees (label + required). Backend: `tickets: { code, label, price, currency }[]`, `customQuestions: { label, required }[]`. Code is client-generated from label (slugify + dedupe).       | Add/remove tickets and custom questions.                         |
 
 **Mobile-friendly:** One step per view on small screens; stepper/progress (e.g. "Step 2 of 4"); Next and Back; optional "Save draft" at end (sets `isActive: false`) or leave always active. No single long page to reduce overwhelm and bounces.
 
@@ -150,7 +150,7 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 **POST / create:** Use **TanStack Query’s useMutation** for create (and later update). Why: loading/error state out of the box, and we can invalidate the experiences list query on success so the table updates. The actual HTTP call stays in **lib** (axios) for consistency with auth-client: e.g. `lib/experiences-client.ts` has `createEvent(payload)` that does `axios.post(..., payload)` with `Authorization: Bearer <token>`. Component calls `useMutation({ mutationFn: createEvent, onSuccess: () => { queryClient.invalidateQueries(...); router.push(...); } })`. **Fetch list:** useQuery for the experiences table (dashboard) as planned.
 
-**Backend reference:** Routes: `GET /`, `GET /:id`, `POST /`, `PUT /:id`, `PUT /:id/toggle-status` (all under `/api/v1/experiences`, requireAuth). Validation: createEventSchema (title, slug optional, location, description, spotsAvailable, startDate, endDate, dateDisplayText optional, media array, faqs array, pricing). Server fixes slug from title if slug empty; media is `{ url, type: 'image'|'video' }[]`.
+**Backend reference:** Routes: `GET /`, `GET /:id`, `POST /`, `PUT /:id`, `PUT /:id/toggle-status` (all under `/api/v1/admin/experiences`, requireAuth). Validation: createEventSchema (tickets[] required, customQuestions[] optional; no single pricing). Server fixes slug from title if slug empty; media is `{ url, type: 'image'|'video' }[]`.
 
 **Implementation order (suggested):** 1) Route + shell (new page with step state). 2) Step 1 (Basics) + Zustand store with persist + client validation. 3) Step 4 (Pricing) so we can build full payload. 4) Step 2 (Media) + upload. 5) Step 3 (FAQs). 6) Wire create (useMutation + lib createEvent); then edit mode + prefill.
 
@@ -160,7 +160,9 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 **Step 3 done:** `Step3Faqs` (FAQs step). List of FAQ rows (question + answer); Add FAQ, Remove per row. Validation on Next: if any row has empty question or answer, toast error; else nextStep(). Back/Next. Store: faqs, setFaqs.
 
-**Step 4 done:** `Step4Pricing` (Pricing step). Price (number ≥ 0, required), Currency: INR (fixed). **Create flow wired:** "Create event" button uses `useMutation`; payload built from store (basics, media, faqs, pricing) via `buildPayload`; `createEvent(payload, token)` from `lib/experiences-client`. On success: `reset()` store, `queryClient.invalidateQueries({ queryKey: ['experiences'] })`, `router.push('/host/experiences')`, toast "Event created". On error: toast. `QueryProvider` (TanStack Query) wraps app in root layout.
+**Step 4 done:** `Step4Pricing` (Pricing step). **Ticket-level system:** tickets array (label + price, code generated from label; at least one); optional customQuestions (label + required). Store: `tickets`, `customQuestions` (replaced deprecated single `pricing`). **Create flow wired:** payload built via `buildEventCreatePayload(basics, media, faqs, tickets, customQuestions)`; `createEvent(payload, token)`; on success reset, invalidate, redirect, toast. Edit prefill: `setTickets(event.tickets)`, `setCustomQuestions(event.customQuestions)`.
+
+**Host form UX:** Back/Next buttons aligned `justify-end` (right) for right-thumb reach on mobile (Step 1–4).
 
 ---
 
@@ -243,4 +245,6 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
-_Last updated: Event landing page – PRD recorded; implementation in progress (carousel, route, components)._
+**Types (v1.7):** Event uses `tickets: EventTicket[]` and `customQuestions?: EventQuestion[]`. `PublicEvent` and `CreateEventPayload`/`UpdateEventPayload` aligned with TECH_PRD. Booking types added for future checkout: `BookingAttendee`, `TicketBreakdownItem`, `ExperienceSnapshot`, `PaymentStatus`.
+
+_Last updated: Event form – ticket-level Step 4, Back/Next justify-end, types and landing pricing bar use tickets._

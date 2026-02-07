@@ -4,8 +4,9 @@ import { persist } from "zustand/middleware";
 
 import type {
   EventFormBasics,
+  EventQuestion,
+  EventTicket,
   ExperienceFAQ,
-  ExperiencePricing,
   MediaItem,
 } from "@/types";
 
@@ -23,7 +24,9 @@ const defaultBasics: EventFormBasics = {
   isActive: true,
 };
 
-const defaultPricing: ExperiencePricing = {
+const defaultTicket: EventTicket = {
+  code: "standard",
+  label: "Standard",
   price: 0,
   currency: "INR",
 };
@@ -33,7 +36,8 @@ interface EventFormState {
   basics: EventFormBasics;
   media: MediaItem[];
   faqs: ExperienceFAQ[];
-  pricing: ExperiencePricing;
+  tickets: EventTicket[];
+  customQuestions: EventQuestion[];
 }
 
 interface EventFormActions {
@@ -41,7 +45,8 @@ interface EventFormActions {
   setBasics: (basics: Partial<EventFormBasics>) => void;
   setMedia: (media: MediaItem[]) => void;
   setFaqs: (faqs: ExperienceFAQ[]) => void;
-  setPricing: (pricing: Partial<ExperiencePricing>) => void;
+  setTickets: (tickets: EventTicket[]) => void;
+  setCustomQuestions: (questions: EventQuestion[]) => void;
   nextStep: () => void;
   prevStep: () => void;
   reset: () => void;
@@ -54,7 +59,8 @@ const initialState: EventFormState = {
   basics: defaultBasics,
   media: [],
   faqs: [],
-  pricing: defaultPricing,
+  tickets: [defaultTicket],
+  customQuestions: [],
 };
 
 const STORAGE_KEY = "supersquad-event-form";
@@ -79,10 +85,9 @@ export const createEventFormSlice: StateCreator<
 
   setFaqs: (faqs) => set({ faqs }),
 
-  setPricing: (pricing) =>
-    set((state) => ({
-      pricing: { ...state.pricing, ...pricing },
-    })),
+  setTickets: (tickets) => set({ tickets }),
+
+  setCustomQuestions: (customQuestions) => set({ customQuestions }),
 
   nextStep: () =>
     set((state) => ({
