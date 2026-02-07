@@ -29,7 +29,9 @@ export function setCheckoutTicketSelection(
   selection: CheckoutTicketSelection,
 ): void {
   if (typeof window === "undefined") return;
+
   const key = getCheckoutStorageKey(username, eventSlug);
+
   try {
     window.sessionStorage.setItem(key, JSON.stringify(selection));
   } catch {
@@ -43,12 +45,16 @@ export function getCheckoutTicketSelection(
 ): CheckoutTicketSelection | null {
   if (typeof window === "undefined") return null;
   const key = getCheckoutStorageKey(username, eventSlug);
+
   try {
     const raw = window.sessionStorage.getItem(key);
     if (!raw) return null;
+
     const data = JSON.parse(raw) as CheckoutTicketSelection;
+
     if (!Array.isArray(data.breakdown) || typeof data.totalQuantity !== "number")
       return null;
+
     return data;
   } catch {
     return null;
@@ -63,6 +69,7 @@ export function expandBreakdownToAttendeeSlots(
   breakdown: TicketBreakdownItem[],
 ): { code: string; label: string; unitPrice: number }[] {
   const slots: { code: string; label: string; unitPrice: number }[] = [];
+
   for (const item of breakdown) {
     for (let i = 0; i < item.quantity; i++) {
       slots.push({
@@ -72,5 +79,6 @@ export function expandBreakdownToAttendeeSlots(
       });
     }
   }
+
   return slots;
 }

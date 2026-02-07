@@ -1,5 +1,9 @@
+"use client";
+
+import CheckoutContent from "@/components/checkout/CheckoutContent";
+
 const EventCheckoutPage = () => {
-  return <div>EventCheckoutPage</div>;
+  return <CheckoutContent />;
 };
 
 export default EventCheckoutPage;
