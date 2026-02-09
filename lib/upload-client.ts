@@ -1,14 +1,6 @@
 import axios from "axios";
-import type { MediaItem } from "@/types";
+import type { ApiResponse, MediaItem } from "@/types";
 import { getApiBaseUrl } from "./api-client";
-
-/** Server returns { statusCode, data, message, success }. */
-interface ApiResponse<T> {
-  data: T;
-  statusCode: number;
-  message: string;
-  success: boolean;
-}
 
 const UPLOAD_FOLDER = "events";
 

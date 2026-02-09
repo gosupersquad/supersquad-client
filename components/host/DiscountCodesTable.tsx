@@ -1,6 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
 import { Calendar, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,33 +18,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { DiscountCodeResponse } from "@/lib/discount-codes-client";
-
-function formatValidity(item: DiscountCodeResponse): string {
-  const start = item.startsAt
-    ? format(new Date(item.startsAt), "d MMM yyyy")
-    : null;
-
-  const end = item.expiresAt
-    ? format(new Date(item.expiresAt), "d MMM yyyy")
-    : null;
-
-  if (!start && !end) return "Always";
-  if (start && end) return `${start} – ${end}`;
-
-  if (start) return `From ${start}`;
-  return `Until ${end}`;
-}
-
-function formatDiscount(item: DiscountCodeResponse): string {
-  if (item.type === "percentage") return `${item.amount}%`;
-  return `₹${item.amount}`;
-}
-
-function formatUsage(item: DiscountCodeResponse): string {
-  const used = item.usedCount ?? 0;
-  if (item.maxUsage == null) return `${used} / ∞`;
-  return `${used} / ${item.maxUsage}`;
-}
+import {
+  formatDiscountCodeDiscount,
+  formatDiscountCodeUsage,
+  formatDiscountCodeValidity,
+} from "@/lib/utils";
 
 interface DiscountCodesTableProps {
   codes: DiscountCodeResponse[];
@@ -65,14 +42,10 @@ const DiscountCodesTable = ({
       <TableHeader>
         <TableRow>
           <TableHead>Code</TableHead>
-          <TableHead>Type</TableHead>
-
           <TableHead>Discount</TableHead>
           <TableHead>Validity</TableHead>
-
           <TableHead>Usage</TableHead>
           <TableHead>Status</TableHead>
-
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -83,18 +56,14 @@ const DiscountCodesTable = ({
           return (
             <TableRow key={item._id}>
               <TableCell className="font-medium">{item.code}</TableCell>
-              <TableCell className="capitalize">{item.type}</TableCell>
-
-              <TableCell>{formatDiscount(item)}</TableCell>
+              <TableCell>{formatDiscountCodeDiscount(item)}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-1">
                   <Calendar className="text-muted-foreground size-4" />
-
-                  <span>{formatValidity(item)}</span>
+                  <span>{formatDiscountCodeValidity(item)}</span>
                 </div>
               </TableCell>
-
-              <TableCell>{formatUsage(item)}</TableCell>
+              <TableCell>{formatDiscountCodeUsage(item)}</TableCell>
 
               <TableCell>
                 <div className="flex items-center gap-2">

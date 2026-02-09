@@ -1,6 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
 import { Calendar, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -10,29 +9,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { DiscountCodeResponse } from "@/lib/discount-codes-client";
-
-function formatValidity(item: DiscountCodeResponse): string {
-  const start = item.startsAt
-    ? format(new Date(item.startsAt), "d MMM yyyy")
-    : null;
-
-  const end = item.expiresAt
-    ? format(new Date(item.expiresAt), "d MMM yyyy")
-    : null;
-
-  if (!start && !end) return "Always";
-  if (start && end) return `${start} – ${end}`;
-
-  if (start) return `From ${start}`;
-  return `Until ${end}`;
-}
-
-function formatUsage(item: DiscountCodeResponse): string {
-  const used = item.usedCount ?? 0;
-  if (item.maxUsage == null) return `${used} / ∞`;
-
-  return `${used} / ${item.maxUsage}`;
-}
+import {
+  formatDiscountCodeUsage,
+  formatDiscountCodeValidity,
+} from "@/lib/utils";
 
 interface DiscountCodesCardsProps {
   codes: DiscountCodeResponse[];
@@ -52,18 +32,16 @@ const DiscountCodesCards = ({ codes, onEdit }: DiscountCodesCardsProps) => {
               <p className="font-semibold">{item.code}</p>
 
               <p className="text-muted-foreground mt-0.5 text-sm">
-                {item.type === "percentage"
-                  ? `${item.amount}% off`
-                  : `₹${item.amount} off`}
+                ₹{item.amount} off
               </p>
 
               <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                 <span className="flex items-center gap-1.5">
                   <Calendar className="size-3.5 shrink-0" />
-                  {formatValidity(item)}
+                  {formatDiscountCodeValidity(item)}
                 </span>
 
-                <span>Usage: {formatUsage(item)}</span>
+                <span>Usage: {formatDiscountCodeUsage(item)}</span>
               </div>
 
               <span

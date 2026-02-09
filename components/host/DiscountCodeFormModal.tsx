@@ -29,7 +29,6 @@ import { cn } from "@/lib/utils";
 
 type FormState = {
   code: string;
-  type: "percentage" | "flat";
   amount: string;
   maxUsage: string;
   startsAt: string;
@@ -39,7 +38,6 @@ type FormState = {
 
 const emptyForm: FormState = {
   code: "",
-  type: "percentage",
   amount: "",
   maxUsage: "",
   startsAt: "",
@@ -73,7 +71,6 @@ const DiscountCodeFormModal = ({
     if (editing) {
       setForm({
         code: editing.code,
-        type: editing.type,
         amount: String(editing.amount),
         maxUsage: editing.maxUsage != null ? String(editing.maxUsage) : "",
         startsAt: editing.startsAt
@@ -99,11 +96,6 @@ const DiscountCodeFormModal = ({
       return;
     }
 
-    if (form.type === "percentage" && amountNum > 100) {
-      toast.error("Percentage must be between 0 and 100");
-      return;
-    }
-
     if (form.startsAt && form.expiresAt) {
       if (new Date(form.expiresAt) <= new Date(form.startsAt)) {
         toast.error("End date must be after start date");
@@ -115,7 +107,6 @@ const DiscountCodeFormModal = ({
     try {
       if (isEdit) {
         const payload: UpdateDiscountCodePayload = {
-          type: form.type,
           amount: amountNum,
           isActive: form.isActive,
         };
@@ -141,7 +132,7 @@ const DiscountCodeFormModal = ({
 
         const payload: CreateDiscountCodePayload = {
           code,
-          type: form.type,
+          type: "flat",
           amount: amountNum,
           currency: "INR",
           isActive: form.isActive,
@@ -208,53 +199,17 @@ const DiscountCodeFormModal = ({
           </div>
 
           <div className="space-y-2">
-            <Label>Type</Label>
-
-            <div className="flex gap-4">
-              <label className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="radio"
-                  name="type"
-                  checked={form.type === "percentage"}
-                  onChange={() =>
-                    setForm((prev) => ({ ...prev, type: "percentage" }))
-                  }
-                  className="size-4"
-                />
-                Percentage
-              </label>
-
-              <label className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="radio"
-                  name="type"
-                  checked={form.type === "flat"}
-                  onChange={() =>
-                    setForm((prev) => ({ ...prev, type: "flat" }))
-                  }
-                  className="size-4"
-                />
-                Flat (₹)
-              </label>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="amount">
-              Amount {form.type === "percentage" ? "(0–100)" : "(₹)"}
-            </Label>
-
+            <Label htmlFor="amount">Amount (₹)</Label>
             <Input
               id="amount"
               type="number"
               min={0}
-              max={form.type === "percentage" ? 100 : undefined}
-              step={form.type === "percentage" ? 1 : 0.01}
+              step={0.01}
               value={form.amount}
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, amount: e.target.value }))
               }
-              placeholder={form.type === "percentage" ? "20" : "100"}
+              placeholder="100"
               required
             />
           </div>

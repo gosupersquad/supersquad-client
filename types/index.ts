@@ -1,3 +1,11 @@
+/** Server API response wrapper: { statusCode, data, message, success }. */
+export interface ApiResponse<T> {
+  data: T;
+  statusCode: number;
+  message: string;
+  success: boolean;
+}
+
 /** Mirrors server CreateEventPayload / Event model for form and API. */
 
 export interface MediaItem {
@@ -140,4 +148,13 @@ export interface BookingAttendee {
   phone: string;
   instagram?: string;
   customAnswers: Record<string, string>;
+}
+
+/** Minimal fields for discount code display formatting (used by utils). v1: flat only (type not used). */
+export interface DiscountCodeDisplayFields {
+  amount: number;
+  usedCount?: number;
+  maxUsage?: number | null;
+  startsAt?: string;
+  expiresAt?: string;
 }

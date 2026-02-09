@@ -1,13 +1,6 @@
 import axios from "axios";
+import type { ApiResponse } from "@/types";
 import { getApiBaseUrl } from "./api-client";
-
-/** Server returns { statusCode, data, message, success }. */
-interface ApiResponse<T> {
-  data: T;
-  statusCode: number;
-  message: string;
-  success: boolean;
-}
 
 export interface DiscountCodeResponse {
   _id: string;
@@ -25,10 +18,10 @@ export interface DiscountCodeResponse {
   updatedAt: string;
 }
 
-/** Create payload. experienceId/experienceType omitted in v1 (not in UI). */
+/** Create payload. v1: flat only (no percentage). experienceId/experienceType omitted. */
 export interface CreateDiscountCodePayload {
   code: string;
-  type: "percentage" | "flat";
+  type: "flat";
   amount: number;
   currency: "INR";
   maxUsage?: number;
@@ -37,9 +30,8 @@ export interface CreateDiscountCodePayload {
   isActive?: boolean;
 }
 
-/** Update payload (partial). Code not sent on edit (read-only in UI). */
+/** Update payload (partial). Code and type not sent on edit (read-only in UI). v1: flat only. */
 export interface UpdateDiscountCodePayload {
-  type?: "percentage" | "flat";
   amount?: number;
   maxUsage?: number;
   startsAt?: string;

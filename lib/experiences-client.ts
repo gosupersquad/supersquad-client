@@ -1,19 +1,12 @@
 import axios from "axios";
 import type {
+  ApiResponse,
   CreateEventPayload,
   EventQuestion,
   EventTicket,
   UpdateEventPayload,
 } from "@/types";
 import { getApiBaseUrl } from "./api-client";
-
-/** Server returns { statusCode, data, message, success }. */
-interface ApiResponse<T> {
-  data: T;
-  statusCode: number;
-  message: string;
-  success: boolean;
-}
 
 export interface EventResponse {
   _id: string;

@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { ApiResponse } from "@/types";
 import { getApiBaseUrl } from "./api-client";
 
 export interface LoginResult {
@@ -11,14 +12,6 @@ export interface LoginResult {
   };
 }
 
-/** Server returns { statusCode, data, message, success }. Login result is in data. */
-interface LoginApiResponse {
-  statusCode: number;
-  data: LoginResult;
-  message: string;
-  success: boolean;
-}
-
 export async function login(
   email: string,
   password: string
@@ -26,7 +19,7 @@ export async function login(
   const base = getApiBaseUrl();
 
   try {
-    const { data } = await axios.post<LoginApiResponse>(`${base}/auth/login`, {
+    const { data } = await axios.post<ApiResponse<LoginResult>>(`${base}/auth/login`, {
       email,
       password,
     });

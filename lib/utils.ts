@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { format, parseISO, startOfDay } from "date-fns"
 import { twMerge } from "tailwind-merge"
+import type { DiscountCodeDisplayFields } from "@/types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -37,4 +38,29 @@ export function getEventDuration(startDate: string, endDate: string): string | n
 
   const days = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
   return days === 1 ? null : `${days} Days`
+}
+
+// --- Discount code display formatters (single source for table + cards) ---
+
+export function formatDiscountCodeValidity(item: DiscountCodeDisplayFields): string {
+  const start = item.startsAt
+    ? format(new Date(item.startsAt), "d MMM yyyy")
+    : null
+  const end = item.expiresAt
+    ? format(new Date(item.expiresAt), "d MMM yyyy")
+    : null
+  if (!start && !end) return "Always"
+  if (start && end) return `${start} – ${end}`
+  if (start) return `From ${start}`
+  return `Until ${end}`
+}
+
+export function formatDiscountCodeDiscount(item: DiscountCodeDisplayFields): string {
+  return `₹${item.amount}`
+}
+
+export function formatDiscountCodeUsage(item: DiscountCodeDisplayFields): string {
+  const used = item.usedCount ?? 0
+  if (item.maxUsage == null) return `${used} / ∞`
+  return `${used} / ${item.maxUsage}`
 }
