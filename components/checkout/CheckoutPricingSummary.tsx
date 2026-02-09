@@ -12,18 +12,36 @@ const formatInr = (amount: number) =>
     maximumFractionDigits: 2,
   }).format(amount);
 
-interface CheckoutPricingSummaryProps {
-  breakdown: TicketBreakdownItem[];
+interface AppliedDiscount {
+  code: string;
+  type: "flat";
+  amount: number;
+  currency: string;
 }
 
-const CheckoutPricingSummary = ({ breakdown }: CheckoutPricingSummaryProps) => {
+interface CheckoutPricingSummaryProps {
+  breakdown: TicketBreakdownItem[];
+  appliedDiscount?: AppliedDiscount | null;
+}
+
+const CheckoutPricingSummary = ({
+  breakdown,
+  appliedDiscount = null,
+}: CheckoutPricingSummaryProps) => {
   const entryFee = breakdown.reduce(
     (sum, row) => sum + row.quantity * row.unitPrice,
     0,
   );
 
-  const gst = (entryFee * GST_PERCENT) / 100;
-  const toPay = entryFee + gst;
+  const discountAmount = appliedDiscount
+    ? appliedDiscount.type === "flat"
+      ? Math.min(appliedDiscount.amount, entryFee)
+      : 0
+    : 0;
+
+  const subtotalAfterDiscount = entryFee - discountAmount;
+  const gst = (subtotalAfterDiscount * GST_PERCENT) / 100;
+  const toPay = subtotalAfterDiscount + gst;
 
   return (
     <div className="border-border bg-card sticky top-24 space-y-3 rounded-xl border p-4">
@@ -31,6 +49,17 @@ const CheckoutPricingSummary = ({ breakdown }: CheckoutPricingSummaryProps) => {
         <span className="text-muted-foreground">Entry fee</span>
         <span className="font-medium">{formatInr(entryFee)}</span>
       </div>
+
+      {appliedDiscount && discountAmount > 0 && (
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">
+            Discount ({appliedDiscount.code})
+          </span>
+          <span className="font-medium text-emerald-600">
+            -{formatInr(discountAmount)}
+          </span>
+        </div>
+      )}
 
       <div className="flex justify-between text-sm">
         <span className="text-muted-foreground">GST ({GST_PERCENT}%)</span>

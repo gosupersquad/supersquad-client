@@ -59,6 +59,11 @@ export function formatDiscountCodeDiscount(item: DiscountCodeDisplayFields): str
   return `₹${item.amount}`
 }
 
+/** Checkout/public: flat discount label (v1 flat only). e.g. "₹20 off". */
+export function formatPublicDiscountLabel(amount: number): string {
+  return `₹${amount} off`
+}
+
 export function formatDiscountCodeUsage(item: DiscountCodeDisplayFields): string {
   const used = item.usedCount ?? 0
   if (item.maxUsage == null) return `${used} / ∞`

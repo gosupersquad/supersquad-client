@@ -2,6 +2,63 @@ import axios from "axios";
 import type { ApiResponse } from "@/types";
 import { getApiBaseUrl } from "./api-client";
 
+// --- Public (checkout, no auth) ---
+
+export interface PublicDiscountCodeItem {
+  code: string;
+  type: string;
+  amount: number;
+  currency: string;
+}
+
+export interface ValidateDiscountCodeResult {
+  valid: boolean;
+  message?: string;
+  discount?: {
+    type: "flat";
+    amount: number;
+    currency: string;
+  };
+}
+
+/** List active discount codes for an event. No auth. */
+export async function listPublicDiscountCodesForEvent(
+  username: string,
+  eventSlug: string
+): Promise<PublicDiscountCodeItem[]> {
+  const base = getApiBaseUrl();
+
+  const res = await fetch(
+    `${base}/hosts/${encodeURIComponent(username)}/events/${encodeURIComponent(eventSlug)}/discount-codes`
+  );
+
+  if (!res.ok) throw new Error("Failed to load discount codes");
+  const json: ApiResponse<PublicDiscountCodeItem[]> = await res.json();
+
+  if (!json.success || !Array.isArray(json.data)) throw new Error("Invalid response");
+  return json.data;
+}
+
+/** Validate a coupon at checkout. No auth. */
+export async function validateDiscountCode(
+  code: string,
+  eventId: string
+): Promise<ValidateDiscountCodeResult> {
+  const base = getApiBaseUrl();
+
+  const res = await fetch(`${base}/admin/discount-codes/validate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code: code.trim().toUpperCase(), eventId }),
+  });
+
+  if (!res.ok) throw new Error("Validation request failed");
+  const json: ApiResponse<ValidateDiscountCodeResult> = await res.json();
+
+  if (json.data == null) throw new Error("Invalid response");
+  return json.data;
+}
+
 export interface DiscountCodeResponse {
   _id: string;
   hostId: string;

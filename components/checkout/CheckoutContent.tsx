@@ -13,6 +13,7 @@ import {
   setCheckoutTicketSelection,
   type TicketBreakdownItem,
 } from "@/lib/checkout-tickets";
+import { validateDiscountCode } from "@/lib/discount-codes-client";
 import { getPublicEvent } from "@/lib/public-event-client";
 import type { PublicEvent } from "@/types";
 
@@ -100,6 +101,12 @@ const CheckoutContentInner = ({
   );
 
   const [couponModalOpen, setCouponModalOpen] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState<{
+    code: string;
+    type: "flat";
+    amount: number;
+    currency: string;
+  } | null>(null);
   const attendeeBlockRefs = useRef<(CheckoutAttendeeBlockHandle | null)[]>([]);
 
   const slots = useMemo(
@@ -135,9 +142,33 @@ const CheckoutContentInner = ({
     [username, eventSlug],
   );
 
-  const handleApplyCoupon = useCallback((code: string) => {
-    // UI only; wire with backend later
-    void code;
+  const handleApplyCoupon = useCallback(
+    async (code: string): Promise<boolean> => {
+      try {
+        const result = await validateDiscountCode(code, event._id);
+
+        if (result.valid && result.discount) {
+          setAppliedDiscount({
+            code: code.trim().toUpperCase(),
+            ...result.discount,
+          });
+          setCouponModalOpen(false);
+          toast.success("Coupon applied");
+          return true;
+        }
+
+        toast.error(result.message ?? "Invalid code");
+        return false;
+      } catch {
+        toast.error("Could not validate coupon");
+        return false;
+      }
+    },
+    [event._id],
+  );
+
+  const handleRemoveCoupon = useCallback(() => {
+    setAppliedDiscount(null);
   }, []);
 
   const handlePayAndReserve = useCallback(async () => {
@@ -205,10 +236,15 @@ const CheckoutContentInner = ({
             )}
 
             <CheckoutExclusiveOffers
+              appliedDiscount={appliedDiscount}
               onOpenCoupons={() => setCouponModalOpen(true)}
+              onRemoveCoupon={handleRemoveCoupon}
             />
 
-            <CheckoutPricingSummary breakdown={breakdown} />
+            <CheckoutPricingSummary
+              breakdown={breakdown}
+              appliedDiscount={appliedDiscount}
+            />
 
             <Button
               className="mb-14 w-full bg-emerald-500 text-base font-semibold text-white hover:bg-emerald-600 md:py-6"
@@ -224,6 +260,8 @@ const CheckoutContentInner = ({
       <OffersModal
         open={couponModalOpen}
         onOpenChange={setCouponModalOpen}
+        username={username}
+        eventSlug={eventSlug}
         onApplyCoupon={handleApplyCoupon}
       />
     </div>

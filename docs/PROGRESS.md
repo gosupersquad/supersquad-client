@@ -226,10 +226,27 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ---
 
+## Checkout page – discount codes (event landing)
+
+**Route:** `/hosts/[username]/events/[eventSlug]/checkout`. Backend: `GET /api/v1/hosts/:username/events/:eventSlug/discount-codes` (list active codes, no auth), `POST /api/v1/admin/discount-codes/validate` (body `{ code, eventId }`, no auth).
+
+**Implemented:**
+
+- **lib/discount-codes-client.ts** – `listPublicDiscountCodesForEvent(username, eventSlug)`, `validateDiscountCode(code, eventId)`; types `PublicDiscountCodeItem`, `ValidateDiscountCodeResult`.
+- **CheckoutContent** – State: `appliedDiscount` (code + type + amount + currency). `handleApplyCoupon`: calls validate API; on success sets discount, closes modal, toast; on failure toast with message. `handleRemoveCoupon` clears discount. Passes `appliedDiscount` to CheckoutExclusiveOffers and CheckoutPricingSummary; passes `eventId`, `username`, `eventSlug` to OffersModal.
+- **OffersModal** – Fetches available coupons when open (`useQuery` list by username/eventSlug). Apply form: submit calls parent `onApplyCoupon(code)` (async); loading state (disabled input + spinner on button); clears input on success. Lists "Available Coupons" (code + formatDiscount) or "No coupons available for this event yet."
+- **CheckoutExclusiveOffers** – When no discount: "Apply Coupons" button opens modal. When discount applied: shows code + discount text (e.g. "SAVE20", "₹50 off") and remove (X) button.
+- **CheckoutPricingSummary** – Optional `appliedDiscount`. Discount line "Discount (CODE)" with negative amount; subtotal after discount; GST on subtotal after discount; toPay. Percentage: discount = entryFee \* amount / 100; flat: discount = min(amount, entryFee).
+
+**Payment:** Pay & Reserve still stubbed; discount is applied to pricing display only.
+
+---
+
 ## Toasts (react-hot-toast)
 
 - **Unauthenticated on protected route:** "Please sign in to continue" (host layout, before redirect).
 - **Login success:** "Signed in successfully" (HostLoginForm, after setAuth). Kept to one success toast to avoid spam.
+- **Checkout coupons:** "Coupon applied" (success); "Invalid code" / server message (error); "Could not validate coupon" (network error). Attendee validation: "Please fix the errors in the attendee details below."
 - Toaster in root layout (`top-center`, 4s duration).
 
 ---
@@ -269,4 +286,4 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 **Types (v1.7):** Event: `tickets: EventTicket[]`, `customQuestions?: EventQuestion[]`. **ApiResponse&lt;T&gt;** in types (shared by auth, experiences, discount-codes, upload clients). **DiscountCodeDisplayFields** for discount formatters (amount, usedCount, maxUsage, startsAt, expiresAt). Booking types for future checkout: `BookingAttendee`, `TicketBreakdownItem`, `ExperienceSnapshot`, `PaymentStatus`.
 
-_Last updated: Discount codes – full CRUD including delete; flat-only v1; shared ApiResponse and formatters._
+_Last updated: Checkout page – discount codes wired (list, validate, apply, remove, pricing summary)._
