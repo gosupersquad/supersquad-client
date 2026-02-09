@@ -13,6 +13,7 @@ import DiscountCodesTable from "@/components/host/DiscountCodesTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  deleteDiscountCode,
   listDiscountCodes,
   toggleDiscountCodeStatus,
   type DiscountCodeResponse,
@@ -61,6 +62,19 @@ const HostDiscountCodesPage = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: ({ id }: { id: string }) => deleteDiscountCode(id, token!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: DISCOUNT_CODES_QUERY_KEY });
+      toast.success("Discount code deleted");
+    },
+    onError: (err) => {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete code";
+      toast.error(message);
+    },
+  });
+
   const fuse = useMemo(() => {
     if (codes.length === 0) return null;
     return new Fuse(codes, {
@@ -90,6 +104,18 @@ const HostDiscountCodesPage = () => {
   const handleEditClick = (item: DiscountCodeResponse) => {
     setEditing(item);
     setModalOpen(true);
+  };
+
+  const handleDeleteClick = (item: DiscountCodeResponse) => {
+    if (
+      !window.confirm(
+        `Delete discount code "${item.code}"? This cannot be undone.`,
+      )
+    )
+      return;
+
+    if (!token) return;
+    deleteMutation.mutate({ id: item._id });
   };
 
   const handleModalSuccess = () => {
@@ -170,6 +196,12 @@ const HostDiscountCodesPage = () => {
             <DiscountCodesCards
               codes={filteredCodes}
               onEdit={handleEditClick}
+              onDelete={handleDeleteClick}
+              isDeletingId={
+                deleteMutation.isPending && deleteMutation.variables
+                  ? deleteMutation.variables.id
+                  : null
+              }
             />
           </div>
 
@@ -178,9 +210,15 @@ const HostDiscountCodesPage = () => {
               codes={filteredCodes}
               onToggleStatus={handleToggleStatus}
               onEdit={handleEditClick}
+              onDelete={handleDeleteClick}
               isTogglingId={
                 toggleMutation.isPending && toggleMutation.variables
                   ? toggleMutation.variables.id
+                  : null
+              }
+              isDeletingId={
+                deleteMutation.isPending && deleteMutation.variables
+                  ? deleteMutation.variables.id
                   : null
               }
             />

@@ -140,3 +140,13 @@ export async function toggleDiscountCodeStatus(
 
   return data.data;
 }
+
+/** Delete a discount code. Server returns 204 No Content. */
+export async function deleteDiscountCode(
+  id: string,
+  token: string
+): Promise<void> {
+  await axios.delete(`${DISCOUNT_CODES_BASE()}/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}

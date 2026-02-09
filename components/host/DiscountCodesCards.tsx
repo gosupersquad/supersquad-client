@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Pencil } from "lucide-react";
+import { Calendar, Pencil, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,9 +17,16 @@ import {
 interface DiscountCodesCardsProps {
   codes: DiscountCodeResponse[];
   onEdit: (item: DiscountCodeResponse) => void;
+  onDelete: (item: DiscountCodeResponse) => void;
+  isDeletingId?: string | null;
 }
 
-const DiscountCodesCards = ({ codes, onEdit }: DiscountCodesCardsProps) => {
+const DiscountCodesCards = ({
+  codes,
+  onEdit,
+  onDelete,
+  isDeletingId,
+}: DiscountCodesCardsProps) => {
   return (
     <div className="grid gap-4 sm:grid-cols-1">
       {codes.map((item) => (
@@ -55,22 +62,41 @@ const DiscountCodesCards = ({ codes, onEdit }: DiscountCodesCardsProps) => {
               </span>
             </div>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(item)}
-                  className="shrink-0"
-                >
-                  <Pencil className="size-4" />
-                </Button>
-              </TooltipTrigger>
+            <div className="flex shrink-0 gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEdit(item)}
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                </TooltipTrigger>
 
-              <TooltipContent>
-                <p>Edit discount code</p>
-              </TooltipContent>
-            </Tooltip>
+                <TooltipContent>
+                  <p>Edit discount code</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => onDelete(item)}
+                    disabled={isDeletingId === item._id}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+
+                <TooltipContent>
+                  <p>Delete discount code</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
         </div>
       ))}

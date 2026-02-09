@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Pencil } from "lucide-react";
+import { Calendar, Pencil, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -28,14 +28,18 @@ interface DiscountCodesTableProps {
   codes: DiscountCodeResponse[];
   onToggleStatus: (id: string) => void;
   onEdit: (item: DiscountCodeResponse) => void;
+  onDelete: (item: DiscountCodeResponse) => void;
   isTogglingId?: string | null;
+  isDeletingId?: string | null;
 }
 
 const DiscountCodesTable = ({
   codes,
   onToggleStatus,
   onEdit,
+  onDelete,
   isTogglingId,
+  isDeletingId,
 }: DiscountCodesTableProps) => {
   return (
     <Table>
@@ -53,6 +57,8 @@ const DiscountCodesTable = ({
       <TableBody>
         {codes.map((item) => {
           const isToggling = isTogglingId === item._id;
+          const isDeleting = isDeletingId === item._id;
+
           return (
             <TableRow key={item._id}>
               <TableCell className="font-medium">{item.code}</TableCell>
@@ -98,21 +104,41 @@ const DiscountCodesTable = ({
               </TableCell>
 
               <TableCell>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEdit(item)}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                  </TooltipTrigger>
+                <div className="flex items-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onEdit(item)}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                    </TooltipTrigger>
 
-                  <TooltipContent>
-                    <p>Edit discount code</p>
-                  </TooltipContent>
-                </Tooltip>
+                    <TooltipContent>
+                      <p>Edit discount code</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => onDelete(item)}
+                        disabled={isDeleting}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </TooltipTrigger>
+
+                    <TooltipContent>
+                      <p>Delete discount code</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </TableCell>
             </TableRow>
           );
