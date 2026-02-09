@@ -44,7 +44,7 @@ After making any change, provide:
 | `/host/experiences?type=event\|trip`           | Filtered experiences table                                                      |
 | `/host/experiences/new?type=event\|trip`       | Create experience                                                               |
 | `/host/experiences/[id]/edit?type=event\|trip` | Edit experience                                                                 |
-| `/host/discount-codes`                         | Discount codes CRUD (list, create, edit, toggle status)                         |
+| `/host/discount-codes`                         | Discount codes CRUD (list, create, edit, toggle, delete)                        |
 | `/host/bookings`, `/host/coupons`              | Future                                                                          |
 
 ### Master Admin (platform admin)
@@ -73,10 +73,11 @@ After making any change, provide:
 
 - **Event only** (no trips): create, read, update (and list).
 - **Host:** login, edit (profile/settings).
+- **Discount codes (host):** full CRUD — list, create, edit, toggle status, delete. v1: flat (₹) only; no event-scoping (experienceId) in UI; code read-only on edit.
 - **Event landing page:** `/hosts/[username]/events/[eventSlug]` (public, SSR).
 - **Mobile-friendly:** all host and admin UIs.
 - **robots.txt:** Disallow `/admin/master` (no listing, no crawling).
-- Nothing else in Phase 1 (trips, bookings, coupons, checkout, full Master Admin UI later).
+- Nothing else in Phase 1 (trips, bookings, checkout, full Master Admin UI later).
 
 ---
 
@@ -248,22 +249,24 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ## Discount Codes (host dashboard) – done
 
-**Context:** Backend: `/api/v1/admin/discount-codes`. List, getOne, create, update, toggle-status (no delete). **v1 MVP:** Client does **not** use `experienceId` or `experienceType` — no event-scoped UI; all codes apply to all events. Code is **read-only on edit** (editable only on create) to avoid uniqueness/UX issues.
+**Context:** Backend: `/api/v1/admin/discount-codes`. List, getOne, create, update, toggle-status, **delete** (204). **v1 MVP:** Client does **not** use `experienceId` or `experienceType` — no event-scoped UI; all codes apply to all events. **Flat (₹) only** — no percentage in UI; schema supports it but dormant. Code is **read-only on edit** (editable only on create).
 
 **Implemented:**
 
-- **lib/discount-codes-client.ts** – list, getOne, create, update, toggleDiscountCodeStatus; types; no experienceId in create/update payloads.
-- **Nav** – Desktop: "Discount codes" in HostShell (Percent icon). Mobile: More page link to `/host/discount-codes` (replaced "Coupons coming soon").
-- **Route** – `app/host/discount-codes/page.tsx`: useQuery list, Fuse search by code, loading/error/401, Create button, table (md+) / cards (&lt; md).
-- **DiscountCodesTable** – Code, Type, Discount, Validity, Usage, Status (Switch + badge), Actions (Edit).
-- **DiscountCodesCards** – Card per code; Edit opens modal.
-- **DiscountCodeFormModal** – Form: code (read-only when editing), type (radio), amount, maxUsage, startsAt, expiresAt, isActive. Fullscreen on &lt; md, centered dialog on md+. Create/update with toasts and invalidate.
+- **lib/discount-codes-client.ts** – list, getOne, create, update, toggleDiscountCodeStatus, **deleteDiscountCode**; types (CreatePayload type: "flat" only; UpdatePayload no type/code); no experienceId in payloads.
+- **Nav** – Desktop: "Discount codes" in HostShell (Percent icon). Mobile: More page link to `/host/discount-codes`.
+- **Route** – `app/host/discount-codes/page.tsx`: useQuery list, Fuse search by code, loading/error/401, Create button; deleteMutation with confirm; table (md+) / cards (&lt; md).
+- **DiscountCodesTable** – Code, Discount, Validity, Usage, Status (Switch + badge), Actions (Edit, Delete). Delete with confirmation; isDeletingId for loading state.
+- **DiscountCodesCards** – Card per code; Edit + Delete (with confirm and isDeletingId).
+- **DiscountCodeFormModal** – Form: code (read-only when editing), amount (₹), maxUsage, startsAt, expiresAt, isActive. No type selector (flat only). Fullscreen on &lt; md, centered dialog on md+. Create sends type: "flat"; update does not send type/code.
 - **401** – Same as experiences: clearAuth, toast, redirect to login.
+
+**Shared code:** `ApiResponse<T>` in `types/index.ts`; discount code display formatters (`formatDiscountCodeValidity`, `formatDiscountCodeDiscount`, `formatDiscountCodeUsage`) in `lib/utils.ts`; `DiscountCodeDisplayFields` in types (minimal fields for formatters).
 
 **Validity display:** "Always" when no dates; "From d MMM yyyy" / "Until d MMM yyyy" when one set; "d MMM yyyy – d MMM yyyy" when both.
 
 ---
 
-**Types (v1.7):** Event uses `tickets: EventTicket[]` and `customQuestions?: EventQuestion[]`. `PublicEvent` and `CreateEventPayload`/`UpdateEventPayload` aligned with TECH_PRD. Booking types added for future checkout: `BookingAttendee`, `TicketBreakdownItem`, `ExperienceSnapshot`, `PaymentStatus`.
+**Types (v1.7):** Event: `tickets: EventTicket[]`, `customQuestions?: EventQuestion[]`. **ApiResponse&lt;T&gt;** in types (shared by auth, experiences, discount-codes, upload clients). **DiscountCodeDisplayFields** for discount formatters (amount, usedCount, maxUsage, startsAt, expiresAt). Booking types for future checkout: `BookingAttendee`, `TicketBreakdownItem`, `ExperienceSnapshot`, `PaymentStatus`.
 
-_Last updated: Discount codes – host CRUD (list, create, edit, toggle); no experienceId in v1; code read-only on edit._
+_Last updated: Discount codes – full CRUD including delete; flat-only v1; shared ApiResponse and formatters._
