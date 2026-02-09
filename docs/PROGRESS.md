@@ -44,6 +44,7 @@ After making any change, provide:
 | `/host/experiences?type=event\|trip`           | Filtered experiences table                                                      |
 | `/host/experiences/new?type=event\|trip`       | Create experience                                                               |
 | `/host/experiences/[id]/edit?type=event\|trip` | Edit experience                                                                 |
+| `/host/discount-codes`                         | Discount codes CRUD (list, create, edit, toggle status)                         |
 | `/host/bookings`, `/host/coupons`              | Future                                                                          |
 
 ### Master Admin (platform admin)
@@ -241,10 +242,28 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 ## Mobile "More" tab
 
-- Bottom bar has **Experiences**, **More**, **Account**. **More** → `/host/more` page with links to Leads, Coupons (placeholder "coming soon"), etc. Keeps the bar to 3 tabs; extra items live under More. Add more links on the More page as features ship.
+- Bottom bar has **Experiences**, **More**, **Account**. **More** → `/host/more` with links to Leads, **Discount codes** (real link to `/host/discount-codes`), etc. Add more links as features ship.
+
+---
+
+## Discount Codes (host dashboard) – done
+
+**Context:** Backend: `/api/v1/admin/discount-codes`. List, getOne, create, update, toggle-status (no delete). **v1 MVP:** Client does **not** use `experienceId` or `experienceType` — no event-scoped UI; all codes apply to all events. Code is **read-only on edit** (editable only on create) to avoid uniqueness/UX issues.
+
+**Implemented:**
+
+- **lib/discount-codes-client.ts** – list, getOne, create, update, toggleDiscountCodeStatus; types; no experienceId in create/update payloads.
+- **Nav** – Desktop: "Discount codes" in HostShell (Percent icon). Mobile: More page link to `/host/discount-codes` (replaced "Coupons coming soon").
+- **Route** – `app/host/discount-codes/page.tsx`: useQuery list, Fuse search by code, loading/error/401, Create button, table (md+) / cards (&lt; md).
+- **DiscountCodesTable** – Code, Type, Discount, Validity, Usage, Status (Switch + badge), Actions (Edit).
+- **DiscountCodesCards** – Card per code; Edit opens modal.
+- **DiscountCodeFormModal** – Form: code (read-only when editing), type (radio), amount, maxUsage, startsAt, expiresAt, isActive. Fullscreen on &lt; md, centered dialog on md+. Create/update with toasts and invalidate.
+- **401** – Same as experiences: clearAuth, toast, redirect to login.
+
+**Validity display:** "Always" when no dates; "From d MMM yyyy" / "Until d MMM yyyy" when one set; "d MMM yyyy – d MMM yyyy" when both.
 
 ---
 
 **Types (v1.7):** Event uses `tickets: EventTicket[]` and `customQuestions?: EventQuestion[]`. `PublicEvent` and `CreateEventPayload`/`UpdateEventPayload` aligned with TECH_PRD. Booking types added for future checkout: `BookingAttendee`, `TicketBreakdownItem`, `ExperienceSnapshot`, `PaymentStatus`.
 
-_Last updated: Event form – ticket-level Step 4, Back/Next justify-end, types and landing pricing bar use tickets._
+_Last updated: Discount codes – host CRUD (list, create, edit, toggle); no experienceId in v1; code read-only on edit._

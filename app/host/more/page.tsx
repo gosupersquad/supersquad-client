@@ -18,7 +18,7 @@ type MoreLink = {
 // Links that don’t need a tab each; add more when in scope (e.g. Bookings)
 const MORE_LINKS: MoreLink[] = [
   { label: "Leads", href: "/host/leads", icon: FileText },
-  { label: "Coupons", href: "/host/coupons", icon: Ticket, comingSoon: true },
+  { label: "Discount codes", href: "/host/discount-codes", icon: Ticket },
 ] as const;
 
 const HostMorePage = () => {
@@ -34,7 +34,7 @@ const HostMorePage = () => {
         {MORE_LINKS.map(({ label, href, icon: Icon, comingSoon }) => (
           <li key={href}>
             {comingSoon ? (
-              <span className="flex items-center gap-2 rounded-lg border border-border px-4 py-3 text-muted-foreground">
+              <span className="border-border text-muted-foreground flex items-center gap-2 rounded-lg border px-4 py-3">
                 <Icon className="size-4" />
                 {label}
 

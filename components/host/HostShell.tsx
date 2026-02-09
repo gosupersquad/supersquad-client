@@ -1,11 +1,11 @@
 "use client";
 
-import { FileText, LayoutGrid, LogOut, Map, User } from "lucide-react";
+import { FileText, LayoutGrid, LogOut, Map, Percent, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
 
@@ -17,9 +17,10 @@ type NavItem = {
   icon: React.ElementType;
 };
 
-// Desktop sidebar nav (Phase 1: Experiences, Leads; add Bookings, Coupons when in scope)
+// Desktop sidebar nav (Phase 1: Experiences, Discount codes, Leads)
 const NAV_ITEMS: NavItem[] = [
   { label: "Experiences", href: "/host/experiences", icon: Map },
+  { label: "Discount codes", href: "/host/discount-codes", icon: Percent },
   { label: "Leads", href: "/host/leads", icon: FileText },
 ];
 
@@ -41,11 +42,11 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="bg-background flex min-h-screen">
       {/* Desktop sidebar: fixed left, hidden on mobile */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-border bg-background md:flex">
-        <div className="flex h-14 items-center justify-between border-b border-border px-4">
-          <span className="font-semibold text-foreground">{SIDEBAR_TITLE}</span>
+      <aside className="border-border bg-background fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r md:flex">
+        <div className="border-border flex h-14 items-center justify-between border-b px-4">
+          <span className="text-foreground font-semibold">{SIDEBAR_TITLE}</span>
 
           <ThemeToggle variant="ghost" size="icon-sm" />
         </div>
@@ -73,7 +74,7 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
           })}
         </nav>
 
-        <div className="border-t border-border p-3">
+        <div className="border-border border-t p-3">
           <Button
             variant="ghost"
             className="w-full justify-start gap-2"
@@ -90,10 +91,10 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
 
       {/* Mobile bottom bar: Experiences, Account (logout on Account page; future: edit host) */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-background md:hidden"
+        className="border-border bg-background fixed inset-x-0 bottom-0 z-40 flex border-t md:hidden"
         aria-label="Mobile navigation"
       >
-        <div className="grid w-full grid-cols-3 gap-px bg-border">
+        <div className="bg-border grid w-full grid-cols-3 gap-px">
           {MOBILE_NAV_ITEMS.map(({ label, href, icon: Icon }) => {
             const isActive =
               pathname === href || pathname.startsWith(href + "/");

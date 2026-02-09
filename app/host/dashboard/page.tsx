@@ -39,7 +39,7 @@ const HostDashboardPage = () => {
               asChild
             >
               <Link href={href}>
-                <Icon className="size-5 shrink-0 text-muted-foreground" />
+                <Icon className="text-muted-foreground size-5 shrink-0" />
                 <span>{label}</span>
               </Link>
             </Button>
