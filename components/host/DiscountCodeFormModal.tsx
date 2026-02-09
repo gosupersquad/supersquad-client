@@ -168,7 +168,7 @@ const DiscountCodeFormModal = ({
         )}
       >
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="mt-4 text-2xl font-semibold md:mt-0">
             {isEdit ? "Edit discount code" : "Create discount code"}
           </DialogTitle>
 
@@ -204,7 +204,7 @@ const DiscountCodeFormModal = ({
               id="amount"
               type="number"
               min={0}
-              step={0.01}
+              step={0.1}
               value={form.amount}
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, amount: e.target.value }))
@@ -275,6 +275,7 @@ const DiscountCodeFormModal = ({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
+              className="mr-2"
             >
               Cancel
             </Button>
