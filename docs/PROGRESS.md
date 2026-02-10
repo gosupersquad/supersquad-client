@@ -233,12 +233,47 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 **Implemented:**
 
 - **lib/discount-codes-client.ts** – `listPublicDiscountCodesForEvent(username, eventSlug)`, `validateDiscountCode(code, eventId)`; types `PublicDiscountCodeItem`, `ValidateDiscountCodeResult`.
-- **CheckoutContent** – State: `appliedDiscount` (code + type + amount + currency). `handleApplyCoupon`: calls validate API; on success sets discount, closes modal, toast; on failure toast with message. `handleRemoveCoupon` clears discount. Passes `appliedDiscount` to CheckoutExclusiveOffers and CheckoutPricingSummary; passes `eventId`, `username`, `eventSlug` to OffersModal.
-- **OffersModal** – Fetches available coupons when open (`useQuery` list by username/eventSlug). Apply form: submit calls parent `onApplyCoupon(code)` (async); loading state (disabled input + spinner on button); clears input on success. Lists "Available Coupons" (code + formatDiscount) or "No coupons available for this event yet."
+- **CheckoutContent** – State: `appliedDiscount` (code + type + amount + currency). `handleApplyCoupon`: calls validate API; on success sets discount, closes modal, toast; on failure toast with message. `handleRemoveCoupon` clears discount. Passes `appliedDiscount` to CheckoutExclusiveOffers and CheckoutPricingSummary; passes `username`, `eventSlug` to OffersModal (no eventId in modal; parent holds event and does validate).
+- **OffersModal** – Fetches available coupons when open (`useQuery` list by username/eventSlug). Manual apply: input + APPLY button; tile apply: each coupon is a **card tile** (icon, code, "₹X off") with an **Apply** button – one click applies that code (no typing). Shared `formatPublicDiscountLabel(amount)` from `lib/utils.ts` for "₹X off" (v1 flat only). On successful apply (tile or manual), modal closes. Loading: per-tile spinner and all Apply disabled while any request in flight.
 - **CheckoutExclusiveOffers** – When no discount: "Apply Coupons" button opens modal. When discount applied: shows code + discount text (e.g. "SAVE20", "₹50 off") and remove (X) button.
-- **CheckoutPricingSummary** – Optional `appliedDiscount`. Discount line "Discount (CODE)" with negative amount; subtotal after discount; GST on subtotal after discount; toPay. Percentage: discount = entryFee \* amount / 100; flat: discount = min(amount, entryFee).
+- **CheckoutPricingSummary** – Optional `appliedDiscount`. v1: **flat only** – discount = min(amount, entryFee). Discount line "Discount (CODE)" with negative amount; subtotal after discount; **GST applied on subtotal after discount**; toPay = subtotalAfterDiscount + gst. See "Payment calculation flow" below.
 
-**Payment:** Pay & Reserve still stubbed; discount is applied to pricing display only.
+**Payment:** Pay & Reserve still stubbed; validates all attendee forms on click then no-op. Discount is applied to pricing display only.
+
+### Payment calculation flow (checkout)
+
+**Where it lives:** `components/checkout/CheckoutPricingSummary.tsx` (and inputs from `CheckoutContent` + `lib/checkout-tickets.ts`).
+
+**1. Ticket breakdown (source of "entry fee")**
+
+- **State:** `breakdown` in `CheckoutContent` – array of `TicketBreakdownItem`: `{ code, label, quantity, unitPrice }` (see `lib/checkout-tickets.ts`).
+- **Origin:** From landing (EventPricingBar drawer) via `setCheckoutTicketSelection`; or on load from `getCheckoutTicketSelection(username, eventSlug)`; if none, `buildDefaultBreakdown(tickets)` gives 1× first ticket (see `getInitialBreakdown` in `CheckoutContent.tsx`).
+- **Reference:** `CheckoutContent.tsx` (breakdown state, `getInitialBreakdown`, `handleBreakdownChange`), `checkout-tickets.ts` (`TicketBreakdownItem`, `getCheckoutTicketSelection`, `setCheckoutTicketSelection`, `expandBreakdownToAttendeeSlots`).
+
+**2. Entry fee (subtotal before discount)**
+
+- **Formula:** `entryFee = Σ (row.quantity × row.unitPrice)` over all rows in `breakdown`.
+- **Reference:** `CheckoutPricingSummary.tsx` lines 30–33 (`breakdown.reduce(...)`).
+
+**3. Discount (v1 flat only)**
+
+- **State:** `appliedDiscount` in `CheckoutContent` – set when a coupon is validated successfully; cleared by "Remove" in CheckoutExclusiveOffers.
+- **Formula:** `discountAmount = appliedDiscount ? min(appliedDiscount.amount, entryFee) : 0`. (No percentage in UI; backend may return type "percentage" but pricing summary currently uses only flat.)
+- **Reference:** `CheckoutPricingSummary.tsx` lines 35–39.
+
+**4. GST**
+
+- **Rate:** 5% (constant `GST_PERCENT = 5` in `CheckoutPricingSummary.tsx`).
+- **Base:** GST is applied to the **subtotal after discount** (taxable amount), not to the pre-discount entry fee.
+- **Formula:** `subtotalAfterDiscount = entryFee - discountAmount`; `gst = (subtotalAfterDiscount × 5) / 100`.
+- **Reference:** `CheckoutPricingSummary.tsx` lines 41–43.
+
+**5. To pay**
+
+- **Formula:** `toPay = subtotalAfterDiscount + gst` (= entry fee − discount + GST on that subtotal).
+- **Reference:** `CheckoutPricingSummary.tsx` line 43.
+
+**Summary:** Entry fee from ticket breakdown → subtract flat discount (capped at entry fee) → GST 5% on that subtotal → toPay = subtotal + GST.
 
 ---
 
@@ -278,7 +313,7 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 - **DiscountCodeFormModal** – Form: code (read-only when editing), amount (₹), maxUsage, startsAt, expiresAt, isActive. No type selector (flat only). Fullscreen on &lt; md, centered dialog on md+. Create sends type: "flat"; update does not send type/code.
 - **401** – Same as experiences: clearAuth, toast, redirect to login.
 
-**Shared code:** `ApiResponse<T>` in `types/index.ts`; discount code display formatters (`formatDiscountCodeValidity`, `formatDiscountCodeDiscount`, `formatDiscountCodeUsage`) in `lib/utils.ts`; `DiscountCodeDisplayFields` in types (minimal fields for formatters).
+**Shared code:** `ApiResponse<T>` in `types/index.ts`; discount code display formatters (`formatDiscountCodeValidity`, `formatDiscountCodeDiscount`, `formatDiscountCodeUsage`, **`formatPublicDiscountLabel`** for checkout "₹X off") in `lib/utils.ts`; `DiscountCodeDisplayFields` in types (minimal fields for formatters).
 
 **Validity display:** "Always" when no dates; "From d MMM yyyy" / "Until d MMM yyyy" when one set; "d MMM yyyy – d MMM yyyy" when both.
 
@@ -286,4 +321,4 @@ Use `const ComponentName = () => {}` and `export default ComponentName` for comp
 
 **Types (v1.7):** Event: `tickets: EventTicket[]`, `customQuestions?: EventQuestion[]`. **ApiResponse&lt;T&gt;** in types (shared by auth, experiences, discount-codes, upload clients). **DiscountCodeDisplayFields** for discount formatters (amount, usedCount, maxUsage, startsAt, expiresAt). Booking types for future checkout: `BookingAttendee`, `TicketBreakdownItem`, `ExperienceSnapshot`, `PaymentStatus`.
 
-_Last updated: Checkout page – discount codes wired (list, validate, apply, remove, pricing summary)._
+_Last updated: Checkout – coupon tiles with Apply button, formatPublicDiscountLabel; PROGRESS doc: payment calculation flow and GST explained with code refs._
