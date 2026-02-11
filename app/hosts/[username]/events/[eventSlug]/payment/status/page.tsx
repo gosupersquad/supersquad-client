@@ -5,7 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 
 import { verifyPayment } from "@/lib/payment-client";
 
-function PaymentSuccessContent() {
+const PaymentStatusInner = () => {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id") ?? undefined;
 
@@ -72,9 +72,9 @@ function PaymentSuccessContent() {
       <p className="text-muted-foreground text-sm">{statusText}</p>
     </div>
   );
-}
+};
 
-export default function PaymentSuccessPage() {
+const PaymentStatusPage = () => {
   return (
     <Suspense
       fallback={
@@ -83,7 +83,9 @@ export default function PaymentSuccessPage() {
         </div>
       }
     >
-      <PaymentSuccessContent />
+      <PaymentStatusInner />
     </Suspense>
   );
-}
+};
+
+export default PaymentStatusPage;

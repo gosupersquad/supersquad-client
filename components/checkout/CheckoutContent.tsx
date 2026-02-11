@@ -216,15 +216,17 @@ const CheckoutContentInner = ({
       return;
     }
 
+    const orderId = generateOrderId();
+
     const returnUrl =
       typeof window !== "undefined"
-        ? `${window.location.origin}/hosts/${username}/events/${eventSlug}/payment/success`
+        ? `${window.location.origin}/hosts/${username}/events/${eventSlug}/payment/status?order_id=${orderId}`
         : "";
 
     const payload: CreateOrderPayload = {
       eventId: event._id,
       returnUrl,
-      orderId: generateOrderId(),
+      orderId,
       customer: {
         name: first.name.trim(),
         email: first.email.trim(),
