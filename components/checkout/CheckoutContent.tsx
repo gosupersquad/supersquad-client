@@ -1,5 +1,6 @@
 "use client";
 
+import { load } from "@cashfreepayments/cashfree-js";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -14,8 +15,10 @@ import {
   type TicketBreakdownItem,
 } from "@/lib/checkout-tickets";
 import { validateDiscountCode } from "@/lib/discount-codes-client";
+import { createOrder } from "@/lib/payment-client";
 import { getPublicEvent } from "@/lib/public-event-client";
-import type { PublicEvent } from "@/types";
+import { generateOrderId } from "@/lib/utils";
+import type { AppliedDiscount, CreateOrderPayload, PublicEvent } from "@/types";
 
 import CheckoutAttendeeBlock, {
   type AttendeeFormData,
@@ -26,6 +29,7 @@ import CheckoutHero from "./CheckoutHero";
 import CheckoutPricingSummary from "./CheckoutPricingSummary";
 import CheckoutTicketSelection from "./CheckoutTicketSelection";
 import OffersModal from "./OffersModal";
+import { GST_PERCENT } from "@/lib/constants";
 
 type Params = {
   username: string;
@@ -101,12 +105,8 @@ const CheckoutContentInner = ({
   );
 
   const [couponModalOpen, setCouponModalOpen] = useState(false);
-  const [appliedDiscount, setAppliedDiscount] = useState<{
-    code: string;
-    type: "flat";
-    amount: number;
-    currency: string;
-  } | null>(null);
+  const [appliedDiscount, setAppliedDiscount] =
+    useState<AppliedDiscount | null>(null);
   const attendeeBlockRefs = useRef<(CheckoutAttendeeBlockHandle | null)[]>([]);
 
   const slots = useMemo(
@@ -118,6 +118,24 @@ const CheckoutContentInner = ({
     () => slots.map((_, i) => attendeeData[i] ?? defaultAttendeeData()),
     [slots, attendeeData],
   );
+
+  const expectedTotal = useMemo(() => {
+    const entryFee = breakdown.reduce(
+      (sum, row) => sum + row.quantity * row.unitPrice,
+      0,
+    );
+
+    const discountAmount = appliedDiscount
+      ? appliedDiscount.type === "flat"
+        ? Math.min(appliedDiscount.amount, entryFee)
+        : 0
+      : 0;
+
+    const subtotalAfterDiscount = entryFee - discountAmount;
+    const gst = (subtotalAfterDiscount * GST_PERCENT) / 100;
+
+    return Math.round((subtotalAfterDiscount + gst) * 100) / 100;
+  }, [breakdown, appliedDiscount]);
 
   const setAttendee = useCallback((index: number, data: AttendeeFormData) => {
     setAttendeeData((prev) => {
@@ -150,7 +168,10 @@ const CheckoutContentInner = ({
         if (result.valid && result.discount) {
           setAppliedDiscount({
             code: code.trim().toUpperCase(),
-            ...result.discount,
+            type: "flat",
+            amount: result.discount.amount,
+            currency: result.discount.currency,
+            discountCodeId: result.discount.discountCodeId,
           });
           setCouponModalOpen(false);
           toast.success("Coupon applied");
@@ -184,8 +205,107 @@ const CheckoutContentInner = ({
       toast.error("Please fix the errors in the attendee details below.");
       return;
     }
-    // Stubbed for later payment wiring
-  }, [slots.length]);
+
+    const first = attendeeDataPadded[0];
+    if (
+      !first?.name?.trim() ||
+      !first?.email?.trim() ||
+      !first?.phone?.trim()
+    ) {
+      toast.error("Please fill in all required attendee details.");
+      return;
+    }
+
+    const returnUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/hosts/${username}/events/${eventSlug}/payment/success`
+        : "";
+
+    const payload: CreateOrderPayload = {
+      eventId: event._id,
+      returnUrl,
+      orderId: generateOrderId(),
+      customer: {
+        name: first.name.trim(),
+        email: first.email.trim(),
+        phone: first.phone.trim(),
+        instagram: first.instagram?.trim() || undefined,
+      },
+      ticketBreakdown: breakdown
+        .filter((r) => r.quantity > 0)
+        .map(({ code, quantity, unitPrice }) => ({
+          code,
+          quantity,
+          unitPrice,
+        })),
+      attendees: slots.map((slot, i) => {
+        const data = attendeeDataPadded[i] ?? defaultAttendeeData();
+        return {
+          ticketCode: slot.code,
+          name: data.name.trim(),
+          email: data.email.trim(),
+          phone: data.phone.trim(),
+          instagram: data.instagram?.trim() || undefined,
+          customAnswers:
+            data.customAnswers && Object.keys(data.customAnswers).length > 0
+              ? data.customAnswers
+              : undefined,
+        };
+      }),
+      expectedTotal,
+      discountAmount:
+        appliedDiscount && appliedDiscount.type === "flat"
+          ? Math.min(
+              appliedDiscount.amount,
+              breakdown.reduce((s, r) => s + r.quantity * r.unitPrice, 0),
+            )
+          : undefined,
+      discountCodeId: appliedDiscount?.discountCodeId,
+    };
+
+    try {
+      const result = await createOrder(payload);
+
+      const cashfreeEnv =
+        (process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT as
+          | "sandbox"
+          | "production") ?? "sandbox";
+
+      const cashfree = await load({ mode: cashfreeEnv });
+      if (!cashfree) {
+        toast.error("Payment could not be loaded. Please try again.");
+        return;
+      }
+
+      const checkoutOptions = {
+        paymentSessionId: result.sessionId,
+        returnUrl,
+      };
+
+      const checkoutResult = await cashfree.checkout(checkoutOptions);
+
+      if (checkoutResult.error) {
+        toast.error(checkoutResult.error.message ?? "Checkout failed");
+        return;
+      }
+
+      if (checkoutResult.redirect) {
+        // User is redirected to Cashfree PG; success page will verify
+      }
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Something went wrong";
+      toast.error(message);
+    }
+  }, [
+    slots,
+    attendeeDataPadded,
+    breakdown,
+    appliedDiscount,
+    expectedTotal,
+    event._id,
+    username,
+    eventSlug,
+  ]);
 
   const host = event.hostId;
   const tickets = event.tickets ?? [];
