@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ApiResponse } from "@/types";
+import type { ApiResponse, AppliedDiscount } from "@/types";
 import { getApiBaseUrl } from "./api-client";
 
 // --- Public (checkout, no auth) ---
@@ -14,11 +14,7 @@ export interface PublicDiscountCodeItem {
 export interface ValidateDiscountCodeResult {
   valid: boolean;
   message?: string;
-  discount?: {
-    type: "flat";
-    amount: number;
-    currency: string;
-  };
+  discount?: AppliedDiscount;
 }
 
 /** List active discount codes for an event. No auth. */
@@ -39,24 +35,26 @@ export async function listPublicDiscountCodesForEvent(
   return json.data;
 }
 
+const DISCOUNT_CODES_BASE = () => `${getApiBaseUrl()}/admin/discount-codes`;
+
 /** Validate a coupon at checkout. No auth. */
 export async function validateDiscountCode(
   code: string,
   eventId: string
 ): Promise<ValidateDiscountCodeResult> {
-  const base = getApiBaseUrl();
+  const { data } = await axios.post<ApiResponse<ValidateDiscountCodeResult>>(
+    `${DISCOUNT_CODES_BASE()}/validate`,
+    { code: code.trim().toUpperCase(), eventId },
+    {
+      headers: { "Content-Type": "application/json" },
+    }
+  );
 
-  const res = await fetch(`${base}/admin/discount-codes/validate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code: code.trim().toUpperCase(), eventId }),
-  });
+  if (!data.success || data.data == null) {
+    throw new Error(data.message ?? "Invalid response");
+  }
 
-  if (!res.ok) throw new Error("Validation request failed");
-  const json: ApiResponse<ValidateDiscountCodeResult> = await res.json();
-
-  if (json.data == null) throw new Error("Invalid response");
-  return json.data;
+  return data.data;
 }
 
 export interface DiscountCodeResponse {
@@ -95,9 +93,6 @@ export interface UpdateDiscountCodePayload {
   expiresAt?: string;
   isActive?: boolean;
 }
-
-const DISCOUNT_CODES_BASE = () =>
-  `${getApiBaseUrl()}/admin/discount-codes`;
 
 export async function listDiscountCodes(
   token: string

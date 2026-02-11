@@ -1,8 +1,8 @@
 "use client";
 
 import type { TicketBreakdownItem } from "@/lib/checkout-tickets";
-
-const GST_PERCENT = 5;
+import { GST_PERCENT } from "@/lib/constants";
+import type { AppliedDiscount } from "@/types";
 
 const formatInr = (amount: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -12,21 +12,14 @@ const formatInr = (amount: number) =>
     maximumFractionDigits: 2,
   }).format(amount);
 
-interface AppliedDiscount {
-  code: string;
-  type: "flat";
-  amount: number;
-  currency: string;
-}
-
 interface CheckoutPricingSummaryProps {
   breakdown: TicketBreakdownItem[];
-  appliedDiscount?: AppliedDiscount | null;
+  appliedDiscount: AppliedDiscount | null;
 }
 
 const CheckoutPricingSummary = ({
   breakdown,
-  appliedDiscount = null,
+  appliedDiscount,
 }: CheckoutPricingSummaryProps) => {
   const entryFee = breakdown.reduce(
     (sum, row) => sum + row.quantity * row.unitPrice,

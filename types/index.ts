@@ -158,3 +158,55 @@ export interface DiscountCodeDisplayFields {
   startsAt?: string;
   expiresAt?: string;
 }
+
+// --- Checkout applied discount (state + validate response discount) ---
+
+/** Discount applied at checkout. discountCodeId set when validated so create-order can send it. */
+export interface AppliedDiscount {
+  code: string;
+  type: "flat";
+  amount: number;
+  currency: string;
+  discountCodeId: string;
+}
+
+// --- Payments (create-order, verify) ---
+
+export interface CreateOrderCustomer {
+  name: string;
+  email: string;
+  phone: string;
+  instagram?: string;
+}
+
+export interface CreateOrderAttendee {
+  ticketCode: string;
+  name: string;
+  email: string;
+  phone: string;
+  instagram?: string;
+  customAnswers?: Record<string, string>;
+}
+
+/** Payload for POST /payments/create-order. Must match server createOrderSchema. */
+export interface CreateOrderPayload {
+  eventId: string;
+  returnUrl: string;
+  orderId?: string;
+  customer: CreateOrderCustomer;
+  ticketBreakdown: Array<{ code: string; quantity: number; unitPrice: number }>;
+  attendees: CreateOrderAttendee[];
+  expectedTotal: number;
+  discountAmount?: number;
+  discountCodeId?: string;
+}
+
+export interface CreateOrderResult {
+  orderId: string;
+  sessionId: string;
+}
+
+export interface VerifyPaymentResult {
+  orderId: string;
+  status: PaymentStatus;
+}

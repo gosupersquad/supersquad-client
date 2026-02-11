@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@cashfreepayments/cashfree-js':
+        specifier: ^1.0.6
+        version: 1.0.6
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.1(react@19.2.3))
@@ -187,6 +190,9 @@ packages:
   '@babel/types@7.28.6':
     resolution: {integrity: sha512-0ZrskXVEHSWIqZM/sQZ4EV3jZJXRkio/WCxaqKZP1g//CEWEPSfeZFcms4XeKBCHU0ZKnIkdJeU/kF+eRp5lBg==}
     engines: {node: '>=6.9.0'}
+
+  '@cashfreepayments/cashfree-js@1.0.6':
+    resolution: {integrity: sha512-9I+Ziv3o3BObvgdPksOV/wd5BG/nlCYhZe5sqk1ryGG2orScBxsCDGHrQdHjGGmYysWQgCLSsNQT/r4N01GUJA==}
 
   '@emnapi/core@1.8.1':
     resolution: {integrity: sha512-AvT9QFpxK0Zd8J0jopedNm+w/2fIzvtPKPjqyw9jwvBaReTTqPBk9Hixaz7KbjimP+QNz605/XnjFcDAL2pqBg==}
@@ -3138,6 +3144,8 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
+
+  '@cashfreepayments/cashfree-js@1.0.6': {}
 
   '@emnapi/core@1.8.1':
     dependencies:

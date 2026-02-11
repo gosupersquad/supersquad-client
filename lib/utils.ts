@@ -3,6 +3,17 @@ import { format, parseISO, startOfDay } from "date-fns"
 import { twMerge } from "tailwind-merge"
 import type { DiscountCodeDisplayFields } from "@/types"
 
+/** Alphanumeric order id for Cashfree (max 50 chars). Client-safe: 12 hex chars from 6 random bytes. */
+export function generateOrderId(): string {
+  const bytes = new Uint8Array(6)
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    crypto.getRandomValues(bytes)
+  }
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }

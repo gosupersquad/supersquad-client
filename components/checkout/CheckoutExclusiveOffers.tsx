@@ -3,13 +3,7 @@
 import { ChevronRight, Tag, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-
-interface AppliedDiscount {
-  code: string;
-  type: "percentage" | "flat";
-  amount: number;
-  currency: string;
-}
+import type { AppliedDiscount } from "@/types";
 
 interface CheckoutExclusiveOffersProps {
   appliedDiscount: AppliedDiscount | null;
@@ -36,9 +30,10 @@ const CheckoutExclusiveOffers = ({
               {appliedDiscount.code}
             </span>
             <span className="text-muted-foreground text-sm">
-              {appliedDiscount.type === "percentage"
+              {`₹${appliedDiscount.amount} off`}
+              {/* {appliedDiscount.type === "percentage"
                 ? `${appliedDiscount.amount}% off`
-                : `₹${appliedDiscount.amount} off`}
+                : `₹${appliedDiscount.amount} off`} */}
             </span>
           </span>
           <Button
