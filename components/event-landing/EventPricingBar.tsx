@@ -176,44 +176,55 @@ const EventPricingBar = ({ tickets, spotsAvailable }: EventPricingBarProps) => {
               {tickets?.map((ticket, index) => (
                 <div
                   key={ticket.code}
-                  className="border-border bg-card flex items-center justify-between gap-4 rounded-lg border p-3"
+                  className="border-border bg-card gap-4 space-y-2 rounded-lg border p-3"
                 >
-                  <div className="min-w-0">
-                    <p className="font-medium">{ticket.label}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0">
+                      <p className="font-medium">{ticket.label}</p>
 
-                    <p className="text-muted-foreground text-sm">
-                      {formatInr(ticket.price ?? 0)} each
-                    </p>
+                      <p className="text-muted-foreground text-sm">
+                        {formatInr(ticket.price ?? 0)} each
+                      </p>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          setQuantity(index, (quantities[index] ?? 0) - 1)
+                        }
+                        disabled={(quantities[index] ?? 0) <= 0}
+                      >
+                        −
+                      </Button>
+
+                      <span className="w-8 text-center font-medium tabular-nums">
+                        {quantities[index] ?? 0}
+                      </span>
+
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          setQuantity(index, (quantities[index] ?? 0) + 1)
+                        }
+                        disabled={
+                          spotsAvailable > 0 && totalQuantity >= spotsAvailable
+                        }
+                      >
+                        +
+                      </Button>
+                    </div>
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        setQuantity(index, (quantities[index] ?? 0) - 1)
-                      }
-                      disabled={(quantities[index] ?? 0) <= 0}
-                    >
-                      −
-                    </Button>
-
-                    <span className="w-8 text-center font-medium tabular-nums">
-                      {quantities[index] ?? 0}
-                    </span>
-
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        setQuantity(index, (quantities[index] ?? 0) + 1)
-                      }
-                      disabled={
-                        spotsAvailable > 0 && totalQuantity >= spotsAvailable
-                      }
-                    >
-                      +
-                    </Button>
+                  {/* description */}
+                  <div className="">
+                    {ticket.description?.trim() && (
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        {ticket.description.trim()}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}

@@ -63,43 +63,51 @@ const CheckoutTicketSelection = ({
           return (
             <li
               key={ticket.code}
-              className="border-border bg-card flex items-center justify-between gap-4 rounded-lg border p-3"
+              className="border-border bg-card gap-4 space-y-2 rounded-lg border p-3"
             >
-              <div className="min-w-0">
-                <p className="font-medium">{ticket.label}</p>
+              <div className="flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="font-medium">{ticket.label}</p>
 
-                <p className="text-muted-foreground text-sm">
-                  {formatInr(ticket.price ?? 0)} each
+                  <p className="text-muted-foreground text-sm">
+                    {formatInr(ticket.price ?? 0)} each
+                  </p>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuantity(ticket.code, qty - 1)}
+                    disabled={qty <= 0}
+                  >
+                    −
+                  </Button>
+
+                  <span className="w-8 text-center font-medium tabular-nums">
+                    {qty}
+                  </span>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuantity(ticket.code, qty + 1)}
+                    disabled={
+                      spotsAvailable > 0 && totalQuantity >= spotsAvailable
+                    }
+                  >
+                    +
+                  </Button>
+                </div>
+              </div>
+
+              {ticket.description?.trim() && (
+                <p className="text-muted-foreground text-xs">
+                  {ticket.description.trim()}
                 </p>
-              </div>
-
-              <div className="flex shrink-0 items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(ticket.code, qty - 1)}
-                  disabled={qty <= 0}
-                >
-                  −
-                </Button>
-
-                <span className="w-8 text-center font-medium tabular-nums">
-                  {qty}
-                </span>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(ticket.code, qty + 1)}
-                  disabled={
-                    spotsAvailable > 0 && totalQuantity >= spotsAvailable
-                  }
-                >
-                  +
-                </Button>
-              </div>
+              )}
             </li>
           );
         })}
