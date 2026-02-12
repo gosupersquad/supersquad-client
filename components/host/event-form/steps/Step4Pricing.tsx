@@ -1,6 +1,5 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 import RequiredMark from "@/components/custom/required-mark";
@@ -17,6 +16,8 @@ import type {
   ExperienceFAQ,
   MediaItem,
 } from "@/types";
+
+import CustomQuestionsSection from "./CustomQuestionsSection";
 
 /** Slugify label for ticket code: lowercase, hyphens, alphanumeric only. */
 function slugifyCode(label: string): string {
@@ -75,7 +76,22 @@ export const buildEventCreatePayload = (
   faqs,
 
   tickets,
-  customQuestions: customQuestions.length > 0 ? customQuestions : undefined,
+  customQuestions:
+    customQuestions.length > 0
+      ? customQuestions.map((q) => {
+          const type = q.type ?? "string";
+          return {
+            label: q.label,
+            required: q.required,
+            type,
+            ...(type === "dropDown" && q.options?.length
+              ? {
+                  options: q.options.map((o) => o.trim()).filter(Boolean),
+                }
+              : {}),
+          };
+        })
+      : undefined,
 });
 
 export interface Step4PricingProps {
@@ -132,20 +148,6 @@ const Step4Pricing = ({
     setTickets(tickets.filter((_, i) => i !== index));
   };
 
-  const addQuestion = () => {
-    setCustomQuestions([...customQuestions, { label: "", required: false }]);
-  };
-
-  const updateQuestion = (index: number, updates: Partial<EventQuestion>) => {
-    setCustomQuestions(
-      customQuestions.map((q, i) => (i === index ? { ...q, ...updates } : q)),
-    );
-  };
-
-  const removeQuestion = (index: number) => {
-    setCustomQuestions(customQuestions.filter((_, i) => i !== index));
-  };
-
   const handleSubmit = () => {
     const hasInvalidTicket = tickets.some(
       (t) => !t.label.trim() || typeof t.price !== "number" || t.price < 0,
@@ -159,6 +161,19 @@ const Step4Pricing = ({
     const hasInvalidQuestion = customQuestions.some((q) => !q.label.trim());
     if (hasInvalidQuestion) {
       toast.error("Custom questions must have a label or be removed.");
+      return;
+    }
+
+    const hasInvalidDropdown = customQuestions.some(
+      (q) =>
+        (q.type ?? "string") === "dropDown" &&
+        (!q.options?.length || !q.options.some((o) => o.trim())),
+    );
+
+    if (hasInvalidDropdown) {
+      toast.error(
+        "Dropdown questions must have at least one option with text.",
+      );
       return;
     }
 
@@ -280,76 +295,11 @@ const Step4Pricing = ({
         </Button>
       </FieldGroup>
 
-      <FieldGroup className="gap-4">
-        <FieldLabel>Custom questions (optional)</FieldLabel>
-
-        <p className="text-muted-foreground text-sm">
-          Extra questions for each attendee at checkout (e.g. &quot;Are you
-          above 18?&quot;). Fixed fields (name, email, phone, Instagram) are
-          always collected.
-        </p>
-
-        {customQuestions.length > 0 && (
-          <ul className="flex flex-col gap-3">
-            {customQuestions.map((q, index) => (
-              <li
-                key={index}
-                className="border-border bg-card flex flex-col gap-2 rounded-lg border p-3 md:flex-row md:flex-wrap md:items-center md:gap-2"
-              >
-                <Input
-                  className="w-full min-w-0 md:min-w-[140px] md:flex-1"
-                  placeholder="Question label"
-                  value={q.label}
-                  onChange={(e) =>
-                    updateQuestion(index, { label: e.target.value })
-                  }
-                  disabled={isSubmitting}
-                />
-
-                <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={q.required}
-                      onChange={(e) =>
-                        updateQuestion(index, {
-                          required: e.target.checked,
-                        })
-                      }
-                      disabled={isSubmitting}
-                      className="border-border rounded"
-                    />
-                    Required
-                  </label>
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="xs"
-                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    onClick={() => removeQuestion(index)}
-                    disabled={isSubmitting}
-                    aria-label="Remove question"
-                  >
-                    <Trash2 className="size-4" />
-                    <span className="ml-1.5 md:hidden">Remove</span>
-                  </Button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={addQuestion}
-          disabled={isSubmitting}
-        >
-          Add custom question
-        </Button>
-      </FieldGroup>
+      <CustomQuestionsSection
+        customQuestions={customQuestions}
+        setCustomQuestions={setCustomQuestions}
+        isSubmitting={isSubmitting}
+      />
 
       <div className="flex justify-end gap-3 pt-2">
         <Button
