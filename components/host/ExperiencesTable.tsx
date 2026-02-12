@@ -115,11 +115,19 @@ const ExperiencesTable = ({
                 </div>
               </TableCell>
 
-              <TableCell>{event.spotsAvailable}</TableCell>
+              <TableCell>
+                {event.spotsAvailable === 0 ? (
+                  <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                    Sold out
+                  </span>
+                ) : (
+                  event.spotsAvailable
+                )}
+              </TableCell>
 
               <TableCell>
                 <div className="flex items-center gap-1">
-                  <Calendar className="size-4 text-muted-foreground" />
+                  <Calendar className="text-muted-foreground size-4" />
 
                   <span>{datesText}</span>
                 </div>

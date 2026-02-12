@@ -47,15 +47,24 @@ const ExperiencesCards = ({ events }: ExperiencesCardsProps) => {
             ? `/hosts/${user.username}/events/${event.slug}`
             : null;
 
+        const isSoldOut = event.spotsAvailable === 0;
+
         return (
           <div key={event._id} className="relative overflow-hidden rounded-xl">
             {imageUrl ? (
               <div
-                className="aspect-4/3 w-full rounded-t-xl bg-muted bg-cover bg-center"
+                className="bg-muted aspect-4/3 w-full rounded-t-xl bg-cover bg-center"
                 style={{ backgroundImage: `url(${imageUrl})` }}
               >
                 <div className="absolute inset-0 rounded-t-xl bg-linear-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                {isSoldOut && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-t-xl bg-black/50">
+                    <span className="text-lg font-semibold tracking-wider text-white uppercase">
+                      Sold Out
+                    </span>
+                  </div>
+                )}
+                <div className="absolute right-0 bottom-0 left-0 p-4 text-white">
                   <h3 className="truncate text-lg font-semibold">
                     {event.title}
                   </h3>
@@ -75,7 +84,14 @@ const ExperiencesCards = ({ events }: ExperiencesCardsProps) => {
                 </div>
               </div>
             ) : (
-              <div className="bg-muted aspect-4/3 w-full rounded-t-xl px-4 pb-4 pt-12">
+              <div className="bg-muted relative aspect-4/3 w-full rounded-t-xl px-4 pt-12 pb-4">
+                {isSoldOut && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-t-xl bg-black/50">
+                    <span className="text-lg font-semibold tracking-wider text-white uppercase">
+                      Sold Out
+                    </span>
+                  </div>
+                )}
                 <div className="flex h-full flex-col justify-end">
                   <h3 className="truncate text-lg font-semibold">
                     {event.title}
@@ -96,7 +112,7 @@ const ExperiencesCards = ({ events }: ExperiencesCardsProps) => {
               </div>
             )}
 
-            <div className="absolute right-2 top-2 flex gap-1.5">
+            <div className="absolute top-2 right-2 flex gap-1.5">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
