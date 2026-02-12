@@ -7,6 +7,7 @@ import RequiredMark from "@/components/custom/required-mark";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useEventFormStore } from "@/store/event-form-store";
 import type {
   CreateEventPayload,
@@ -245,6 +246,25 @@ const Step4Pricing = ({
                   />
                 </Field>
               </div>
+
+              <Field className="mt-3">
+                <FieldLabel htmlFor={`ticket-description-${index}`}>
+                  Description (optional)
+                </FieldLabel>
+                <Textarea
+                  id={`ticket-description-${index}`}
+                  placeholder="e.g. Includes entry, welcome drink, and goodie bag"
+                  value={ticket.description ?? ""}
+                  onChange={(e) =>
+                    updateTicket(index, {
+                      description: e.target.value || undefined,
+                    })
+                  }
+                  disabled={isSubmitting}
+                  rows={3}
+                  className="min-h-[80px] resize-y"
+                />
+              </Field>
             </li>
           ))}
         </ul>

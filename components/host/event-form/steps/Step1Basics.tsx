@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { addDays } from "date-fns";
 import DatePicker from "react-datepicker";
 import type { Resolver } from "react-hook-form";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -48,10 +47,10 @@ const step1Schema = z
     (data) => {
       const start = parseISOToDate(data.startDate);
       const end = parseISOToDate(data.endDate);
-      return start !== null && end !== null && end > start;
+      return start !== null && end !== null && end >= start;
     },
     {
-      message: "End date must be after start date",
+      message: "End date cannot be before start date",
       path: ["endDate"],
     },
   );
@@ -247,9 +246,8 @@ const Step1Basics = () => {
             control={form.control}
             render={({ field, fieldState }) => {
               const startParsed = startDate ? parseISOToDate(startDate) : null;
-              const minEnd = startParsed
-                ? addDays(startParsed, 1)
-                : startOfToday();
+              const minEnd = startParsed ?? startOfToday();
+
               return (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="event-end">

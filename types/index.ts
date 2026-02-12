@@ -28,6 +28,8 @@ export interface EventTicket {
   label: string;
   price: number;
   currency: "INR";
+  /** Optional description (e.g. benefits) shown on landing and checkout. */
+  description?: string;
 }
 
 /** Host-defined custom question for attendee form (label + required). */

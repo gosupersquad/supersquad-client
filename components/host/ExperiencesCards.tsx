@@ -57,6 +57,7 @@ const ExperiencesCards = ({ events }: ExperiencesCardsProps) => {
                 style={{ backgroundImage: `url(${imageUrl})` }}
               >
                 <div className="absolute inset-0 rounded-t-xl bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+
                 {isSoldOut && (
                   <div className="absolute inset-0 flex items-center justify-center rounded-t-xl bg-black/50">
                     <span className="text-lg font-semibold tracking-wider text-white uppercase">
@@ -64,6 +65,7 @@ const ExperiencesCards = ({ events }: ExperiencesCardsProps) => {
                     </span>
                   </div>
                 )}
+
                 <div className="absolute right-0 bottom-0 left-0 p-4 text-white">
                   <h3 className="truncate text-lg font-semibold">
                     {event.title}
@@ -92,6 +94,7 @@ const ExperiencesCards = ({ events }: ExperiencesCardsProps) => {
                     </span>
                   </div>
                 )}
+
                 <div className="flex h-full flex-col justify-end">
                   <h3 className="truncate text-lg font-semibold">
                     {event.title}
