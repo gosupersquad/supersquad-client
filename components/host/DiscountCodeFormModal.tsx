@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import type {
   CreateDiscountCodePayload,
   DiscountCodeResponse,
+  DiscountType,
   UpdateDiscountCodePayload,
 } from "@/lib/discount-codes-client";
 import {
@@ -29,6 +30,7 @@ import { cn } from "@/lib/utils";
 
 type FormState = {
   code: string;
+  type: DiscountType;
   amount: string;
   maxUsage: string;
   startsAt: string;
@@ -38,6 +40,7 @@ type FormState = {
 
 const emptyForm: FormState = {
   code: "",
+  type: "flat",
   amount: "",
   maxUsage: "",
   startsAt: "",
@@ -71,6 +74,7 @@ const DiscountCodeFormModal = ({
     if (editing) {
       setForm({
         code: editing.code,
+        type: editing.type,
         amount: String(editing.amount),
         maxUsage: editing.maxUsage != null ? String(editing.maxUsage) : "",
         startsAt: editing.startsAt
@@ -96,6 +100,11 @@ const DiscountCodeFormModal = ({
       return;
     }
 
+    if (form.type === "percentage" && amountNum > 100) {
+      toast.error("Percentage must be between 0 and 100");
+      return;
+    }
+
     if (form.startsAt && form.expiresAt) {
       if (new Date(form.expiresAt) <= new Date(form.startsAt)) {
         toast.error("End date must be after start date");
@@ -107,6 +116,7 @@ const DiscountCodeFormModal = ({
     try {
       if (isEdit) {
         const payload: UpdateDiscountCodePayload = {
+          type: form.type,
           amount: amountNum,
           isActive: form.isActive,
         };
@@ -132,7 +142,7 @@ const DiscountCodeFormModal = ({
 
         const payload: CreateDiscountCodePayload = {
           code,
-          type: "flat",
+          type: form.type,
           amount: amountNum,
           currency: "INR",
           isActive: form.isActive,
@@ -199,17 +209,42 @@ const DiscountCodeFormModal = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount (₹)</Label>
+            <Label htmlFor="type">Discount type</Label>
+
+            <select
+              id="type"
+              value={form.type}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  type: e.target.value as DiscountType,
+                }))
+              }
+              disabled={isEdit}
+              className="border-input bg-background focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Discount type"
+            >
+              <option value="flat">Flat (₹ off)</option>
+              <option value="percentage">Percentage (% off)</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="amount">
+              {form.type === "percentage" ? "Percentage (%)" : "Amount (₹)"}
+            </Label>
+
             <Input
               id="amount"
               type="number"
               min={0}
-              step={0.1}
+              max={form.type === "percentage" ? 100 : undefined}
+              step={form.type === "percentage" ? 1 : 0.1}
               value={form.amount}
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, amount: e.target.value }))
               }
-              placeholder="100"
+              placeholder={form.type === "percentage" ? "10" : "100"}
               required
             />
           </div>

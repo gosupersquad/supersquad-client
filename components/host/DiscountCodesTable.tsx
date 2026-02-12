@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/tooltip";
 import type { DiscountCodeResponse } from "@/lib/discount-codes-client";
 import {
+  cn,
   formatDiscountCodeDiscount,
   formatDiscountCodeUsage,
   formatDiscountCodeValidity,
@@ -46,9 +47,12 @@ const DiscountCodesTable = ({
       <TableHeader>
         <TableRow>
           <TableHead>Code</TableHead>
+          <TableHead>Type</TableHead>
+
           <TableHead>Discount</TableHead>
           <TableHead>Validity</TableHead>
           <TableHead>Usage</TableHead>
+
           <TableHead>Status</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
@@ -62,13 +66,28 @@ const DiscountCodesTable = ({
           return (
             <TableRow key={item._id}>
               <TableCell className="font-medium">{item.code}</TableCell>
+
+              <TableCell
+                className={cn(
+                  "uppercase",
+                  item.type === "percentage"
+                    ? "text-amber-500"
+                    : "text-green-500",
+                )}
+              >
+                {item.type}
+              </TableCell>
+
               <TableCell>{formatDiscountCodeDiscount(item)}</TableCell>
+
               <TableCell>
                 <div className="flex items-center gap-1">
                   <Calendar className="text-muted-foreground size-4" />
+
                   <span>{formatDiscountCodeValidity(item)}</span>
                 </div>
               </TableCell>
+
               <TableCell>{formatDiscountCodeUsage(item)}</TableCell>
 
               <TableCell>

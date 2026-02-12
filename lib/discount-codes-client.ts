@@ -4,9 +4,11 @@ import { getApiBaseUrl } from "./api-client";
 
 // --- Public (checkout, no auth) ---
 
+export type DiscountType = "percentage" | "flat";
+
 export interface PublicDiscountCodeItem {
   code: string;
-  type: "percentage" | "flat";
+  type: DiscountType;
   amount: number;
   currency: string;
 }
@@ -61,7 +63,7 @@ export interface DiscountCodeResponse {
   _id: string;
   hostId: string;
   code: string;
-  type: "percentage" | "flat";
+  type: DiscountType;
   amount: number;
   currency: string;
   maxUsage?: number;
@@ -73,10 +75,10 @@ export interface DiscountCodeResponse {
   updatedAt: string;
 }
 
-/** Create payload. v1: flat only (no percentage). experienceId/experienceType omitted. */
+/** Create payload. experienceId/experienceType omitted. */
 export interface CreateDiscountCodePayload {
   code: string;
-  type: "flat";
+  type: DiscountType;
   amount: number;
   currency: "INR";
   maxUsage?: number;
@@ -85,8 +87,9 @@ export interface CreateDiscountCodePayload {
   isActive?: boolean;
 }
 
-/** Update payload (partial). Code and type not sent on edit (read-only in UI). v1: flat only. */
+/** Update payload (partial). Code not sent on edit. */
 export interface UpdateDiscountCodePayload {
+  type?: DiscountType;
   amount?: number;
   maxUsage?: number;
   startsAt?: string;
