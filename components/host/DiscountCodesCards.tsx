@@ -39,7 +39,9 @@ const DiscountCodesCards = ({
               <p className="font-semibold">{item.code}</p>
 
               <p className="text-muted-foreground mt-0.5 text-sm">
-                ₹{item.amount} off
+                {item.type === "percentage"
+                  ? `${item.amount}% off (percentage)`
+                  : `₹${item.amount} off (flat)`}
               </p>
 
               <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
