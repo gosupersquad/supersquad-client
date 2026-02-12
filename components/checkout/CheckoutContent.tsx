@@ -126,9 +126,9 @@ const CheckoutContentInner = ({
     );
 
     const discountAmount = appliedDiscount
-      ? appliedDiscount.type === "flat"
-        ? Math.min(appliedDiscount.amount, entryFee)
-        : 0
+      ? appliedDiscount.type === "percentage"
+        ? Math.min((entryFee * appliedDiscount.amount) / 100, entryFee)
+        : Math.min(appliedDiscount.amount, entryFee)
       : 0;
 
     const subtotalAfterDiscount = entryFee - discountAmount;
@@ -168,7 +168,7 @@ const CheckoutContentInner = ({
         if (result.valid && result.discount) {
           setAppliedDiscount({
             code: code.trim().toUpperCase(),
-            type: "flat",
+            type: result.discount.type ?? "flat",
             amount: result.discount.amount,
             currency: result.discount.currency,
             discountCodeId: result.discount.discountCodeId,
@@ -255,13 +255,18 @@ const CheckoutContentInner = ({
         };
       }),
       expectedTotal,
-      discountAmount:
-        appliedDiscount && appliedDiscount.type === "flat"
-          ? Math.min(
-              appliedDiscount.amount,
-              breakdown.reduce((s, r) => s + r.quantity * r.unitPrice, 0),
-            )
-          : undefined,
+      discountAmount: (() => {
+        if (!appliedDiscount) return undefined;
+
+        const entryFee = breakdown.reduce(
+          (s, r) => s + r.quantity * r.unitPrice,
+          0,
+        );
+
+        return appliedDiscount.type === "percentage"
+          ? Math.min((entryFee * appliedDiscount.amount) / 100, entryFee)
+          : Math.min(appliedDiscount.amount, entryFee);
+      })(),
       discountCodeId: appliedDiscount?.discountCodeId,
     };
 

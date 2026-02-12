@@ -67,12 +67,15 @@ export function formatDiscountCodeValidity(item: DiscountCodeDisplayFields): str
 }
 
 export function formatDiscountCodeDiscount(item: DiscountCodeDisplayFields): string {
-  return `₹${item.amount}`
+  return (item.type === "percentage" ? `${item.amount}%` : `₹${item.amount}`)
 }
 
-/** Checkout/public: flat discount label (v1 flat only). e.g. "₹20 off". */
-export function formatPublicDiscountLabel(amount: number): string {
-  return `₹${amount} off`
+/** Checkout/public: discount label. e.g. "₹20 off" or "10% off". */
+export function formatPublicDiscountLabel(
+  amount: number,
+  type: "flat" | "percentage" = "flat",
+): string {
+  return type === "percentage" ? `${amount}% off` : `₹${amount} off`
 }
 
 export function formatDiscountCodeUsage(item: DiscountCodeDisplayFields): string {

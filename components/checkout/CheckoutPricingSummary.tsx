@@ -27,9 +27,9 @@ const CheckoutPricingSummary = ({
   );
 
   const discountAmount = appliedDiscount
-    ? appliedDiscount.type === "flat"
-      ? Math.min(appliedDiscount.amount, entryFee)
-      : 0
+    ? appliedDiscount.type === "percentage"
+      ? Math.min((entryFee * appliedDiscount.amount) / 100, entryFee)
+      : Math.min(appliedDiscount.amount, entryFee)
     : 0;
 
   const subtotalAfterDiscount = entryFee - discountAmount;

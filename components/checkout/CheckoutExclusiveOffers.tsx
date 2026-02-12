@@ -26,16 +26,18 @@ const CheckoutExclusiveOffers = ({
         <div className="border-border bg-card flex items-center justify-between gap-2 rounded-xl border px-4 py-3">
           <span className="flex items-center gap-2">
             <Tag className="size-5 text-amber-500" />
+
             <span className="font-medium uppercase">
               {appliedDiscount.code}
             </span>
+
             <span className="text-muted-foreground text-sm">
-              {`₹${appliedDiscount.amount} off`}
-              {/* {appliedDiscount.type === "percentage"
+              {appliedDiscount.type === "percentage"
                 ? `${appliedDiscount.amount}% off`
-                : `₹${appliedDiscount.amount} off`} */}
+                : `₹${appliedDiscount.amount} off`}
             </span>
           </span>
+
           <Button
             type="button"
             variant="ghost"

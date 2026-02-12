@@ -6,7 +6,7 @@ import { getApiBaseUrl } from "./api-client";
 
 export interface PublicDiscountCodeItem {
   code: string;
-  type: string;
+  type: "percentage" | "flat";
   amount: number;
   currency: string;
 }

@@ -138,7 +138,7 @@ const OffersModal = ({
                       <div
                         className="border-border bg-card flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                         role="article"
-                        aria-label={`Coupon ${c.code}, ${formatPublicDiscountLabel(c.amount)}`}
+                        aria-label={`Coupon ${c.code}, ${formatPublicDiscountLabel(c.amount, c.type)}`}
                       >
                         <div className="flex min-w-0 items-center gap-3">
                           <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
@@ -151,7 +151,7 @@ const OffersModal = ({
                             </p>
 
                             <p className="text-muted-foreground text-sm">
-                              {formatPublicDiscountLabel(c.amount)}
+                              {formatPublicDiscountLabel(c.amount, c.type)}
                             </p>
                           </div>
                         </div>

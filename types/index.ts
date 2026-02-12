@@ -158,9 +158,13 @@ export interface BookingAttendee {
   customAnswers: Record<string, string>;
 }
 
-/** Minimal fields for discount code display formatting (used by utils). v1: flat only (type not used). */
+/** Discount type: flat (₹ off) or percentage (% off). */
+export type DiscountType = "flat" | "percentage";
+
+/** Minimal fields for discount code display formatting (used by utils). */
 export interface DiscountCodeDisplayFields {
   amount: number;
+  type?: DiscountType;
   usedCount?: number;
   maxUsage?: number | null;
   startsAt?: string;
@@ -172,10 +176,10 @@ export interface DiscountCodeDisplayFields {
 /** Discount applied at checkout. discountCodeId set when validated so create-order can send it. */
 export interface AppliedDiscount {
   code: string;
-  type: "flat";
+  type: DiscountType;
   amount: number;
   currency: string;
-  discountCodeId: string;
+  discountCodeId?: string;
 }
 
 // --- Payments (create-order, verify) ---
