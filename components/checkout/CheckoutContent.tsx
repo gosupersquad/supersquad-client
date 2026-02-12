@@ -17,7 +17,7 @@ import {
 import { validateDiscountCode } from "@/lib/discount-codes-client";
 import { createOrder } from "@/lib/payment-client";
 import { getPublicEvent } from "@/lib/public-event-client";
-import { generateOrderId } from "@/lib/utils";
+import { cn, generateOrderId } from "@/lib/utils";
 import type { AppliedDiscount, CreateOrderPayload, PublicEvent } from "@/types";
 
 import CheckoutAttendeeBlock, {
@@ -369,11 +369,17 @@ const CheckoutContentInner = ({
             />
 
             <Button
-              className="mb-14 w-full bg-emerald-500 text-base font-semibold text-white hover:bg-emerald-600 md:py-6"
+              className={cn(
+                "mb-14 w-full text-base font-semibold md:py-6",
+                event.spotsAvailable === 0
+                  ? "cursor-not-allowed bg-gray-400 text-white hover:bg-gray-400"
+                  : "bg-emerald-500 text-white hover:bg-emerald-600",
+              )}
               size="lg"
               onClick={handlePayAndReserve}
+              disabled={event.spotsAvailable === 0}
             >
-              Pay & Reserve Spot
+              {event.spotsAvailable === 0 ? "Sold out" : "Pay & Reserve Spot"}
             </Button>
           </div>
         </div>

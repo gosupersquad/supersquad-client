@@ -27,11 +27,17 @@ const CheckoutTicketSelection = ({
   const totalQuantity = breakdown.reduce((s, r) => s + r.quantity, 0);
 
   const setQuantity = (code: string, quantity: number) => {
+    const currentRowQty = breakdown.find((r) => r.code === code)?.quantity ?? 0;
+    const otherRowsTotal = totalQuantity - currentRowQty;
+
+    const maxForThisRow =
+      spotsAvailable > 0 ? Math.max(0, spotsAvailable - otherRowsTotal) : 0;
+
     const next = breakdown.map((r) =>
       r.code === code
         ? {
             ...r,
-            quantity: Math.max(0, Math.min(spotsAvailable || 999, quantity)),
+            quantity: Math.max(0, Math.min(maxForThisRow, quantity)),
           }
         : r,
     );

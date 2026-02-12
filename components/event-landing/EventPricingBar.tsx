@@ -148,11 +148,17 @@ const EventPricingBar = ({ tickets, spotsAvailable }: EventPricingBarProps) => {
         <span className="text-xl font-semibold">{priceLabel}</span>
 
         <Button
-          className="shrink-0 bg-emerald-500 text-base font-semibold text-white hover:bg-emerald-600 md:px-8 md:py-6 md:text-lg"
+          className={cn(
+            "shrink-0 text-base font-semibold md:px-8 md:py-6 md:text-lg",
+            spotsAvailable === 0
+              ? "cursor-not-allowed bg-gray-400 text-white hover:bg-gray-400"
+              : "bg-emerald-500 text-white hover:bg-emerald-600",
+          )}
           size="lg"
           onClick={onReserveFromBar}
+          disabled={spotsAvailable === 0}
         >
-          Reserve a spot
+          {spotsAvailable === 0 ? "Sold out" : "Reserve a spot"}
         </Button>
       </div>
 
