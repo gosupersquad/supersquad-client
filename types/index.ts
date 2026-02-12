@@ -32,10 +32,18 @@ export interface EventTicket {
   description?: string;
 }
 
-/** Host-defined custom question for attendee form (label + required). */
+/** Custom question type: free text or dropdown. Must match server QUESTION_TYPES. */
+export const QUESTION_TYPES = ["string", "dropDown"] as const;
+export type EventQuestionType = (typeof QUESTION_TYPES)[number];
+
+/** Host-defined custom question for attendee form. */
 export interface EventQuestion {
   label: string;
   required: boolean;
+  /** Default "string" (text input). Use "dropDown" for select; then options required. */
+  type?: EventQuestionType;
+  /** Options for dropDown type (ignored for string). */
+  options?: string[];
 }
 
 /** @deprecated Legacy single-price; use EventTicket[] for new events. */
@@ -123,10 +131,8 @@ export interface SnapshotTicket {
   currency: string;
 }
 
-export interface SnapshotQuestion {
-  label: string;
-  required: boolean;
-}
+/** Alias: Same shape as EventQuestion (snapshotted on Booking). */
+export type SnapshotQuestion = EventQuestion;
 
 /** Experience snapshot stored on Booking at creation time. */
 export interface ExperienceSnapshot {

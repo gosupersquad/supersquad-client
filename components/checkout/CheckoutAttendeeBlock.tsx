@@ -133,6 +133,8 @@ const CheckoutAttendeeBlock = forwardRef<
   );
 
   useEffect(() => {
+    // Sync form values to parent; unsubscribe on cleanup. React Hook Form watch() triggers this rule but is appropriate here.
+    // eslint-disable-next-line react-hooks/incompatible-library -- intentional use of form.watch for state sync
     const sub = form.watch((values) => {
       onChange(formValuesToData(values as AttendeeFormValues, customQuestions));
     });
@@ -253,6 +255,12 @@ const CheckoutAttendeeBlock = forwardRef<
             control={form.control}
             render={({ field, fieldState }) => {
               const value = (field.value ?? "") as string;
+              const isDropdown = q.type === "dropDown";
+
+              const options = (q.options ?? [])
+                .map((o) => o.trim())
+                .filter(Boolean);
+
               return (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={`attendee-${index}-q-${q.label}`}>
@@ -260,14 +268,33 @@ const CheckoutAttendeeBlock = forwardRef<
                     {q.required && <RequiredMark />}
                   </FieldLabel>
 
-                  <Input
-                    id={`attendee-${index}-q-${q.label}`}
-                    type="text"
-                    value={value}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    onBlur={field.onBlur}
-                    aria-invalid={fieldState.invalid}
-                  />
+                  {isDropdown && options.length > 0 ? (
+                    <select
+                      id={`attendee-${index}-q-${q.label}`}
+                      value={value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      onBlur={field.onBlur}
+                      aria-invalid={fieldState.invalid}
+                      className="border-input bg-background focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Select...</option>
+
+                      {options.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Input
+                      id={`attendee-${index}-q-${q.label}`}
+                      type="text"
+                      value={value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      onBlur={field.onBlur}
+                      aria-invalid={fieldState.invalid}
+                    />
+                  )}
 
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
