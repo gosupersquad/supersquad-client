@@ -209,8 +209,8 @@ export interface CreateOrderPayload {
   ticketBreakdown: Array<{ code: string; quantity: number; unitPrice: number }>;
   attendees: CreateOrderAttendee[];
   expectedTotal: number;
-  discountAmount?: number;
-  discountCodeId?: string;
+  /** Applied discount (id from validate, codeName e.g. SAVE20, amount in ₹). */
+  discountCode?: { id: string; codeName: string; amount: number };
 }
 
 export interface CreateOrderResult {

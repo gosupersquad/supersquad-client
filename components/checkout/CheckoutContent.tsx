@@ -255,19 +255,24 @@ const CheckoutContentInner = ({
         };
       }),
       expectedTotal,
-      discountAmount: (() => {
-        if (!appliedDiscount) return undefined;
+      discountCode: (() => {
+        if (!appliedDiscount?.discountCodeId) return undefined;
 
         const entryFee = breakdown.reduce(
           (s, r) => s + r.quantity * r.unitPrice,
           0,
         );
+        const amountInRupees =
+          appliedDiscount.type === "percentage"
+            ? Math.min((entryFee * appliedDiscount.amount) / 100, entryFee)
+            : Math.min(appliedDiscount.amount, entryFee);
 
-        return appliedDiscount.type === "percentage"
-          ? Math.min((entryFee * appliedDiscount.amount) / 100, entryFee)
-          : Math.min(appliedDiscount.amount, entryFee);
+        return {
+          id: appliedDiscount.discountCodeId,
+          codeName: appliedDiscount.code,
+          amount: amountInRupees,
+        };
       })(),
-      discountCodeId: appliedDiscount?.discountCodeId,
     };
 
     try {
