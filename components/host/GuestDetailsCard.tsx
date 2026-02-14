@@ -127,35 +127,26 @@ const GuestDetailsCard = ({ attendee, booking }: GuestDetailsCardProps) => {
         </div>
       </div>
 
-      {/* Ticket type and price for this attendee (per-ticket, not booking total) */}
+      {/* Ticket (type + list price) and booking total (amount actually paid for this order) */}
       <div className="border-border mt-4 flex flex-wrap gap-4 border-t pt-4">
         <div>
           <span className="text-muted-foreground text-sm">Ticket</span>
-          <p className="font-medium capitalize">{ticketLabel}</p>
+          <p className="font-medium capitalize">
+            {ticketLabel} — ₹{ticketPrice.toFixed(2)}
+          </p>
         </div>
 
         <div>
-          <span className="text-muted-foreground text-sm">Price</span>
+          <span className="text-muted-foreground text-sm">
+            Booking total (this order)
+          </span>
           <p className="font-medium text-green-600 dark:text-green-400">
-            ₹{ticketPrice.toFixed(2)}
+            {booking.totalAmount === 0
+              ? "Free"
+              : `₹${booking.totalAmount.toFixed(2)}`}
           </p>
         </div>
       </div>
-
-      {/* Part payment not used for events; kept for reference
-      <div className="border-border mt-4 flex flex-wrap gap-4 border-t pt-4">
-        <div>
-          <span className="text-muted-foreground text-sm">Amount Paid</span>
-          <p className="font-medium text-green-600 dark:text-green-400">
-            ₹{booking.totalAmount.toFixed(2)}
-          </p>
-        </div>
-        <div>
-          <span className="text-muted-foreground text-sm">Remaining</span>
-          <p className="text-muted-foreground font-medium">₹0.00</p>
-        </div>
-      </div>
-      */}
     </div>
   );
 };

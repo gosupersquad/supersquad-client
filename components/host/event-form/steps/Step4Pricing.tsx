@@ -76,7 +76,9 @@ export const buildEventCreatePayload = (
   media,
   faqs,
 
-  tickets,
+  tickets: basics.isFreeRsvp
+    ? tickets.map((t) => ({ ...t, price: 0 }))
+    : tickets,
   isFreeRsvp: basics.isFreeRsvp ?? false,
   customQuestions:
     customQuestions.length > 0
@@ -202,9 +204,13 @@ const Step4Pricing = ({
 
           <Switch
             checked={basics.isFreeRsvp ?? false}
-            onCheckedChange={(checked) =>
-              setBasics({ isFreeRsvp: checked === true })
-            }
+            onCheckedChange={(checked) => {
+              setBasics({ isFreeRsvp: checked === true });
+
+              if (checked === true) {
+                setTickets(tickets.map((t) => ({ ...t, price: 0 })));
+              }
+            }}
             disabled={isSubmitting}
           />
         </div>
@@ -261,7 +267,8 @@ const Step4Pricing = ({
 
                 <Field>
                   <FieldLabel htmlFor={`ticket-price-${index}`}>
-                    Price (₹) <RequiredMark />
+                    Price (₹){" "}
+                    {!(basics.isFreeRsvp ?? false) && <RequiredMark />}
                   </FieldLabel>
 
                   <Input
@@ -270,14 +277,21 @@ const Step4Pricing = ({
                     min={0}
                     step={1}
                     placeholder="0"
-                    value={ticket.price === 0 ? "" : ticket.price}
+                    value={
+                      basics.isFreeRsvp
+                        ? 0
+                        : ticket.price === 0
+                          ? ""
+                          : ticket.price
+                    }
                     onChange={(e) => {
+                      if (basics.isFreeRsvp) return;
                       const v = e.target.valueAsNumber;
                       updateTicket(index, {
                         price: Number.isFinite(v) ? v : 0,
                       });
                     }}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (basics.isFreeRsvp ?? false)}
                   />
                 </Field>
               </div>
@@ -286,6 +300,7 @@ const Step4Pricing = ({
                 <FieldLabel htmlFor={`ticket-description-${index}`}>
                   Description (optional)
                 </FieldLabel>
+
                 <Textarea
                   id={`ticket-description-${index}`}
                   placeholder="e.g. Includes entry, welcome drink, and goodie bag"
