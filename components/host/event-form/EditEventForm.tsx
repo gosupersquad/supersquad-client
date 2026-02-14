@@ -65,6 +65,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
       startDate,
       endDate,
       dateDisplayText: event.dateDisplayText ?? "",
+      isFreeRsvp: event.isFreeRsvp ?? false,
       isActive: event.isActive,
     });
     setMedia(event.media ?? []);

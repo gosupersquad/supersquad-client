@@ -21,6 +21,7 @@ const defaultBasics: EventFormBasics = {
   startDate: "",
   endDate: "",
   dateDisplayText: "",
+  isFreeRsvp: false,
   isActive: true,
 };
 

@@ -2,7 +2,7 @@
 
 import { load } from "@cashfreepayments/cashfree-js";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -94,6 +94,8 @@ const CheckoutContentInner = ({
   username,
   eventSlug,
 }: CheckoutContentInnerProps) => {
+  const router = useRouter();
+
   const [breakdown, setBreakdown] = useState<TicketBreakdownItem[]>(() =>
     getInitialBreakdown(event, username, eventSlug),
   );
@@ -278,6 +280,20 @@ const CheckoutContentInner = ({
     try {
       const result = await createOrder(payload);
 
+      if (result.freeRsvp) {
+        router.push(
+          `/hosts/${username}/events/${eventSlug}/payment/status?order_id=${result.orderId}`,
+        );
+        return;
+      }
+
+      if (!result.sessionId) {
+        toast.error(
+          "Payment could not be loaded. Please try again. No session ID.",
+        );
+        return;
+      }
+
       const cashfreeEnv =
         (process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT as
           | "sandbox"
@@ -317,6 +333,7 @@ const CheckoutContentInner = ({
     event._id,
     username,
     eventSlug,
+    router,
   ]);
 
   const host = event.hostId;
@@ -389,7 +406,11 @@ const CheckoutContentInner = ({
               onClick={handlePayAndReserve}
               disabled={event.spotsAvailable === 0}
             >
-              {event.spotsAvailable === 0 ? "Sold out" : "Pay & Reserve Spot"}
+              {event.spotsAvailable === 0
+                ? "Sold out"
+                : event.isFreeRsvp
+                  ? "Reserve spot"
+                  : "Pay & Reserve Spot"}
             </Button>
           </div>
         </div>

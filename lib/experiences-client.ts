@@ -23,6 +23,7 @@ export interface EventResponse {
   faqs: { question: string; answer: string }[];
   tickets: EventTicket[];
   customQuestions?: EventQuestion[];
+  isFreeRsvp?: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

@@ -6,6 +6,7 @@ import RequiredMark from "@/components/custom/required-mark";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useEventFormStore } from "@/store/event-form-store";
 import type {
@@ -76,6 +77,7 @@ export const buildEventCreatePayload = (
   faqs,
 
   tickets,
+  isFreeRsvp: basics.isFreeRsvp ?? false,
   customQuestions:
     customQuestions.length > 0
       ? customQuestions.map((q) => {
@@ -115,6 +117,7 @@ const Step4Pricing = ({
     customQuestions,
     setTickets,
     setCustomQuestions,
+    setBasics,
     prevStep,
   } = useEventFormStore();
 
@@ -190,6 +193,23 @@ const Step4Pricing = ({
 
   return (
     <div className="space-y-8">
+      <FieldGroup className="gap-4">
+        <div className="border-border flex items-center justify-between gap-4 rounded-lg border p-4">
+          <FieldLabel className="text-muted-foreground font-normal">
+            Free RSVP — no payment required; guests reserve a spot and go
+            straight to confirmation.
+          </FieldLabel>
+
+          <Switch
+            checked={basics.isFreeRsvp ?? false}
+            onCheckedChange={(checked) =>
+              setBasics({ isFreeRsvp: checked === true })
+            }
+            disabled={isSubmitting}
+          />
+        </div>
+      </FieldGroup>
+
       <FieldGroup className="gap-4">
         <FieldLabel>Tickets</FieldLabel>
 

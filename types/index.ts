@@ -66,6 +66,7 @@ export interface CreateEventPayload {
   faqs: ExperienceFAQ[];
   tickets: EventTicket[];
   customQuestions?: EventQuestion[];
+  isFreeRsvp?: boolean;
 }
 
 /** Payload for PUT /api/v1/admin/experiences/:id (update). Partial of create. */
@@ -81,6 +82,7 @@ export interface EventFormBasics {
   startDate: string;
   endDate: string;
   dateDisplayText: string;
+  isFreeRsvp?: boolean;
   isActive: boolean;
 }
 
@@ -110,6 +112,8 @@ export interface PublicEvent {
   faqs: ExperienceFAQ[];
   tickets: EventTicket[];
   customQuestions?: EventQuestion[];
+  /** When true, no payment; reserve creates a paid booking and redirects to success. */
+  isFreeRsvp?: boolean;
   isActive: boolean;
 }
 
@@ -215,7 +219,10 @@ export interface CreateOrderPayload {
 
 export interface CreateOrderResult {
   orderId: string;
-  sessionId: string;
+  /** Omitted when freeRsvp is true. */
+  sessionId?: string;
+  /** True when event is free RSVP; redirect to payment/status?order_id=... */
+  freeRsvp?: boolean;
 }
 
 export interface VerifyPaymentResult {
