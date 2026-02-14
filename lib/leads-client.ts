@@ -27,6 +27,7 @@ export interface LeadsAttendee {
 
 /** Single booking in leads detail. */
 export interface LeadsBooking {
+  id: string;
   ticketBreakdown: { code: string; quantity: number; unitPrice: number }[];
   attendees: LeadsAttendee[];
   totalAmount: number;

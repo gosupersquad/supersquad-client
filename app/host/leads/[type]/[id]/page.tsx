@@ -1,10 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Search } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
+
+import { Input } from "@/components/ui/input";
 
 import EventCard from "@/components/host/EventCard";
 import GuestDetailsCard from "@/components/host/GuestDetailsCard";
@@ -37,6 +40,33 @@ export default function HostLeadsDetailPage() {
       getLeadsDetail(id!, token!, (type as "event" | "trip") ?? "event"),
     enabled: !!token && !!id,
   });
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const allAttendees = useMemo(() => {
+    if (!detail?.bookings) return [];
+
+    const out: { attendee: LeadsAttendee; booking: LeadsBooking }[] = [];
+    detail.bookings.forEach((b) => {
+      b.attendees.forEach((a) => out.push({ attendee: a, booking: b }));
+    });
+
+    return out;
+  }, [detail]);
+
+  const filteredAttendees = useMemo(() => {
+    if (!searchQuery.trim()) return allAttendees;
+
+    const q = searchQuery.trim().toLowerCase();
+
+    return allAttendees.filter(
+      ({ attendee }) =>
+        attendee.name.toLowerCase().includes(q) ||
+        attendee.email.toLowerCase().includes(q) ||
+        attendee.phone.includes(q) ||
+        (attendee.instagram?.toLowerCase().includes(q) ?? false),
+    );
+  }, [allAttendees, searchQuery]);
 
   if (type !== "event") {
     return (
@@ -114,11 +144,6 @@ export default function HostLeadsDetailPage() {
     .filter((b) => b.paymentStatus === "paid")
     .reduce((sum, b) => sum + b.attendees.length, 0);
 
-  const allAttendees: { attendee: LeadsAttendee; booking: LeadsBooking }[] = [];
-  detail.bookings.forEach((b) => {
-    b.attendees.forEach((a) => allAttendees.push({ attendee: a, booking: b }));
-  });
-
   return (
     <div className="space-y-6 p-6">
       <Link
@@ -156,67 +181,54 @@ export default function HostLeadsDetailPage() {
         </div>
       </div>
 
-      {/* Bookings (short list) */}
+      {/* Bookings */}
       <section>
         <h2 className="text-lg font-semibold">Bookings</h2>
-
         <p className="text-muted-foreground mt-0.5 text-sm">
           {totalConfirmed} spot{totalConfirmed !== 1 ? "s" : ""} confirmed
         </p>
-
-        <ul className="mt-3 space-y-2">
-          {detail.bookings.map((booking, idx) => {
-            const primaryName =
-              booking.attendees[0]?.name ?? `Booking ${idx + 1}`;
-            return (
-              <li
-                key={idx}
-                className="border-border bg-muted/30 flex flex-wrap items-center justify-between gap-2 rounded-lg border px-4 py-3"
-              >
-                <span className="font-medium">{primaryName}</span>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">
-                    ₹{booking.totalAmount.toFixed(2)}{" "}
-                    {booking.paymentStatus === "paid"
-                      ? "paid"
-                      : booking.paymentStatus}
-                  </span>
-
-                  <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-0.5 text-xs font-medium">
-                    {booking.paymentStatus === "paid"
-                      ? "confirmed"
-                      : booking.paymentStatus}
-                  </span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-
         {detail.bookings.length === 0 && (
           <p className="text-muted-foreground mt-2 text-sm">No bookings yet.</p>
         )}
       </section>
 
-      {/* Attendees (Guest Details cards) */}
+      {/* Guest details: search + cards */}
       {allAttendees.length > 0 && (
         <section>
           <h2 className="text-lg font-semibold">Guest details</h2>
-
           <p className="text-muted-foreground mt-0.5 text-sm">
             One card per attendee
           </p>
+          <div className="relative mt-3">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
 
-          <div className="mt-3 grid gap-4 sm:grid-cols-2">
-            {allAttendees.map(({ attendee, booking }, idx) => (
+            <Input
+              placeholder="Search by name, email, phone, Instagram…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {filteredAttendees.map(({ attendee, booking }, idx) => (
               <GuestDetailsCard
-                key={`${booking.createdAt}-${attendee.email}-${idx}`}
+                key={
+                  booking.id
+                    ? `${booking.id}-${attendee.email}-${idx}`
+                    : `${booking.createdAt}-${attendee.email}-${idx}`
+                }
                 attendee={attendee}
                 booking={booking}
               />
             ))}
           </div>
+
+          {filteredAttendees.length === 0 && (
+            <p className="text-muted-foreground mt-4 text-sm">
+              No attendees match your search.
+            </p>
+          )}
         </section>
       )}
     </div>
