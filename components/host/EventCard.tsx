@@ -32,7 +32,7 @@ const EventCard = ({ event, linkHref, actions }: EventCardProps) => {
     <div className="relative overflow-hidden rounded-xl">
       {imageUrl ? (
         <div
-          className="bg-muted aspect-4/3 w-full rounded-t-xl bg-cover bg-center"
+          className="bg-muted aspect-4/3 w-full rounded-t-xl bg-cover bg-center lg:h-[50vh]"
           style={{ backgroundImage: `url(${imageUrl})` }}
         >
           <div className="absolute inset-0 rounded-t-xl bg-linear-to-t from-black/80 via-black/20 to-transparent" />
