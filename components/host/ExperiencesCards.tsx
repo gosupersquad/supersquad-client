@@ -3,7 +3,7 @@
 import { ExternalLink, Pencil } from "lucide-react";
 import Link from "next/link";
 
-import EventCard, { type EventCardData } from "@/components/host/EventCard";
+import EventCard from "@/components/host/EventCard";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -11,23 +11,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { EventResponse } from "@/lib/experiences-client";
+import { toEventCardData } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
 
 interface ExperiencesCardsProps {
   events: EventResponse[];
 }
-
-const toEventCardData = (e: EventResponse): EventCardData => {
-  return {
-    id: e._id,
-    title: e.title,
-    location: e.location ?? "",
-    startDate: e.startDate,
-    endDate: e.endDate,
-    media: e.media ?? [],
-    spotsAvailable: e.spotsAvailable,
-  };
-};
 
 export default function ExperiencesCards({ events }: ExperiencesCardsProps) {
   const user = useAuthStore((s) => s.user);
@@ -55,10 +44,12 @@ export default function ExperiencesCards({ events }: ExperiencesCardsProps) {
                   </Link>
                 </Button>
               </TooltipTrigger>
+
               <TooltipContent>
                 <p>Edit event</p>
               </TooltipContent>
             </Tooltip>
+
             {viewLiveHref && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -77,6 +68,7 @@ export default function ExperiencesCards({ events }: ExperiencesCardsProps) {
                     </Link>
                   </Button>
                 </TooltipTrigger>
+
                 <TooltipContent>
                   <p>View live</p>
                 </TooltipContent>

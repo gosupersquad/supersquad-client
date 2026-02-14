@@ -2,7 +2,7 @@ import { clsx, type ClassValue } from "clsx"
 import { format, parseISO, startOfDay } from "date-fns"
 import toast from "react-hot-toast"
 import { twMerge } from "tailwind-merge"
-import type { DiscountCodeDisplayFields } from "@/types"
+import type { DiscountCodeDisplayFields, MediaItem } from "@/types"
 
 /** Copy text to clipboard; show toast on success or failure. */
 export function copyToClipboard(text: string, label: string): void {
@@ -49,6 +49,37 @@ export function formatDateToISO(date: Date): string {
   return format(date, "yyyy-MM-dd")
 }
 
+/**
+ * Format event start/end dates for display. Used by EventCard and ExperiencesTable.
+ * Same day: "14 February '26". Multi-day: "14 Feb - 15 February '26".
+ */
+export function formatEventDates(
+  startDate: string,
+  endDate: string,
+): { startFormatted: string; endFormatted: string; datesText: string } {
+  if (!startDate || !endDate) {
+    return { startFormatted: "", endFormatted: "", datesText: "No dates" }
+  }
+
+  const start = parseISO(startDate.slice(0, 10))
+  const end = parseISO(endDate.slice(0, 10))
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return { startFormatted: "", endFormatted: "", datesText: "No dates" }
+  }
+
+  const startFormatted = format(start, "d MMM")
+  const endFormatted = format(end, "d MMMM ''yy")
+
+  const isSameDay = start.getTime() === end.getTime()
+
+  const datesText = isSameDay
+    ? format(start, "d MMMM ''yy")
+    : `${startFormatted} - ${endFormatted}`
+
+  return { startFormatted, endFormatted, datesText }
+}
+
 /** Event duration from start/end date strings. Returns "X Days" or null for single-day. */
 export function getEventDuration(startDate: string, endDate: string): string | null {
   const start = parseISO(startDate.slice(0, 10))
@@ -91,4 +122,43 @@ export function formatDiscountCodeUsage(item: DiscountCodeDisplayFields): string
   const used = item.usedCount ?? 0
   if (item.maxUsage == null) return `${used} / ∞`
   return `${used} / ${item.maxUsage}`
+}
+
+// --- Event card (single source for list + detail; DRY) ---
+
+/** Minimal event shape for EventCard. Used by Experiences list, Leads list, and Leads detail. */
+export interface EventCardData {
+  id: string
+  title: string
+  location: string
+  startDate: string
+  endDate: string
+  media: MediaItem[]
+  /** If provided, show "Sold out" overlay when 0. */
+  spotsAvailable?: number
+}
+
+/** Any event-like object (EventResponse has _id, EventLeadsListItem/EventLeadsDetail have id). */
+type EventLike = {
+  id?: string
+  _id?: string
+  title: string
+  location?: string | null
+  startDate: string
+  endDate: string
+  media?: MediaItem[] | null
+  spotsAvailable?: number
+}
+
+/** Normalize event-like payloads to EventCardData. Use in ExperiencesCards, leads list, leads detail. */
+export function toEventCardData(event: EventLike): EventCardData {
+  return {
+    id: event.id ?? event._id ?? "",
+    title: event.title,
+    location: event.location ?? "",
+    startDate: event.startDate,
+    endDate: event.endDate,
+    media: event.media ?? [],
+    spotsAvailable: event.spotsAvailable,
+  }
 }

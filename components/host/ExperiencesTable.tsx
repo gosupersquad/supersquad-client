@@ -1,6 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
 import { Calendar, ExternalLink, Pencil } from "lucide-react";
 import Link from "next/link";
 
@@ -20,7 +19,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { EventResponse } from "@/lib/experiences-client";
-import { getEventDuration } from "@/lib/utils";
+import { formatEventDates, getEventDuration } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
 
 interface ExperiencesTableProps {
@@ -56,18 +55,10 @@ const ExperiencesTable = ({
           const isToggling = isTogglingId === event._id;
           const duration = getEventDuration(event.startDate, event.endDate);
 
-          const startFormatted = event.startDate
-            ? format(new Date(event.startDate), "d MMM")
-            : "";
-
-          const endFormatted = event.endDate
-            ? format(new Date(event.endDate), "d MMM, yy")
-            : "";
-
-          const datesText =
-            startFormatted && endFormatted
-              ? `${startFormatted} – ${endFormatted}`
-              : "No dates";
+          const { datesText } = formatEventDates(
+            event.startDate,
+            event.endDate,
+          );
 
           const viewLiveHref =
             user?.username && event.slug

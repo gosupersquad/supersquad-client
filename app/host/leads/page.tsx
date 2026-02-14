@@ -5,23 +5,12 @@ import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
-import EventCard, { type EventCardData } from "@/components/host/EventCard";
-import { listLeads, type EventLeadsListItem } from "@/lib/leads-client";
+import EventCard from "@/components/host/EventCard";
+import { listLeads } from "@/lib/leads-client";
+import { toEventCardData } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
 
 const LEADS_QUERY_KEY = ["leads"];
-
-const toEventCardData = (e: EventLeadsListItem): EventCardData => {
-  return {
-    id: e.id,
-    title: e.title,
-    location: e.location ?? "",
-    startDate: e.startDate,
-    endDate: e.endDate,
-    media: e.media ?? [],
-    spotsAvailable: e.spotsAvailable,
-  };
-};
 
 const HostLeadsPage = () => {
   const router = useRouter();

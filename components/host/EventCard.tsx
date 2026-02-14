@@ -1,20 +1,10 @@
 "use client";
 
-import { format } from "date-fns";
 import { Calendar, MapPin } from "lucide-react";
 import Link from "next/link";
 
-/** Minimal event shape shared by Experiences and Leads list. */
-export interface EventCardData {
-  id: string;
-  title: string;
-  location: string;
-  startDate: string;
-  endDate: string;
-  media: { url: string; type: string }[];
-  /** If provided, show "Sold out" overlay when 0. */
-  spotsAvailable?: number;
-}
+import type { EventCardData } from "@/lib/utils";
+import { formatEventDates } from "@/lib/utils";
 
 interface EventCardProps {
   event: EventCardData;
@@ -24,24 +14,15 @@ interface EventCardProps {
   actions?: React.ReactNode;
 }
 
+export type { EventCardData };
+
 function getCardImageUrl(event: EventCardData): string | null {
   const image = event.media?.find((m) => m.type === "image");
   return image?.url ?? null;
 }
 
 const EventCard = ({ event, linkHref, actions }: EventCardProps) => {
-  const startFormatted = event.startDate
-    ? format(new Date(event.startDate), "d")
-    : "";
-
-  const endFormatted = event.endDate
-    ? format(new Date(event.endDate), "d MMMM ''yy")
-    : "";
-
-  const datesText =
-    startFormatted && endFormatted
-      ? `${startFormatted} to ${endFormatted}`
-      : "No dates";
+  const { datesText } = formatEventDates(event.startDate, event.endDate);
 
   const imageUrl = getCardImageUrl(event);
   const isSoldOut =
