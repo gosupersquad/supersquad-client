@@ -1,7 +1,16 @@
 import { clsx, type ClassValue } from "clsx"
 import { format, parseISO, startOfDay } from "date-fns"
+import toast from "react-hot-toast"
 import { twMerge } from "tailwind-merge"
 import type { DiscountCodeDisplayFields } from "@/types"
+
+/** Copy text to clipboard; show toast on success or failure. */
+export function copyToClipboard(text: string, label: string): void {
+  navigator.clipboard.writeText(text).then(
+    () => toast.success(`${label} copied`),
+    () => toast.error("Could not copy"),
+  )
+}
 
 /** Alphanumeric order id for Cashfree (max 50 chars). Client-safe: 12 hex chars from 6 random bytes. */
 export function generateOrderId(): string {

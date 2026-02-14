@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutGrid, Map, User } from "lucide-react";
+import { FileText, LayoutGrid, Map, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth-store";
@@ -11,11 +11,8 @@ const HostDashboardPage = () => {
 
   const quickLinks = [
     { label: "Experiences", href: "/host/experiences", icon: Map },
-    {
-      label: "More (Leads, Coupons, etc.)",
-      href: "/host/more",
-      icon: LayoutGrid,
-    },
+    { label: "Leads", href: "/host/leads", icon: FileText },
+    { label: "More (Coupons, etc.)", href: "/host/more", icon: LayoutGrid },
     { label: "Account", href: "/host/account", icon: User },
   ] as const;
 
