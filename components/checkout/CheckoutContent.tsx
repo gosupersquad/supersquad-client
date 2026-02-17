@@ -391,11 +391,13 @@ const CheckoutContentInner = ({
               </section>
             )}
 
-            <CheckoutExclusiveOffers
-              appliedDiscount={appliedDiscount}
-              onOpenCoupons={() => setCouponModalOpen(true)}
-              onRemoveCoupon={handleRemoveCoupon}
-            />
+            {!event.isFreeRsvp && (
+              <CheckoutExclusiveOffers
+                appliedDiscount={appliedDiscount}
+                onOpenCoupons={() => setCouponModalOpen(true)}
+                onRemoveCoupon={handleRemoveCoupon}
+              />
+            )}
 
             <CheckoutPricingSummary
               breakdown={breakdown}
