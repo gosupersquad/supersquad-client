@@ -79,7 +79,7 @@ const HostExperiencesPage = () => {
   if (isLoading) {
     return (
       <div className="flex min-h-[200px] items-center justify-center p-6">
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-2">
           <Loader2 className="size-4 animate-spin" />
 
           <span>Loading events…</span>
@@ -128,7 +128,7 @@ const HostExperiencesPage = () => {
       </div>
 
       <div className="relative">
-        <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+        <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
 
         <Input
           placeholder="Search by title or slug…"
@@ -161,6 +161,15 @@ const HostExperiencesPage = () => {
               }
             />
           </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              throw new Error("New Sentry Error");
+            }}
+          >
+            Break the world
+          </button>
         </>
       )}
     </div>
