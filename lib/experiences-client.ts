@@ -126,20 +126,32 @@ export async function createEvent(
   payload: CreateEventPayload,
   token: string
 ): Promise<EventResponse> {
-  const { data } = await axios.post<ApiResponse<EventResponse>>(
-    EXPERIENCES_BASE(),
-    payload,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+  try {
+    const { data } = await axios.post<ApiResponse<EventResponse>>(
+      EXPERIENCES_BASE(),
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!data.data) {
+      throw new Error("Invalid response from server");
     }
-  );
 
-  if (!data.data) {
-    throw new Error("Invalid response from server");
+    return data.data;
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.data) {
+      const body = err.response.data as { message?: string };
+
+      if (typeof body.message === "string" && body.message) {
+        throw new Error(body.message);
+      }
+    }
+
+    throw err;
   }
-
-  return data.data;
 }
