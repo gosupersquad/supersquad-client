@@ -161,15 +161,6 @@ const HostExperiencesPage = () => {
               }
             />
           </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              throw new Error("New Sentry Error");
-            }}
-          >
-            Break the world
-          </button>
         </>
       )}
     </div>
