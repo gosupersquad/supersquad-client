@@ -2,6 +2,7 @@
 
 import { load } from "@cashfreepayments/cashfree-js";
 import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -109,6 +110,7 @@ const CheckoutContentInner = ({
   const [couponModalOpen, setCouponModalOpen] = useState(false);
   const [appliedDiscount, setAppliedDiscount] =
     useState<AppliedDiscount | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const attendeeBlockRefs = useRef<(CheckoutAttendeeBlockHandle | null)[]>([]);
 
   const slots = useMemo(
@@ -277,6 +279,7 @@ const CheckoutContentInner = ({
       })(),
     };
 
+    setIsSubmitting(true);
     try {
       const result = await createOrder(payload);
 
@@ -291,6 +294,7 @@ const CheckoutContentInner = ({
         toast.error(
           "Payment could not be loaded. Please try again. No session ID.",
         );
+        setIsSubmitting(false);
         return;
       }
 
@@ -302,6 +306,7 @@ const CheckoutContentInner = ({
       const cashfree = await load({ mode: cashfreeEnv });
       if (!cashfree) {
         toast.error("Payment could not be loaded. Please try again.");
+        setIsSubmitting(false);
         return;
       }
 
@@ -314,6 +319,7 @@ const CheckoutContentInner = ({
 
       if (checkoutResult.error) {
         toast.error(checkoutResult.error.message ?? "Checkout failed");
+        setIsSubmitting(false);
         return;
       }
 
@@ -323,6 +329,7 @@ const CheckoutContentInner = ({
     } catch (e) {
       const message = e instanceof Error ? e.message : "Something went wrong";
       toast.error(message);
+      setIsSubmitting(false);
     }
   }, [
     slots,
@@ -398,19 +405,26 @@ const CheckoutContentInner = ({
             <Button
               className={cn(
                 "mb-14 w-full text-base font-semibold md:py-6",
-                event.spotsAvailable === 0
+                event.spotsAvailable === 0 || isSubmitting
                   ? "cursor-not-allowed bg-gray-400 text-white hover:bg-gray-400"
                   : "bg-emerald-500 text-white hover:bg-emerald-600",
               )}
               size="lg"
               onClick={handlePayAndReserve}
-              disabled={event.spotsAvailable === 0}
+              disabled={event.spotsAvailable === 0 || isSubmitting}
             >
-              {event.spotsAvailable === 0
-                ? "Sold out"
-                : event.isFreeRsvp
-                  ? "Reserve spot"
-                  : "Pay & Reserve Spot"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Processing…
+                </>
+              ) : event.spotsAvailable === 0 ? (
+                "Sold out"
+              ) : event.isFreeRsvp ? (
+                "Reserve spot"
+              ) : (
+                "Pay & Reserve Spot"
+              )}
             </Button>
           </div>
         </div>
