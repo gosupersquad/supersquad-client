@@ -58,6 +58,8 @@ export interface OrderSummary {
     quantity: number;
     unitPrice: number;
   }[];
+  /** Applied coupon: code name and discount amount in ₹. */
+  discountCode?: { codeName: string; amount: number };
   totalAmount: number;
 }
 

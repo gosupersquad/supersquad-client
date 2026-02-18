@@ -76,6 +76,13 @@ export function OrderSummaryCard({
           ))}
         </ul>
 
+        {summary.discountCode && (
+          <div className="mt-2 flex justify-between text-sm text-green-400/90">
+            <span>Discount ({summary.discountCode.codeName})</span>
+            <span>-₹{summary.discountCode.amount.toFixed(2)}</span>
+          </div>
+        )}
+
         <div className="mt-2 flex justify-between text-sm text-gray-400">
           <span>Subtotal</span>
           <span>₹{subtotal.toFixed(2)}</span>
