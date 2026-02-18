@@ -30,7 +30,7 @@ import CheckoutHero from "./CheckoutHero";
 import CheckoutPricingSummary from "./CheckoutPricingSummary";
 import CheckoutTicketSelection from "./CheckoutTicketSelection";
 import OffersModal from "./OffersModal";
-import { GST_PERCENT } from "@/lib/constants";
+import { computeGstFromSubtotal } from "@/lib/pricing";
 
 type Params = {
   username: string;
@@ -136,9 +136,9 @@ const CheckoutContentInner = ({
       : 0;
 
     const subtotalAfterDiscount = entryFee - discountAmount;
-    const gst = (subtotalAfterDiscount * GST_PERCENT) / 100;
+    const { total } = computeGstFromSubtotal(subtotalAfterDiscount);
 
-    return Math.round((subtotalAfterDiscount + gst) * 100) / 100;
+    return total;
   }, [breakdown, appliedDiscount]);
 
   const setAttendee = useCallback((index: number, data: AttendeeFormData) => {

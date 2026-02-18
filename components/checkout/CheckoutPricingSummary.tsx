@@ -1,7 +1,7 @@
 "use client";
 
 import type { TicketBreakdownItem } from "@/lib/checkout-tickets";
-import { GST_PERCENT } from "@/lib/constants";
+import { computeGstFromSubtotal, GST_PERCENT } from "@/lib/pricing";
 import type { AppliedDiscount } from "@/types";
 
 const formatInr = (amount: number) =>
@@ -33,8 +33,7 @@ const CheckoutPricingSummary = ({
     : 0;
 
   const subtotalAfterDiscount = entryFee - discountAmount;
-  const gst = (subtotalAfterDiscount * GST_PERCENT) / 100;
-  const toPay = subtotalAfterDiscount + gst;
+  const { gst, total: toPay } = computeGstFromSubtotal(subtotalAfterDiscount);
 
   return (
     <div className="border-border bg-card sticky top-24 space-y-3 rounded-xl border p-4">

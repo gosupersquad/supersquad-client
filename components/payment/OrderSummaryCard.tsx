@@ -5,6 +5,7 @@ import { Calendar, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { getOrderSummary, type OrderSummary } from "@/lib/payment-client";
+import { getSubtotalAndGstFromTotal, GST_PERCENT } from "@/lib/pricing";
 import { formatEventDates } from "@/lib/utils";
 
 interface OrderSummaryCardProps {
@@ -25,6 +26,8 @@ export function OrderSummaryCard({
   }, [orderId]);
 
   if (!summary) return null;
+
+  const { subtotal, gst } = getSubtotalAndGstFromTotal(summary.totalAmount);
 
   return (
     <motion.div
@@ -72,6 +75,16 @@ export function OrderSummaryCard({
             </li>
           ))}
         </ul>
+
+        <div className="mt-2 flex justify-between text-sm text-gray-400">
+          <span>Subtotal</span>
+          <span>₹{subtotal.toFixed(2)}</span>
+        </div>
+
+        <div className="flex justify-between text-sm text-gray-400">
+          <span>GST ({GST_PERCENT}%)</span>
+          <span>₹{gst.toFixed(2)}</span>
+        </div>
 
         <div className="mt-2 flex justify-between border-t border-gray-700 pt-2 text-sm font-semibold text-white">
           <span>Total</span>
