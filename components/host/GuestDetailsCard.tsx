@@ -140,7 +140,13 @@ const GuestDetailsCard = ({ attendee, booking }: GuestDetailsCardProps) => {
           <span className="text-muted-foreground text-sm">
             Booking total (this order)
           </span>
-          <p className="font-medium text-green-600 dark:text-green-400">
+          <p
+            className={
+              booking.paymentStatus === "paid"
+                ? "font-medium text-green-600 dark:text-green-400"
+                : "font-medium text-red-600 dark:text-red-400"
+            }
+          >
             {booking.totalAmount === 0
               ? "Free"
               : `₹${booking.totalAmount.toFixed(2)}`}

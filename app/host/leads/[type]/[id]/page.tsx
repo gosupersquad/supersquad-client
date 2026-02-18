@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import EventCard from "@/components/host/EventCard";
@@ -18,6 +19,8 @@ import {
 } from "@/lib/leads-client";
 import { toEventCardData } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
+
+type ViewMode = "confirmed" | "abandoned";
 
 export default function HostLeadsDetailPage() {
   const params = useParams();
@@ -42,6 +45,7 @@ export default function HostLeadsDetailPage() {
   });
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("confirmed");
 
   const allAttendees = useMemo(() => {
     if (!detail?.bookings) return [];
@@ -54,19 +58,31 @@ export default function HostLeadsDetailPage() {
     return out;
   }, [detail]);
 
+  const attendeesByView = useMemo(() => {
+    if (viewMode === "confirmed") {
+      return allAttendees.filter(
+        ({ booking }) => booking.paymentStatus === "paid",
+      );
+    }
+
+    return allAttendees.filter(
+      ({ booking }) => booking.paymentStatus !== "paid",
+    );
+  }, [allAttendees, viewMode]);
+
   const filteredAttendees = useMemo(() => {
-    if (!searchQuery.trim()) return allAttendees;
+    if (!searchQuery.trim()) return attendeesByView;
 
     const q = searchQuery.trim().toLowerCase();
 
-    return allAttendees.filter(
+    return attendeesByView.filter(
       ({ attendee }) =>
         attendee.name.toLowerCase().includes(q) ||
         attendee.email.toLowerCase().includes(q) ||
         attendee.phone.includes(q) ||
         (attendee.instagram?.toLowerCase().includes(q) ?? false),
     );
-  }, [allAttendees, searchQuery]);
+  }, [attendeesByView, searchQuery]);
 
   if (type !== "event") {
     return (
@@ -107,6 +123,7 @@ export default function HostLeadsDetailPage() {
 
       return null;
     }
+
     return (
       <div className="p-6">
         <Link
@@ -142,6 +159,10 @@ export default function HostLeadsDetailPage() {
 
   const totalConfirmed = detail.bookings
     .filter((b) => b.paymentStatus === "paid")
+    .reduce((sum, b) => sum + b.attendees.length, 0);
+
+  const totalAbandoned = detail.bookings
+    .filter((b) => b.paymentStatus !== "paid")
     .reduce((sum, b) => sum + b.attendees.length, 0);
 
   return (
@@ -181,24 +202,62 @@ export default function HostLeadsDetailPage() {
         </div>
       </div>
 
-      {/* Bookings */}
+      {/* Bookings: toggle Confirmed / Abandoned Carts */}
       <section>
         <h2 className="text-lg font-semibold">Bookings</h2>
-        <p className="text-muted-foreground mt-0.5 text-sm">
-          {totalConfirmed} spot{totalConfirmed !== 1 ? "s" : ""} confirmed
-        </p>
-        {detail.bookings.length === 0 && (
-          <p className="text-muted-foreground mt-2 text-sm">No bookings yet.</p>
+
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <div className="border-input bg-muted/30 flex rounded-lg border p-0.5">
+            <Button
+              type="button"
+              variant={viewMode === "confirmed" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-md"
+              onClick={() => setViewMode("confirmed")}
+            >
+              Confirmed
+            </Button>
+
+            <Button
+              type="button"
+              variant={viewMode === "abandoned" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-md"
+              onClick={() => setViewMode("abandoned")}
+            >
+              Abandoned Carts
+            </Button>
+          </div>
+
+          <p className="text-muted-foreground text-sm">
+            {viewMode === "confirmed"
+              ? `${totalConfirmed} spot${totalConfirmed !== 1 ? "s" : ""} confirmed`
+              : `${totalAbandoned} abandoned`}
+          </p>
+        </div>
+
+        {viewMode === "confirmed" && totalConfirmed === 0 && (
+          <p className="text-muted-foreground mt-2 text-sm">
+            No confirmed bookings yet.
+          </p>
+        )}
+
+        {viewMode === "abandoned" && totalAbandoned === 0 && (
+          <p className="text-muted-foreground mt-2 text-sm">
+            No abandoned carts.
+          </p>
         )}
       </section>
 
-      {/* Guest details: search + cards */}
-      {allAttendees.length > 0 && (
+      {/* Guest details: search + cards (only for current view) */}
+      {attendeesByView.length > 0 && (
         <section>
           <h2 className="text-lg font-semibold">Guest details</h2>
+
           <p className="text-muted-foreground mt-0.5 text-sm">
             One card per attendee
           </p>
+
           <div className="relative mt-3">
             <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
 
