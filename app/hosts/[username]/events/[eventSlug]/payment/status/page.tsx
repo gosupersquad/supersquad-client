@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
+import { OrderSummaryCard } from "@/components/payment/OrderSummaryCard";
 import { verifyPayment } from "@/lib/payment-client";
 
 type DisplayStatus = "VERIFYING" | "SUCCESS" | "PENDING" | "FAILED";
@@ -77,8 +78,9 @@ const PaymentStatusInner = () => {
     if (!orderId || verificationAttempted.current) return;
 
     const verify = async () => {
+      verificationAttempted.current = true;
+
       try {
-        verificationAttempted.current = true;
         const result = await verifyPayment(orderId);
         setDisplayStatus(mapApiStatusToDisplay(result.status));
       } catch {
@@ -149,7 +151,9 @@ const PaymentStatusInner = () => {
           {config.message}
         </p>
 
-        <div className="mt-4 flex flex-col justify-center gap-3 md:mt-6 md:flex-row">
+        {orderId && <OrderSummaryCard orderId={orderId} />}
+
+        <div className="mt-6 flex flex-col justify-center gap-3 md:mt-8 md:flex-row">
           {displayStatus === "FAILED" && (
             <button
               type="button"

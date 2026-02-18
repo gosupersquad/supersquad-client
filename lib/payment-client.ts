@@ -44,3 +44,37 @@ export async function verifyPayment(
 
   return data.data;
 }
+
+/** Order summary for payment status page (event title, dates, tickets, total). */
+export interface OrderSummary {
+  orderId: string;
+  eventTitle: string;
+  startDate: string;
+  endDate: string;
+  location?: string;
+  ticketBreakdown: {
+    code: string;
+    label?: string;
+    quantity: number;
+    unitPrice: number;
+  }[];
+  totalAmount: number;
+}
+
+/** Fetch order summary by orderId. Returns null if not found (e.g. 404). */
+export async function getOrderSummary(
+  orderId: string
+): Promise<OrderSummary | null> {
+  try {
+    const { data } = await axios.get<ApiResponse<OrderSummary>>(
+      `${PAYMENTS_BASE()}/order-summary`,
+      { params: { orderId } }
+    );
+
+    if (!data.success || !data.data) return null;
+
+    return data.data;
+  } catch {
+    return null;
+  }
+}
