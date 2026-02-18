@@ -1,6 +1,9 @@
 import axios from "axios";
 import type { ApiResponse } from "@/types";
+
 import { getApiBaseUrl } from "./api-client";
+import type { AuthRole } from "./constants";
+
 
 export interface LoginResult {
   token: string;
@@ -10,6 +13,7 @@ export interface LoginResult {
     username: string;
     email: string;
   };
+  role: AuthRole;
 }
 
 export async function login(

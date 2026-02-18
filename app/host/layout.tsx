@@ -5,16 +5,19 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import HostShell from "@/components/host/HostShell";
+import { ROLES } from "@/lib/constants";
 import { useAuthStore } from "@/store/auth-store";
 
 const LOGIN_PATH = "/host/login";
-const DASHBOARD_PATH = "/host/dashboard";
+export const DASHBOARD_PATH = "/host/dashboard";
+export const MASTER_PATH = "/admin/master";
 
 const HostLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const router = useRouter();
 
   const token = useAuthStore((s) => s.token);
+  const role = useAuthStore((s) => s.role);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -36,11 +39,11 @@ const HostLayout = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // 🚫 Authenticated user on login page
+    // 🚫 Authenticated user on login page → redirect by role
     if (isAuthenticated && isLoginPage) {
-      router.replace(DASHBOARD_PATH);
+      router.replace(role === ROLES.MASTER ? MASTER_PATH : DASHBOARD_PATH);
     }
-  }, [mounted, pathname, token, router]);
+  }, [mounted, pathname, token, role, router]);
 
   // Login page: no shell, render as-is
   if (pathname === LOGIN_PATH) {
@@ -50,7 +53,7 @@ const HostLayout = ({ children }: { children: React.ReactNode }) => {
   // Protected: wait for mount + auth check before showing content (avoids flash then redirect)
   if (!mounted || !token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="bg-background flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground text-sm">Loading…</p>
       </div>
     );

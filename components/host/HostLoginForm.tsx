@@ -8,6 +8,8 @@ import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
 
+import { DASHBOARD_PATH, MASTER_PATH } from "@/app/host/layout";
+import RequiredMark from "@/components/custom/required-mark";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,7 +25,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import RequiredMark from "@/components/custom/required-mark";
 import {
   InputGroup,
   InputGroupAddon,
@@ -31,6 +32,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { login } from "@/lib/auth-client";
+import { ROLES } from "@/lib/constants";
 import { useAuthStore } from "@/store/auth-store";
 
 const loginSchema = z.object({
@@ -60,10 +62,12 @@ const HostLoginForm = () => {
 
     try {
       const result = await login(data.email, data.password);
-      setAuth(result.token, result.user);
+      setAuth(result.token, result.user, result.role);
 
       toast.success("Signed in successfully");
-      router.replace("/host/dashboard");
+      router.replace(
+        result.role === ROLES.MASTER ? MASTER_PATH : DASHBOARD_PATH,
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Invalid email or password");
     }
@@ -158,7 +162,7 @@ const HostLoginForm = () => {
 
               {error && (
                 <p
-                  className="text-center text-sm text-destructive"
+                  className="text-destructive text-center text-sm"
                   role="alert"
                 >
                   {error}
