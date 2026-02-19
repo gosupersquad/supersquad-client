@@ -2,7 +2,7 @@
 
 **Purpose:** Plan and track Master Admin Panel (MAP) **Hosts** tab: list all hosts, create host, update host. No delete. Approval flow and Pending tab are done; this doc is for Host CRUD only.
 
-**Status:** In progress – backend done; frontend Hosts list + Create/Update modals implemented.
+**Status:** Done – backend and frontend complete. Hosts list with client-side Fuse search (name/username), Create/Update modals using modular form components (HostFormBase, CreateHostForm, EditHostForm), isActive toggle in form.
 
 **Related:** Frontend context in [PROGRESS.md](./PROGRESS.md). Backend context in [server/docs/ROADMAP.md](../../server/docs/ROADMAP.md).
 
@@ -73,18 +73,17 @@ All require Bearer token + role = master.
    - Title: “Hosts”, short description (e.g. “Manage hosts”).
    - “Add host” button → opens **Create host modal**.
    - Content: **cards**. Each card: avatar/placeholder, name, username, image (if any), bio, isActive badge, instagram, **Edit** button (opens **Update host modal**).
-   - Optional: search by name/username (client-side only for now).
+   - **Client-side Fuse search** by **name** and **username** (fuzzy; search input above the grid). Empty search shows all hosts; no results shows "No hosts match your search."
    - Loading and empty states.
 
 2. **Create host (modal)**
-   - Form: name, username, email, password, **image** (upload via `upload-client.ts`, use returned url), bio, instagram (url?). **isActive = true** by default.
-   - Submit → POST `/hosts` → success: toast, close modal, invalidate list.
+   - Form (via **HostFormBase** + **CreateHostForm**): name, username, email, password, **image** (upload via `upload-client.ts`, folder `hosts`), bio, instagram URL, **isActive** toggle (default true). Submit/cancel labels hardcoded in base by mode.
+   - Submit → upload image if selected → POST `/hosts` → success: toast, close modal, invalidate list.
    - Cancel → close modal.
 
 3. **Update host (modal)**
-   - Load host with GET `/hosts/:id` when modal opens.
-   - Same fields as create; **password optional** (leave blank = no change).
-   - Submit → PUT `/hosts/:id` → success: toast, close modal, invalidate list.
+   - **EditHostForm** loads host with GET `/hosts/:id` when modal opens; renders **HostFormBase** in edit mode with same fields; **password optional** (leave blank = no change); **isActive** toggle (editable).
+   - Submit → upload new image if selected → PUT `/hosts/:id` → success: toast, close modal, invalidate list.
    - Cancel → close modal.
 
 ### 4.3 Client API
@@ -145,4 +144,4 @@ All require Bearer token + role = master.
 
 ---
 
-**Implementation:** Backend B1–B5 and frontend F1–F5 are done. Host API lives in `lib/master-admin/hosts-client.ts`. Upload client accepts `folder: "events" | "hosts"` for host images.
+**Implementation:** Backend B1–B5 and frontend F1–F6 are done. Host API lives in `lib/master-admin/hosts-client.ts`. Upload client accepts `folder: "events" | "hosts"` for host images. **Form architecture:** `components/host/host-form/HostFormBase.tsx` (shared form UI, Zod schemas, mode `create` | `edit`; submit/cancel labels derived from mode), `CreateHostForm.tsx` (create mutation, image upload, invalidation), `EditHostForm.tsx` (getHost query, update mutation, image upload). **List search:** Fuse.js client-side fuzzy search on keys `name` and `username` only (threshold 0.3); page state `searchQuery` and `filteredHosts` from `useMemo`.
