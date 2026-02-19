@@ -31,8 +31,9 @@
 
 ## Implemented (summary)
 
-- **Host:** Login, layout (guard + HostShell), dashboard, experiences list (table + cards, search, toggle status, edit, view live), event create/edit (4-step form, media upload, discount codes in checkout), discount codes CRUD, leads (list + detail, Confirmed/Abandoned toggle).
+- **Host:** Login, layout (guard + HostShell), dashboard, experiences list (table + cards, search, toggle status, edit, view live), **approval column + badges** (shared `ApprovalBadge`; Rejected shows info icon → click opens Dialog with reason; card variant has prominent icon on bright media), event create/edit (4-step form, media upload, discount codes in checkout), discount codes CRUD, leads (list + detail, Confirmed/Abandoned toggle).
 - **Public:** Event landing (SSR), checkout (tickets, attendees, coupons, Pay & Reserve / free RSVP), payment status page (verify, order summary).
+- **MAP:** Pending page (cards, search, approve/reject with reason), preview page (same event landing, pricing bar visible but disabled), 403 → redirect + toast.
 - **Auth:** Login with role; redirect by role; store has `role` for refresh/guards.
 
 ---
@@ -66,17 +67,17 @@ Use this list step-by-step; tick and review as we go. Order is intentional.
 
 ### D. Preview page
 
-| #   | Task                                                                                                                                                                                                   | Status |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| D1  | `app/admin/master/experiences/[id]/preview/page.tsx`: useParams id, useQuery `getExperienceForPreview(id)`.                                                                                            | [x]    |
-| D2  | Render **same event-landing component** as public event page; pass event from MAP API. Optional: hide or disable "Book" / checkout CTA for preview. "Back to Pending" link to `/admin/master/pending`. | [x]    |
+| #   | Task                                                                                                                                    | Status |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| D1  | `app/admin/master/experiences/[id]/preview/page.tsx`: useParams id, useQuery `getExperienceForPreview(id)`.                             | [x]    |
+| D2  | Render **same event-landing component** as public; pricing bar **shown** with button disabled ("Preview only"). "Back to Pending" link. | [x]    |
 
 ### E. Host dashboard – approval status
 
-| #   | Task                                                                                                                                                                                                 | Status |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| E1  | **ExperiencesTable:** Add column **Approval** (or integrate into Status): badge Pending (amber), Rejected (show `rejectedReason` in tooltip), Approved (green). Data already in event from list API. | [x]    |
-| E2  | **ExperiencesCards:** Add small approval badge per card (Pending / Rejected / Approved); Rejected: show reason on hover or under badge.                                                              | [x]    |
+| #   | Task                                                                                                                                                                                                                   | Status |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| E1  | **ExperiencesTable:** Add column **Approval** with shared **ApprovalBadge** (Pending amber, Approved green, Rejected red). When Rejected + reason: info icon button opens Dialog with reason (click, mobile-friendly). | [x]    |
+| E2  | **ExperiencesCards:** Approval badge per card via shared **ApprovalBadge** (`variant="card"`). Rejected + reason: info icon (prominent on card overlay) opens Dialog on click. No duplicate logic.                     | [x]    |
 
 ### F. Polish & review
 
@@ -95,4 +96,4 @@ Use this list step-by-step; tick and review as we go. Order is intentional.
 
 ---
 
-_Last updated: C1–C3 done (pending page cards, search, reject confirm + reason). robots.txt disallow /admin/master and /host/, allow public routes._
+_Last updated: E/F done. Shared ApprovalBadge (table + card); rejection reason via click (Dialog + info icon); card info icon prominent on bright media. Preview: pricing bar shown, button disabled. D–F complete._
