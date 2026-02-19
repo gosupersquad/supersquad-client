@@ -12,9 +12,14 @@ import EventPricingBar from "./EventPricingBar";
 
 interface EventLandingPageProps {
   event: PublicEvent;
+  /** When true, hide the Reserve/Book CTA (e.g. for master admin preview). */
+  preview?: boolean;
 }
 
-const EventLandingPage = ({ event }: EventLandingPageProps) => {
+const EventLandingPage = ({
+  event,
+  preview = false,
+}: EventLandingPageProps) => {
   const host = event.hostId;
 
   return (
@@ -43,10 +48,12 @@ const EventLandingPage = ({ event }: EventLandingPageProps) => {
         </main>
       </div>
 
-      <EventPricingBar
-        tickets={event.tickets}
-        spotsAvailable={event.spotsAvailable}
-      />
+      {!preview && (
+        <EventPricingBar
+          tickets={event.tickets}
+          spotsAvailable={event.spotsAvailable}
+        />
+      )}
     </div>
   );
 };

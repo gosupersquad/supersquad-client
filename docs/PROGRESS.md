@@ -68,8 +68,8 @@ Use this list step-by-step; tick and review as we go. Order is intentional.
 
 | #   | Task                                                                                                                                                                                                   | Status |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| D1  | `app/admin/master/experiences/[id]/preview/page.tsx`: useParams id, useQuery `getExperienceForPreview(id)`.                                                                                            | [ ]    |
-| D2  | Render **same event-landing component** as public event page; pass event from MAP API. Optional: hide or disable "Book" / checkout CTA for preview. "Back to Pending" link to `/admin/master/pending`. | [ ]    |
+| D1  | `app/admin/master/experiences/[id]/preview/page.tsx`: useParams id, useQuery `getExperienceForPreview(id)`.                                                                                            | [x]    |
+| D2  | Render **same event-landing component** as public event page; pass event from MAP API. Optional: hide or disable "Book" / checkout CTA for preview. "Back to Pending" link to `/admin/master/pending`. | [x]    |
 
 ### E. Host dashboard – approval status
 

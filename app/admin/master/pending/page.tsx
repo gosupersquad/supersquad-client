@@ -94,8 +94,8 @@ const PendingCard = ({ item, token }: PendingCardProps) => {
         <Link
           href={previewHref}
           className="w-full"
-          target="_blank"
-          rel="noopener noreferrer"
+          // target="_blank"
+          // rel="noopener noreferrer"
         >
           <Button variant="outline" size="sm" className="w-full">
             Preview
