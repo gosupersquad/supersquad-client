@@ -22,10 +22,9 @@ import { getFirstImageUrl } from "@/components/checkout/CheckoutHero";
 interface PendingCardProps {
   item: MasterEventListItem;
   token: string;
-  onAction: () => void;
 }
 
-const PendingCard = ({ item, token, onAction }: PendingCardProps) => {
+const PendingCard = ({ item, token }: PendingCardProps) => {
   const queryClient = useQueryClient();
 
   const approve = useMutation({
@@ -34,7 +33,6 @@ const PendingCard = ({ item, token, onAction }: PendingCardProps) => {
       queryClient.invalidateQueries({ queryKey: ["master", "pending"] });
       queryClient.invalidateQueries({ queryKey: ["master", "pending-count"] });
       toast.success("Approved");
-      onAction();
     },
     onError: (e: Error) => toast.error(e.message || "Failed to approve"),
   });
@@ -46,7 +44,6 @@ const PendingCard = ({ item, token, onAction }: PendingCardProps) => {
       queryClient.invalidateQueries({ queryKey: ["master", "pending"] });
       queryClient.invalidateQueries({ queryKey: ["master", "pending-count"] });
       toast.success("Rejected");
-      onAction();
     },
     onError: (e: Error) => toast.error(e.message || "Failed to reject"),
   });
@@ -200,12 +197,7 @@ const MasterPendingPage = () => {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredList.map((item) => (
-            <PendingCard
-              key={item.id}
-              item={item}
-              token={token!}
-              onAction={() => {}}
-            />
+            <PendingCard key={item.id} item={item} token={token!} />
           ))}
         </div>
       )}
