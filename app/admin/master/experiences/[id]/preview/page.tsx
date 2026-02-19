@@ -13,7 +13,7 @@ import { ROLES } from "@/lib/constants";
 import {
   getExperienceForPreview,
   isMasterForbidden,
-} from "@/lib/master-experiences-client";
+} from "@/lib/master-admin/experiences-client";
 import { useAuthStore } from "@/store/auth-store";
 
 const MasterExperiencePreviewPage = () => {

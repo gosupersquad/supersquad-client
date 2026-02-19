@@ -18,7 +18,7 @@ import {
   listPendingExperiences,
   setApproval,
   type MasterEventListItem,
-} from "@/lib/master-experiences-client";
+} from "@/lib/master-admin/experiences-client";
 import { useAuthStore } from "@/store/auth-store";
 
 interface PendingCardProps {

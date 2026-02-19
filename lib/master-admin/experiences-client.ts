@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { ApiResponse, MediaItem } from "@/types";
-import { getApiBaseUrl } from "./api-client";
-import type { EventResponse } from "./experiences-client";
+import { getApiBaseUrl } from "../api-client";
+import type { EventResponse } from "../experiences-client";
 import type { PublicEvent } from "@/types";
 
 const MASTER_EXPERIENCES_BASE = () =>
