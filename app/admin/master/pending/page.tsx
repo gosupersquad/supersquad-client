@@ -40,7 +40,8 @@ const PendingCard = ({ item, token, onAction }: PendingCardProps) => {
   });
 
   const reject = useMutation({
-    mutationFn: () => setApproval(item.id, { approved: false }, token),
+    mutationFn: (rejectedReason?: string) =>
+      setApproval(item.id, { approved: false, rejectedReason }, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["master", "pending"] });
       queryClient.invalidateQueries({ queryKey: ["master", "pending-count"] });
@@ -49,6 +50,19 @@ const PendingCard = ({ item, token, onAction }: PendingCardProps) => {
     },
     onError: (e: Error) => toast.error(e.message || "Failed to reject"),
   });
+
+  const handleReject = () => {
+    const confirmed = window.confirm(
+      "Reject this event? The host will see your reason (you can add it in the next step).",
+    );
+
+    if (!confirmed) return;
+
+    const reason = window.prompt("Reason for rejection (optional):", "");
+    if (reason === null) return; // user cancelled prompt
+
+    reject.mutate(reason.trim() || undefined);
+  };
 
   const imageUrl = getFirstImageUrl(item.media);
   const previewHref = `/admin/master/experiences/${item.id}/preview`;
@@ -96,7 +110,7 @@ const PendingCard = ({ item, token, onAction }: PendingCardProps) => {
             variant="destructive"
             size="sm"
             className="flex-1"
-            onClick={() => reject.mutate()}
+            onClick={handleReject}
             disabled={approve.isPending || reject.isPending}
           >
             <X className="mr-1 h-4 w-4" />

@@ -25,7 +25,7 @@
 
 - **Single app:** app.gosupersquad.com. Host routes: `app/host/*`. Master Admin: `app/admin/master/*`. Public: `/`, `/hosts/[username]/events/[eventSlug]` (and checkout, payment/status).
 - **Auth:** Zustand store (`token`, `user`, `role`); persisted. Login returns `role` ('host' | 'master'); redirect by role (master → `/admin/master`, host → `/host/dashboard`).
-- **robots.txt:** Must **Disallow** `/admin/master`. Static file or `app/robots.ts`.
+- **robots.txt:** `app/robots.ts` — Disallow `/admin/master` and `/host/` (host dashboard); allow only public routes (`/`, `/hosts/`, optionally `/host/login`).
 
 ---
 
@@ -58,11 +58,11 @@ Use this list step-by-step; tick and review as we go. Order is intentional.
 
 ### C. Pending approval tab
 
-| #   | Task                                                                                                                                                                                                                            | Status |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| C1  | `app/admin/master/pending/page.tsx`: useQuery list (`listPendingExperiences`), useQuery count (`getPendingCount`). Loading/empty states.                                                                                        | [ ]    |
-| C2  | Table: columns Title, Host (name/username), Dates, Actions. Actions: **Preview** (link to preview page), **Approve** (button → setApproval approved: true → invalidate list + count → toast), **Reject** (button → open modal). | [ ]    |
-| C3  | Reject modal: optional "Reason" text input; Confirm → setApproval(approved: false, rejectedReason) → invalidate → toast; Cancel closes.                                                                                         | [ ]    |
+| #   | Task                                                                                                                                                                                                             | Status |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| C1  | `app/admin/master/pending/page.tsx`: useQuery list (`listPendingExperiences`), useQuery count (`getPendingCount`). Loading/empty states.                                                                         | [x]    |
+| C2  | Cards (not table): image, Title, Host, **Preview** (link), **Approve** (green), **Reject** (→ confirm + reason). Fuse search by title/slug/host. Title, description, padding aligned with host experiences page. | [x]    |
+| C3  | Reject: `window.confirm` before reject; then `window.prompt` for optional reason → setApproval(approved: false, rejectedReason) → invalidate → toast.                                                            | [x]    |
 
 ### D. Preview page
 
@@ -95,4 +95,4 @@ Use this list step-by-step; tick and review as we go. Order is intentional.
 
 ---
 
-_Last updated: Added MAP & approval status actionable todos; trimmed old narrative; kept constraints, conventions, architecture summary._
+_Last updated: C1–C3 done (pending page cards, search, reject confirm + reason). robots.txt disallow /admin/master and /host/, allow public routes._
