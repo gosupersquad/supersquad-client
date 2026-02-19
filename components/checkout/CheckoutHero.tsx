@@ -3,10 +3,10 @@
 import { format, parseISO } from "date-fns";
 import type { MediaItem } from "@/types";
 
-function getFirstImageUrl(media: MediaItem[]): string | null {
+export const getFirstImageUrl = (media?: MediaItem[]): string | null => {
   const first = media?.find((m) => m.type === "image");
   return first?.url ?? null;
-}
+};
 
 interface CheckoutHeroProps {
   media: MediaItem[];

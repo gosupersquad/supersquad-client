@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ApiResponse } from "@/types";
+import type { ApiResponse, MediaItem } from "@/types";
 import { getApiBaseUrl } from "./api-client";
 import type { EventResponse } from "./experiences-client";
 import type { PublicEvent } from "@/types";
@@ -7,7 +7,7 @@ import type { PublicEvent } from "@/types";
 const MASTER_EXPERIENCES_BASE = () =>
   `${getApiBaseUrl()}/admin/master/experiences`;
 
-/** Slim list item for pending-approval table (title, host, dates, etc.). */
+/** Slim list item for pending-approval cards. */
 export interface MasterEventListItem {
   id: string;
   title: string;
@@ -18,6 +18,7 @@ export interface MasterEventListItem {
   startDate: string;
   endDate: string;
   createdAt: string;
+  media: MediaItem[];
 }
 
 export interface SetApprovalPayload {
