@@ -132,7 +132,7 @@ All require Bearer token + role = master.
 | F3  | **Create host modal**: form (name, username, email, password, image upload via upload-client folder=hosts, bio, instagram url; isActive = true). Submit → createHost → toast, close, invalidate list.                   | [x]    |
 | F4  | **Update host modal**: load host by id (getHost), same form with password optional. Submit → updateHost → toast, close, invalidate list.                                                                                | [x]    |
 | F5  | Ensure Hosts tab in MAP layout links to `/admin/master/hosts` and is active when on that path.                                                                                                                          | [x]    |
-| F6  | Optional: client-side search/filter on list by name/username.                                                                                                                                                           | [ ]    |
+| F6  | Optional: client-side search/filter on list by name/username.                                                                                                                                                           | [x]    |
 
 ---
 

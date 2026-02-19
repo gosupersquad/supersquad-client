@@ -1,10 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Pencil, User, UserPlus } from "lucide-react";
+import Fuse from "fuse.js";
+import { Loader2, Pencil, Search, User, UserPlus } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 import CreateHostForm from "@/components/host/host-form/CreateHostForm";
@@ -16,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ROLES } from "@/lib/constants";
 import { isMasterForbidden } from "@/lib/master-admin/experiences-client";
 import { listHosts, type HostListItem } from "@/lib/master-admin/hosts-client";
@@ -107,6 +109,8 @@ export default function MasterHostsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editHostId, setEditHostId] = useState<string | null>(null);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const {
     data: hosts = [],
     isLoading,
@@ -116,6 +120,17 @@ export default function MasterHostsPage() {
     queryFn: () => listHosts(token!),
     enabled: !!token && role === ROLES.MASTER,
   });
+
+  const filteredHosts = useMemo(() => {
+    if (!searchQuery.trim()) return hosts;
+
+    const fuse = new Fuse(hosts, {
+      keys: ["name", "username"],
+      threshold: 0.3,
+    });
+
+    return fuse.search(searchQuery.trim()).map((r) => r.item);
+  }, [hosts, searchQuery]);
 
   const hasHandled403 = useRef(false);
   useEffect(() => {
@@ -156,11 +171,31 @@ export default function MasterHostsPage() {
           No hosts yet. Add your first host to get started.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {hosts.map((host) => (
-            <HostCard key={host._id} host={host} onEdit={setEditHostId} />
-          ))}
-        </div>
+        <>
+          <div className="relative max-w-sm">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Input
+              type="search"
+              placeholder="Search by name or username…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+              aria-label="Search hosts"
+            />
+          </div>
+
+          {filteredHosts.length === 0 ? (
+            <div className="text-muted-foreground py-12 text-center">
+              No hosts match your search.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {filteredHosts.map((host) => (
+                <HostCard key={host._id} host={host} onEdit={setEditHostId} />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <Dialog
