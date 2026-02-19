@@ -25,6 +25,9 @@ export interface EventResponse {
   customQuestions?: EventQuestion[];
   isFreeRsvp?: boolean;
   isActive: boolean;
+  /** Admin approval; host list/get include these for dashboard status. */
+  approvalStatus?: "pending" | "approved" | "rejected";
+  rejectedReason?: string;
   createdAt: string;
   updatedAt: string;
 }

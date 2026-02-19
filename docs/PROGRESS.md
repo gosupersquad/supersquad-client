@@ -1,324 +1,98 @@
 # Supersquad client – progress & context
 
-**Purpose:** Single source of truth for progress and understanding. Update this file as we go.
+**Purpose:** Single source of truth for progress and context. Update as we go; refer when summarizing or continuing work.
 
 ---
 
 ## Constraints (do not remove)
 
-1. **Clean, maintainable code** – Follow industry standards; no mess.
-2. **PROGRESS.md** – Use this file to record progress and understanding; refer when context is lost.
+1. **Clean, maintainable code** – Follow industry standards; no spaghetti.
+2. **PROGRESS.md** – Record progress and decisions here; refer when context is lost.
 3. **No hallucinations** – Only state what we can verify from code or PRD.
-
----
-
-## Output after any code change
-
-After making any change, provide:
-
-- **Summary of changes** with reasoning.
-- **Assessment:** Pragmatic, over-engineered, or under-engineered?
-- **Alternatives:** Other workarounds (better or worse) we could have taken.
-
----
-
-## Architecture (PRD v1.7)
-
-**Single app domain:** **app.gosupersquad.com** (one frontend; no separate main vs admin subdomains).
-
-**App folder grouping (for clarity):** Host routes live in `app/host/`. Admin routes will live in `app/admin/`. Public routes (landing, event landing) can live in `app/(public-routes)/` so the three areas stay clearly separated. No requirement to move existing files; use this convention for new routes.
-
-### Public routes
-
-| Route                                  | Renders                          |
-| -------------------------------------- | -------------------------------- |
-| `/`                                    | Landing page (public, later)     |
-| `/hosts/[username]/events/[eventSlug]` | Event landing page (public, SSR) |
-
-### Host routes (host-facing product)
-
-| Route                                          | Renders                                                                         |
-| ---------------------------------------------- | ------------------------------------------------------------------------------- |
-| `/host/login`                                  | Host login                                                                      |
-| `/host/dashboard`                              | Host dashboard – sidebar: Experiences (default), Bookings; future: Coupons etc. |
-| `/host/experiences?type=event\|trip`           | Filtered experiences table                                                      |
-| `/host/experiences/new?type=event\|trip`       | Create experience                                                               |
-| `/host/experiences/[id]/edit?type=event\|trip` | Edit experience                                                                 |
-| `/host/discount-codes`                         | Discount codes CRUD (list, create, edit, toggle, delete)                        |
-| `/host/bookings`, `/host/coupons`              | Future                                                                          |
-
-### Master Admin (platform admin)
-
-| Route                       | Renders          |
-| --------------------------- | ---------------- |
-| `/admin/master/`            | Index            |
-| `/admin/master/hosts`       | Hosts list       |
-| `/admin/master/experiences` | Experiences list |
-
-### robots.txt (REQUIRED)
-
-- **robots.txt** must **Disallow** `/admin/master` so that:
-  - Search engines do **not list** these URLs.
-  - Bots do **not crawl** or index any page under `/admin/master`.
-
-**Implementation (do not forget):** Serve a robots.txt with at least:
-
-- `User-agent: *`
-- `Disallow: /admin/master`
-  Either: (1) static file at **public/robots.txt** in the Next.js app, or (2) dynamic route (e.g. **app/robots.ts**) that returns the same. Do this before launch so `/admin/master` is never indexed or crawled.
-
----
-
-## Phase 1 scope (current)
-
-- **Event only** (no trips): create, read, update (and list).
-- **Host:** login, edit (profile/settings).
-- **Discount codes (host):** full CRUD — list, create, edit, toggle status, delete. v1: flat (₹) only; no event-scoping (experienceId) in UI; code read-only on edit.
-- **Event landing page:** `/hosts/[username]/events/[eventSlug]` (public, SSR).
-- **Mobile-friendly:** all host and admin UIs.
-- **robots.txt:** Disallow `/admin/master` (no listing, no crawling).
-- Nothing else in Phase 1 (trips, bookings, checkout, full Master Admin UI later).
-
----
-
-## Host layout wireframe (agreed)
-
-- **Desktop:** Sidebar (fixed left). Title: "Supersquad Admin". Nav: Experiences (default), later Bookings/Coupons. Logout at bottom of sidebar.
-- **Mobile:** Bottom bar. Two items: **Experiences**, **Account** (logout inside; future: edit host personal info).
-- **First page:** Dashboard = welcome + quick links. If product owner prefers, can redirect `/host/dashboard` → `/host/experiences`.
-- **Active state:** Classy (e.g. subtle bg + border or pill).
-
----
-
-## Host layout – short tasks
-
-1. **Task 1: Protected host layout** ✅ – Auth guard: `/host/*` except `/host/login` require token; else redirect to `/host/login`. One layout wraps all host routes; login route renders no shell. **Done:** `app/host/layout.tsx` (client): pathname check, token check after mount, redirect if no token; login path renders children only; protected paths show "Loading…" until mounted + token.
-2. **Task 2: Desktop sidebar** ✅ – Sidebar with "Supersquad Admin", nav (Experiences, later Bookings/Coupons), logout. Wraps main content; visible on `md+`. **Done:** `HostShell.tsx` (desktop sidebar, fixed left, hidden on mobile); layout wraps protected children in `HostShell`; placeholder `/host/experiences` page.
-3. **Task 3: Mobile bottom bar** ✅ – Bottom bar with Experiences, Account (logout on Account page; future: edit host). Visible on `< md`. **Done:** `HostShell.tsx` mobile nav (fixed bottom, `md:hidden`), two items with active state; `main` has `pb-16` on mobile; `/host/account` page with Logout (and user name/email; future: edit profile).
-4. **Task 4: Dashboard welcome** ✅ – Dashboard page: welcome + quick links (or redirect to `/host/experiences` if PO prefers). **Done:** `app/host/dashboard/page.tsx` (client): welcome with user name from store; quick links to Experiences, More, Account; note that redirect can be added later. `app/host/dashboard/layout.tsx` for metadata (title/description).
-5. **Task 5: Active nav state** – Skipped; current styles are fine.
-6. **Task 6: Theme toggle** ✅ – Dark/light toggle. **Done:** `next-themes` + `ThemeProvider` (root layout, default dark); `ThemeToggle` component (Sun/Moon icon); desktop: right end of sidebar title "Supersquad Admin"; mobile: Account page tile "Appearance" with toggle.
-
-Reference (design only): `trip-page/client` (admin branch) – AdminLayout.
-
----
-
-## Component format (preferred)
-
-Use `const ComponentName = () => {}` and `export default ComponentName` for components.
-
----
-
-## Current work: Host layout tasks done; next as needed
-
-**Backend (existing):** `POST /api/v1/auth/login` – body `{ email, password }`; returns `{ data: { token, user: { id, name, username, email } } }`. Validation: email, password min 6 chars.
-
-**Client (done):**
-
-- **shadcn:** Added `button`, `input`, `card`, `label`, `form` (design reference: `trip-page/client` AdminLogin; rewritten with shadcn).
-- **lib/api-client.ts** – `getApiBaseUrl()` (uses `NEXT_PUBLIC_API_URL`, default `http://localhost:3001/api/v1`).
-- **lib/auth-client.ts** – `login(email, password)` calls backend, returns `LoginResult`; throws on error.
-- **store/auth-store.ts** – Zustand store with `token`, `user`, `setAuth`, `clearAuth`; persisted to localStorage (`supersquad-host-auth`).
-- **app/host/login/page.tsx** – Host login page; renders `HostLoginForm`.
-- **components/host/HostLoginForm.tsx** – Client form: email, password; react-hook-form + zod; on success `setAuth` + `router.replace("/host/dashboard")`; Card + Form + Input + Button; error state; mobile-friendly (centered, max-width, padding).
-- **app/host/dashboard/page.tsx** – Placeholder dashboard so login redirect does not 404.
-
-**Env:** `NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1` in `.env` (client).
-
-**Next:** Event create (multi-step form) → Experiences table.
-
----
-
-## Event creation: multi-step form (planned)
-
-**Route:** `/host/experiences/new?type=event`. Same form component used for edit at `/host/experiences/[id]/edit?type=event` with `mode: "create" | "edit"` (edit pre-fill later).
-
-**Host:** No host selection step; host = logged-in user (`hostId` from auth). Backend uses `req.userId` for `hostId`.
-
-**Steps (4 steps, one per screen on mobile; Next/Back + progress indicator):**
-
-| Step  | Name        | Fields                                                                                                                                                                                                                                                                                                | Notes                                                            |
-| ----- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| **1** | **Basics**  | Title (required), Slug (optional; server auto-generates from title if empty), Location (required), Description (required, textarea), Spots available (number ≥ 0), Start date, End date, Date display text (optional, e.g. "March 15–17"), Active (boolean; default true; or "Save as draft" = false) | Single scrollable step on mobile; keep fields in one column.     |
-| **2** | **Media**   | Event images (multiple, ordered; upload → get URLs), Optional event video (one; upload → URL). Backend expects `media: { url, type: 'image' \| 'video' }[]`.                                                                                                                                          | Upload UI; add/remove/reorder; then pass URLs in create payload. |
-| **3** | **FAQs**    | Q&A pairs: question + answer (both required). Add/remove pairs; default 0. Backend: `faqs: { question, answer }[]`.                                                                                                                                                                                   | Simple list: add row, remove row; no need for many at once.      |
-| **4** | **Pricing** | **Ticket-level:** at least one ticket type (label + price, currency INR). Optional custom questions for attendees (label + required). Backend: `tickets: { code, label, price, currency }[]`, `customQuestions: { label, required }[]`. Code is client-generated from label (slugify + dedupe).       | Add/remove tickets and custom questions.                         |
-
-**Mobile-friendly:** One step per view on small screens; stepper/progress (e.g. "Step 2 of 4"); Next and Back; optional "Save draft" at end (sets `isActive: false`) or leave always active. No single long page to reduce overwhelm and bounces.
-
-**Form component:** One combined form that accepts `mode: "create" | "edit"`. Create: submit to `POST /api/v1/experiences` (auth = host). Edit: prefill from event (later), submit to `PUT /api/v1/experiences/:id`. Shared validation and step logic.
-
-**Persistence (mobile-friendly):** Use Zustand for step + form state, with **persist** (localStorage). Each step saves to the store so refresh or leaving the page doesn’t lose data. On the **final step** we POST the full payload to the backend; no per-step API calls.
-
-**POST / create:** Use **TanStack Query’s useMutation** for create (and later update). Why: loading/error state out of the box, and we can invalidate the experiences list query on success so the table updates. The actual HTTP call stays in **lib** (axios) for consistency with auth-client: e.g. `lib/experiences-client.ts` has `createEvent(payload)` that does `axios.post(..., payload)` with `Authorization: Bearer <token>`. Component calls `useMutation({ mutationFn: createEvent, onSuccess: () => { queryClient.invalidateQueries(...); router.push(...); } })`. **Fetch list:** useQuery for the experiences table (dashboard) as planned.
-
-**Backend reference:** Routes: `GET /`, `GET /:id`, `POST /`, `PUT /:id`, `PUT /:id/toggle-status` (all under `/api/v1/admin/experiences`, requireAuth). Validation: createEventSchema (tickets[] required, customQuestions[] optional; no single pricing). Server fixes slug from title if slug empty; media is `{ url, type: 'image'|'video' }[]`.
-
-**Implementation order (suggested):** 1) Route + shell (new page with step state). 2) Step 1 (Basics) + Zustand store with persist + client validation. 3) Step 4 (Pricing) so we can build full payload. 4) Step 2 (Media) + upload. 5) Step 3 (FAQs). 6) Wire create (useMutation + lib createEvent); then edit mode + prefill.
-
-**Step 1 done:** Route `/host/experiences/new?type=event`, `EventFormShell` (stepper, Cancel, Step X of 4), `Step1Basics` (title, slug, location, description, spots, start/end date in **DD/MM/YYYY** format, dateDisplayText, isActive). Validation: start date cannot be in the past; end date must be after start date. Store/API still use YYYY-MM-DD; display/input use DD/MM/YYYY. Zustand `event-form-store` with persist (localStorage). `lib/experiences-client.ts` has `createEvent(payload, token)`. "Create event" button on experiences page.
-
-**Step 2 done:** `Step2Media` (Media step). Single **drag-and-drop** area via `react-dropzone`: "Drag & drop files here, or click to select"; supports images (JPG, PNG, GIF, WebP) and videos (MP4, WebM, MOV). `lib/upload-client.ts`: only `uploadMedia`; **no `Content-Type` header** so axios sets `multipart/form-data` with boundary (fixes "No files uploaded"). Step shows current media list (thumbnail + type + remove); Back/Next. Toasts on success/error.
-
-**Step 3 done:** `Step3Faqs` (FAQs step). List of FAQ rows (question + answer); Add FAQ, Remove per row. Validation on Next: if any row has empty question or answer, toast error; else nextStep(). Back/Next. Store: faqs, setFaqs.
-
-**Step 4 done:** `Step4Pricing` (Pricing step). **Ticket-level system:** tickets array (label + price, code generated from label; at least one); optional customQuestions (label + required). Store: `tickets`, `customQuestions` (replaced deprecated single `pricing`). **Create flow wired:** payload built via `buildEventCreatePayload(basics, media, faqs, tickets, customQuestions)`; `createEvent(payload, token)`; on success reset, invalidate, redirect, toast. Edit prefill: `setTickets(event.tickets)`, `setCustomQuestions(event.customQuestions)`.
-
-**Host form UX:** Back/Next buttons aligned `justify-end` (right) for right-thumb reach on mobile (Step 1–4).
-
----
-
-## Experiences list table (step-by-step checklist)
-
-**Scope:** `/host/experiences` – list current host’s events only (events only, no trips). Design reference: `trip-page/client` AdminTrips. Same behaviour: search (fuzzy), table (Title, Status toggle, Spots, Dates, Duration, Actions Edit), loading/empty states, toggle status → API + invalidate + toast.
-
-**API (existing):** `GET /api/v1/admin/experiences` (list by host), `PUT /api/v1/admin/experiences/:id/toggle-status`. Base path: `getApiBaseUrl() + '/admin/experiences'`.
-
-| Step  | Task                                                                                                                                                                                                                                                                                                                                        | Status |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| **1** | Extend `lib/experiences-client.ts`: add `listEvents(token)` (GET), add `toggleEventStatus(id, token)` (PUT). Ensure `createEvent` uses `${base}/admin/experiences` (already correct).                                                                                                                                                       | Done   |
-| **2** | Add shadcn UI: `table`, `switch`, `tooltip`. Install `fuse.js` for client-side fuzzy search.                                                                                                                                                                                                                                                | Done   |
-| **3** | Build `ExperiencesTable` component: columns Title, Status (Switch + badge), Spots, Dates, Duration, Actions (Edit). Use date-fns for dates; duration helper (X days or "-").                                                                                                                                                                | Done   |
-| **4** | Convert `app/host/experiences/page.tsx` to client: `useQuery` listEvents, search state + Fuse (title, slug), loading/empty states, render ExperiencesTable; toggle status `useMutation` + invalidateQueries + toast.                                                                                                                        | Done   |
-| **5** | Edit feature: `getEvent(id, token)` and `updateEvent(id, payload, token)` in experiences-client; `EventFormShell` accepts `mode: "create" \| "edit"` and `eventId`; Step4Pricing creates or updates by mode; edit page at `/host/experiences/[id]/edit` fetches event, prefills store, then renders shell with `mode="edit"` and `eventId`. | Done   |
-
-**Future: trips + combined list (not implemented yet).** Keep two separate list functions: `listEvents(token)` and later `listTrips(token)` — two collections, different logic; no `listExperiences(type)`. Combined view: fetch both in parallel (`Promise.all([listEvents, listTrips])`), normalize with discriminator (e.g. `kind: 'event' | 'trip'`), sort by `updatedAt` desc, render one table. URL: `?type=event` (events only), `?type=trip` (trips only), `?type=event,trip` (combined). Current work: events-only flow only.
-
----
-
-## Experiences list – mobile & view live
-
-| #   | Task                                                                                                                                                                                         | Status |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| 1   | **Cards view for mobile** – On viewport \< md, show event list as cards (image, title, location, dates, Edit + View live). Table on md+.                                                     | Done   |
-| 2   | **Open link button** – Button that opens the public event URL in a new tab (ExternalLink icon).                                                                                              | Done   |
-| 3   | **Host username for view live** – No backend change: login response already returns `user.username`; saved in auth store. Frontend builds `/hosts/[username]/events/[eventSlug]` from store. | Done   |
-| 4   | **View live button** – In table and cards: ExternalLink opens `/hosts/[username]/events/[eventSlug]` (new tab). Uses `useAuthStore` for username.                                            | Done   |
-
----
-
-## Event Landing Page (public, customer-facing)
-
-**Route:** `/hosts/[username]/events/[eventSlug]` — SSR where possible; single responsive layout (no separate desktop/mobile components).
-
-**PRD – components (in order):**
-
-1. **Hero** – Image + optional video; scrollable media (shadcn Carousel). Carousel is content-agnostic; use `<img>` or `<video>` per item.
-2. **Event Information** – Event title; host name + display picture; host bio and Instagram link (in modal); Share button alongside host details.
-3. **Event Details** – Location; date & time; event description (long-form).
-4. **FAQs** – Simple Q&A list (single unified list; no categories).
-5. **Pricing & Booking CTA** – Single ticket type → show price; multiple (future) → “Starting from ₹X”. CTA opens ticket selector in a bottom drawer (half-screen).
-6. **Footer** – “Powered by Supersquad”; secondary “Host your event” (small text).
-
-**Removed from old trip-page:** Category, itinerary, amenities, accommodation, spots-left as a separate block, etc. Keep only the above.
-
-**Tech:** shadcn Carousel (Embla); one page composes small components (Hero, EventInfo, EventDetails, EventFaqs, PricingCta, Footer). Best practices: componentize where appropriate; avoid one long file.
-
-**API:** `GET /api/v1/hosts/:username/events/:eventSlug` — returns event with populated host (name, username, image, bio, instagram). Response shape: `{ success, data }`, `data` = event doc with `hostId` populated.
-
-| #   | Task                                                             | Status |
-| --- | ---------------------------------------------------------------- | ------ |
-| 1   | PRD in PROGRESS.md                                               | Done   |
-| 2   | Add shadcn carousel; route + fetch public event                  | Done   |
-| 3   | EventHero (carousel: image + video support)                      | Done   |
-| 4   | EventInfo, EventDetails, EventFaqs, EventPricingCta, EventFooter | Done   |
-| 5   | Single page layout, loading/error/not-found                      | Done   |
-
----
-
-## Checkout page – discount codes (event landing)
-
-**Route:** `/hosts/[username]/events/[eventSlug]/checkout`. Backend: `GET /api/v1/hosts/:username/events/:eventSlug/discount-codes` (list active codes, no auth), `POST /api/v1/admin/discount-codes/validate` (body `{ code, eventId }`, no auth).
-
-**Implemented:**
-
-- **lib/discount-codes-client.ts** – `listPublicDiscountCodesForEvent(username, eventSlug)`, `validateDiscountCode(code, eventId)`; types `PublicDiscountCodeItem`, `ValidateDiscountCodeResult`.
-- **CheckoutContent** – State: `appliedDiscount` (code + type + amount + currency). `handleApplyCoupon`: calls validate API; on success sets discount, closes modal, toast; on failure toast with message. `handleRemoveCoupon` clears discount. Passes `appliedDiscount` to CheckoutExclusiveOffers and CheckoutPricingSummary; passes `username`, `eventSlug` to OffersModal (no eventId in modal; parent holds event and does validate).
-- **OffersModal** – Fetches available coupons when open (`useQuery` list by username/eventSlug). Manual apply: input + APPLY button; tile apply: each coupon is a **card tile** (icon, code, "₹X off") with an **Apply** button – one click applies that code (no typing). Shared `formatPublicDiscountLabel(amount)` from `lib/utils.ts` for "₹X off" (v1 flat only). On successful apply (tile or manual), modal closes. Loading: per-tile spinner and all Apply disabled while any request in flight.
-- **CheckoutExclusiveOffers** – When no discount: "Apply Coupons" button opens modal. When discount applied: shows code + discount text (e.g. "SAVE20", "₹50 off") and remove (X) button.
-- **CheckoutPricingSummary** – Optional `appliedDiscount`. v1: **flat only** – discount = min(amount, entryFee). Discount line "Discount (CODE)" with negative amount; subtotal after discount; **GST applied on subtotal after discount**; toPay = subtotalAfterDiscount + gst. See "Payment calculation flow" below.
-
-**Payment:** Pay & Reserve still stubbed; validates all attendee forms on click then no-op. Discount is applied to pricing display only.
-
-### Payment calculation flow (checkout)
-
-**Where it lives:** `components/checkout/CheckoutPricingSummary.tsx` (and inputs from `CheckoutContent` + `lib/checkout-tickets.ts`).
-
-**1. Ticket breakdown (source of "entry fee")**
-
-- **State:** `breakdown` in `CheckoutContent` – array of `TicketBreakdownItem`: `{ code, label, quantity, unitPrice }` (see `lib/checkout-tickets.ts`).
-- **Origin:** From landing (EventPricingBar drawer) via `setCheckoutTicketSelection`; or on load from `getCheckoutTicketSelection(username, eventSlug)`; if none, `buildDefaultBreakdown(tickets)` gives 1× first ticket (see `getInitialBreakdown` in `CheckoutContent.tsx`).
-- **Reference:** `CheckoutContent.tsx` (breakdown state, `getInitialBreakdown`, `handleBreakdownChange`), `checkout-tickets.ts` (`TicketBreakdownItem`, `getCheckoutTicketSelection`, `setCheckoutTicketSelection`, `expandBreakdownToAttendeeSlots`).
-
-**2. Entry fee (subtotal before discount)**
-
-- **Formula:** `entryFee = Σ (row.quantity × row.unitPrice)` over all rows in `breakdown`.
-- **Reference:** `CheckoutPricingSummary.tsx` lines 30–33 (`breakdown.reduce(...)`).
-
-**3. Discount (v1 flat only)**
-
-- **State:** `appliedDiscount` in `CheckoutContent` – set when a coupon is validated successfully; cleared by "Remove" in CheckoutExclusiveOffers.
-- **Formula:** `discountAmount = appliedDiscount ? min(appliedDiscount.amount, entryFee) : 0`. (No percentage in UI; backend may return type "percentage" but pricing summary currently uses only flat.)
-- **Reference:** `CheckoutPricingSummary.tsx` lines 35–39.
-
-**4. GST**
-
-- **Rate:** 5% (constant `GST_PERCENT = 5` in `CheckoutPricingSummary.tsx`).
-- **Base:** GST is applied to the **subtotal after discount** (taxable amount), not to the pre-discount entry fee.
-- **Formula:** `subtotalAfterDiscount = entryFee - discountAmount`; `gst = (subtotalAfterDiscount × 5) / 100`.
-- **Reference:** `CheckoutPricingSummary.tsx` lines 41–43.
-
-**5. To pay**
-
-- **Formula:** `toPay = subtotalAfterDiscount + gst` (= entry fee − discount + GST on that subtotal).
-- **Reference:** `CheckoutPricingSummary.tsx` line 43.
-
-**Summary:** Entry fee from ticket breakdown → subtract flat discount (capped at entry fee) → GST 5% on that subtotal → toPay = subtotal + GST.
-
----
-
-## Toasts (react-hot-toast)
-
-- **Unauthenticated on protected route:** "Please sign in to continue" (host layout, before redirect).
-- **Login success:** "Signed in successfully" (HostLoginForm, after setAuth). Kept to one success toast to avoid spam.
-- **Checkout coupons:** "Coupon applied" (success); "Invalid code" / server message (error); "Could not validate coupon" (network error). Attendee validation: "Please fix the errors in the attendee details below."
-- Toaster in root layout (`top-center`, 4s duration).
 
 ---
 
 ## Conventions
 
-- **Custom components:** Any new custom components go in `components/custom/`, not `components/ui/` (ui is reserved for shadcn). Only `required-mark` lives in custom; form fields are inlined in Step1Basics (no form-field-input / form-field-textarea).
-- **Upload:** Client uses only `POST /api/v1/upload/media` (field `files`, array). Server single-image and single-video routes are commented out; only `/media` is active.
+- **Custom components:** New custom components go in `components/custom/`, not `components/ui/` (ui = shadcn).
+- **Component format:** `const ComponentName = () => {}` and `export default ComponentName`.
+- **Upload:** Client uses only `POST /api/v1/upload/media` (field `files`, array).
+- **Toasts:** react-hot-toast; toaster in root layout (top-center, 4s). One success toast per flow to avoid spam.
 
 ---
 
-## Mobile "More" tab
+## Architecture (brief)
 
-- Bottom bar has **Experiences**, **More**, **Account**. **More** → `/host/more` with links to Leads, **Discount codes** (real link to `/host/discount-codes`), etc. Add more links as features ship.
-
----
-
-## Discount Codes (host dashboard) – done
-
-**Context:** Backend: `/api/v1/admin/discount-codes`. List, getOne, create, update, toggle-status, **delete** (204). **v1 MVP:** Client does **not** use `experienceId` or `experienceType` — no event-scoped UI; all codes apply to all events. **Flat (₹) only** — no percentage in UI; schema supports it but dormant. Code is **read-only on edit** (editable only on create).
-
-**Implemented:**
-
-- **lib/discount-codes-client.ts** – list, getOne, create, update, toggleDiscountCodeStatus, **deleteDiscountCode**; types (CreatePayload type: "flat" only; UpdatePayload no type/code); no experienceId in payloads.
-- **Nav** – Desktop: "Discount codes" in HostShell (Percent icon). Mobile: More page link to `/host/discount-codes`.
-- **Route** – `app/host/discount-codes/page.tsx`: useQuery list, Fuse search by code, loading/error/401, Create button; deleteMutation with confirm; table (md+) / cards (&lt; md).
-- **DiscountCodesTable** – Code, Discount, Validity, Usage, Status (Switch + badge), Actions (Edit, Delete). Delete with confirmation; isDeletingId for loading state.
-- **DiscountCodesCards** – Card per code; Edit + Delete (with confirm and isDeletingId).
-- **DiscountCodeFormModal** – Form: code (read-only when editing), amount (₹), maxUsage, startsAt, expiresAt, isActive. No type selector (flat only). Fullscreen on &lt; md, centered dialog on md+. Create sends type: "flat"; update does not send type/code.
-- **401** – Same as experiences: clearAuth, toast, redirect to login.
-
-**Shared code:** `ApiResponse<T>` in `types/index.ts`; discount code display formatters (`formatDiscountCodeValidity`, `formatDiscountCodeDiscount`, `formatDiscountCodeUsage`, **`formatPublicDiscountLabel`** for checkout "₹X off") in `lib/utils.ts`; `DiscountCodeDisplayFields` in types (minimal fields for formatters).
-
-**Validity display:** "Always" when no dates; "From d MMM yyyy" / "Until d MMM yyyy" when one set; "d MMM yyyy – d MMM yyyy" when both.
+- **Single app:** app.gosupersquad.com. Host routes: `app/host/*`. Master Admin: `app/admin/master/*`. Public: `/`, `/hosts/[username]/events/[eventSlug]` (and checkout, payment/status).
+- **Auth:** Zustand store (`token`, `user`, `role`); persisted. Login returns `role` ('host' | 'master'); redirect by role (master → `/admin/master`, host → `/host/dashboard`).
+- **robots.txt:** Must **Disallow** `/admin/master`. Static file or `app/robots.ts`.
 
 ---
 
-**Types (v1.7):** Event: `tickets: EventTicket[]`, `customQuestions?: EventQuestion[]`. **ApiResponse&lt;T&gt;** in types (shared by auth, experiences, discount-codes, upload clients). **DiscountCodeDisplayFields** for discount formatters (amount, usedCount, maxUsage, startsAt, expiresAt). Booking types for future checkout: `BookingAttendee`, `TicketBreakdownItem`, `ExperienceSnapshot`, `PaymentStatus`.
+## Implemented (summary)
 
-_Last updated: Checkout – coupon tiles with Apply button, formatPublicDiscountLabel; PROGRESS doc: payment calculation flow and GST explained with code refs._
+- **Host:** Login, layout (guard + HostShell), dashboard, experiences list (table + cards, search, toggle status, edit, view live), event create/edit (4-step form, media upload, discount codes in checkout), discount codes CRUD, leads (list + detail, Confirmed/Abandoned toggle).
+- **Public:** Event landing (SSR), checkout (tickets, attendees, coupons, Pay & Reserve / free RSVP), payment status page (verify, order summary).
+- **Auth:** Login with role; redirect by role; store has `role` for refresh/guards.
+
+---
+
+## Frontend work – MAP & approval status (actionable todos)
+
+Use this list step-by-step; tick and review as we go. Order is intentional.
+
+### A. Types & data (client)
+
+| #   | Task                                                                                                                                                                                                                                                                                 | Status |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| A1  | Add `approvalStatus` and `rejectedReason` to `EventResponse` in `lib/experiences-client.ts` (or shared event type) so host list/get responses are typed.                                                                                                                             | [x]    |
+| A2  | Create **master API client** (e.g. `lib/master-experiences-client.ts`): `listPendingExperiences(token)`, `getPendingCount(token)`, `getExperienceForPreview(id, token)`, `setApproval(id, { approved, rejectedReason? }, token)`. Use `getApiBaseUrl()` and `Authorization: Bearer`. | [x]    |
+
+### B. MAP layout & guard
+
+| #   | Task                                                                                                                                                                                                                                 | Status |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| B1  | Create `app/admin/master/layout.tsx` (client): After mount, if no token → `router.replace('/host/login')`; if token and `role !== 'master'` → `router.replace('/host/dashboard')`. Else render MAP shell (header + tabs + children). | [ ]    |
+| B2  | MAP shell: Tabs **Pending approval** (with badge count), **Experiences** (disabled/placeholder), **Hosts** (disabled/placeholder). Badge from `getPendingCount`. Content area = `children`.                                          | [ ]    |
+| B3  | `app/admin/master/page.tsx`: Redirect to `/admin/master/pending` or show minimal dashboard.                                                                                                                                          | [ ]    |
+
+### C. Pending approval tab
+
+| #   | Task                                                                                                                                                                                                                            | Status |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| C1  | `app/admin/master/pending/page.tsx`: useQuery list (`listPendingExperiences`), useQuery count (`getPendingCount`). Loading/empty states.                                                                                        | [ ]    |
+| C2  | Table: columns Title, Host (name/username), Dates, Actions. Actions: **Preview** (link to preview page), **Approve** (button → setApproval approved: true → invalidate list + count → toast), **Reject** (button → open modal). | [ ]    |
+| C3  | Reject modal: optional "Reason" text input; Confirm → setApproval(approved: false, rejectedReason) → invalidate → toast; Cancel closes.                                                                                         | [ ]    |
+
+### D. Preview page
+
+| #   | Task                                                                                                                                                                                                   | Status |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| D1  | `app/admin/master/experiences/[id]/preview/page.tsx`: useParams id, useQuery `getExperienceForPreview(id)`.                                                                                            | [ ]    |
+| D2  | Render **same event-landing component** as public event page; pass event from MAP API. Optional: hide or disable "Book" / checkout CTA for preview. "Back to Pending" link to `/admin/master/pending`. | [ ]    |
+
+### E. Host dashboard – approval status
+
+| #   | Task                                                                                                                                    | Status                                                  |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------- | --- |
+| E1  | **ExperiencesTable:** Add column **Approval** (or integrate into Status): badge Pending (e.g. amber)                                    | Rejected (show `rejectedReason` in tooltip or subtitle) | Approved (e.g. green). Data already in event from list API. | [ ] |
+| E2  | **ExperiencesCards:** Add small approval badge per card (Pending / Rejected / Approved); Rejected: show reason on hover or under badge. | [ ]                                                     |
+
+### F. Polish & review
+
+| #   | Task                                                                                                                                    | Status |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| F1  | 403 from MAP API (e.g. host hits master endpoint): redirect to `/host/dashboard` or show "Access denied". Optional.                     | [ ]    |
+| F2  | Review: no duplicate logic; event-landing reused for preview; one master client module; host table/cards only get one new column/badge. | [ ]    |
+
+---
+
+## Reference (for implementation)
+
+- **Backend MAP APIs:** `GET .../admin/master/experiences?approvalStatus=pending`, `GET .../experiences/count?approvalStatus=pending`, `GET .../experiences/:id`, `PATCH .../experiences/:id/approval` (body: `{ approved, rejectedReason? }`). All require Bearer token and role = master.
+- **Host list/get:** Responses include `approvalStatus` and `rejectedReason` (server already returns them).
+- **Reuse:** Event-landing component for MAP preview; host table/card design system; auth store and redirect pattern. Do **not** reuse HostShell for MAP (different nav); build minimal MAP shell with tabs only.
+
+---
+
+_Last updated: Added MAP & approval status actionable todos; trimmed old narrative; kept constraints, conventions, architecture summary._
