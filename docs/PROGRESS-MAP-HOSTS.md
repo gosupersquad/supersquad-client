@@ -2,7 +2,7 @@
 
 **Purpose:** Plan and track Master Admin Panel (MAP) **Hosts** tab: list all hosts, create host, update host. No delete. Approval flow and Pending tab are done; this doc is for Host CRUD only.
 
-**Status:** DRAFT – approve before implementation.
+**Status:** In progress – backend done; frontend Hosts list + Create/Update modals implemented.
 
 **Related:** Frontend context in [PROGRESS.md](./PROGRESS.md). Backend context in [server/docs/ROADMAP.md](../../server/docs/ROADMAP.md).
 
@@ -128,10 +128,10 @@ All require Bearer token + role = master.
 | #   | Task                                                                                                                                                                                                                    | Status |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | F1  | In `lib/master-admin/client.ts`: add listHosts, getHost, createHost, updateHost + types; refactor to use **axios base instance** (token in headers) for all MAP calls.                                                  | [x]    |
-| F2  | **Hosts list page** `app/admin/master/hosts/page.tsx`: useQuery list, “Add host” button (opens Create modal), **cards** with name, username, image, bio, isActive, instagram, Edit (opens Update modal). Loading/empty. | [ ]    |
-| F3  | **Create host modal**: form (name, username, email, password, image upload via upload-client, bio, instagram url; isActive = true). Submit → createHost → toast, close, invalidate list.                                | [ ]    |
-| F4  | **Update host modal**: load host by id (getHost), same form with password optional. Submit → updateHost → toast, close, invalidate list.                                                                                | [ ]    |
-| F5  | Ensure Hosts tab in MAP layout links to `/admin/master/hosts` and is active when on that path.                                                                                                                          | [ ]    |
+| F2  | **Hosts list page** `app/admin/master/hosts/page.tsx`: useQuery list, “Add host” button (opens Create modal), **cards** with name, username, image, bio, isActive, instagram, Edit (opens Update modal). Loading/empty. | [x]    |
+| F3  | **Create host modal**: form (name, username, email, password, image upload via upload-client folder=hosts, bio, instagram url; isActive = true). Submit → createHost → toast, close, invalidate list.                   | [x]    |
+| F4  | **Update host modal**: load host by id (getHost), same form with password optional. Submit → updateHost → toast, close, invalidate list.                                                                                | [x]    |
+| F5  | Ensure Hosts tab in MAP layout links to `/admin/master/hosts` and is active when on that path.                                                                                                                          | [x]    |
 | F6  | Optional: client-side search/filter on list by name/username.                                                                                                                                                           | [ ]    |
 
 ---
@@ -145,4 +145,4 @@ All require Bearer token + role = master.
 
 ---
 
-_Once approved, implementation can start with backend B1–B5 then frontend F1–F5._
+**Implementation:** Backend B1–B5 and frontend F1–F5 are done. Host API lives in `lib/master-admin/hosts-client.ts`. Upload client accepts `folder: "events" | "hosts"` for host images.

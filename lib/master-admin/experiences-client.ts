@@ -1,11 +1,9 @@
-import axios from "axios";
 import type { ApiResponse, MediaItem } from "@/types";
-import { getApiBaseUrl } from "../api-client";
 import type { EventResponse } from "../experiences-client";
 import type { PublicEvent } from "@/types";
+import { createMasterApi } from "./api";
 
-const MASTER_EXPERIENCES_BASE = () =>
-  `${getApiBaseUrl()}/admin/master/experiences`;
+export { isMasterForbidden } from "./api";
 
 /** Slim list item for pending-approval cards. */
 export interface MasterEventListItem {
@@ -33,12 +31,10 @@ export async function listPendingExperiences(
   token: string,
   approvalStatus = "pending"
 ): Promise<MasterEventListItem[]> {
-  const { data } = await axios.get<ApiResponse<MasterEventListItem[]>>(
-    MASTER_EXPERIENCES_BASE(),
-    {
-      params: { approvalStatus },
-      headers: { Authorization: `Bearer ${token}` },
-    }
+  const api = createMasterApi(token);
+  const { data } = await api.get<ApiResponse<MasterEventListItem[]>>(
+    "/experiences",
+    { params: { approvalStatus } }
   );
 
   if (!Array.isArray(data.data)) {
@@ -55,12 +51,10 @@ export async function getPendingCount(
   token: string,
   approvalStatus = "pending"
 ): Promise<number> {
-  const { data } = await axios.get<ApiResponse<{ count: number }>>(
-    `${MASTER_EXPERIENCES_BASE()}/count`,
-    {
-      params: { approvalStatus },
-      headers: { Authorization: `Bearer ${token}` },
-    }
+  const api = createMasterApi(token);
+  const { data } = await api.get<ApiResponse<{ count: number }>>(
+    "/experiences/count",
+    { params: { approvalStatus } }
   );
 
   if (typeof data.data?.count !== "number") {
@@ -77,12 +71,8 @@ export async function getExperienceForPreview(
   id: string,
   token: string
 ): Promise<PublicEvent> {
-  const { data } = await axios.get<ApiResponse<PublicEvent>>(
-    `${MASTER_EXPERIENCES_BASE()}/${id}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
+  const api = createMasterApi(token);
+  const { data } = await api.get<ApiResponse<PublicEvent>>(`/experiences/${id}`);
 
   if (!data.data) {
     throw new Error("Invalid response from server");
@@ -99,15 +89,10 @@ export async function setApproval(
   payload: SetApprovalPayload,
   token: string
 ): Promise<EventResponse> {
-  const { data } = await axios.patch<ApiResponse<EventResponse>>(
-    `${MASTER_EXPERIENCES_BASE()}/${id}/approval`,
-    payload,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
+  const api = createMasterApi(token);
+  const { data } = await api.patch<ApiResponse<EventResponse>>(
+    `/experiences/${id}/approval`,
+    payload
   );
 
   if (!data.data) {
@@ -115,9 +100,4 @@ export async function setApproval(
   }
 
   return data.data;
-}
-
-/** True when the server returned 403 (e.g. host hit master endpoint). Use with onError to redirect. */
-export function isMasterForbidden(error: unknown): boolean {
-  return axios.isAxiosError(error) && error.response?.status === 403;
 }
