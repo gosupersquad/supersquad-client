@@ -88,6 +88,12 @@ Use this list step-by-step; tick and review as we go. Order is intentional.
 
 ---
 
+## MAP – Host CRUD (next)
+
+- **Plan doc:** [PROGRESS-MAP-HOSTS.md](./PROGRESS-MAP-HOSTS.md) – Host Create, Read (list), Update for MAP. HLD/LLD, wireframe, backend (B1–B5) and frontend (F1–F6) tasks. **Approve before implementation.** All `/admin/master` routes use document title **Master Admin - Supersquad** (set in MAP layout).
+
+---
+
 ## Reference (for implementation)
 
 - **Backend MAP APIs:** `GET .../admin/master/experiences?approvalStatus=pending`, `GET .../experiences/count?approvalStatus=pending`, `GET .../experiences/:id`, `PATCH .../experiences/:id/approval` (body: `{ approved, rejectedReason? }`). All require Bearer token and role = master.

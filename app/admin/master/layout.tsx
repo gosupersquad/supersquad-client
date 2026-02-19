@@ -78,10 +78,18 @@ const MasterLayout = ({ children }: { children: React.ReactNode }) => {
     },
   ];
 
+  const MAP_TITLE = "Master Admin - Supersquad";
+
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    if (mounted && token && role === ROLES.MASTER) {
+      document.title = MAP_TITLE;
+    }
+  }, [mounted, token, role]);
 
   useEffect(() => {
     if (!mounted) return;
