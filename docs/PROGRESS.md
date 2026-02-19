@@ -52,9 +52,9 @@ Use this list step-by-step; tick and review as we go. Order is intentional.
 
 | #   | Task                                                                                                                                                                                                                                 | Status |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| B1  | Create `app/admin/master/layout.tsx` (client): After mount, if no token → `router.replace('/host/login')`; if token and `role !== 'master'` → `router.replace('/host/dashboard')`. Else render MAP shell (header + tabs + children). | [ ]    |
-| B2  | MAP shell: Tabs **Pending approval** (with badge count), **Experiences** (disabled/placeholder), **Hosts** (disabled/placeholder). Badge from `getPendingCount`. Content area = `children`.                                          | [ ]    |
-| B3  | `app/admin/master/page.tsx`: Redirect to `/admin/master/pending` or show minimal dashboard.                                                                                                                                          | [ ]    |
+| B1  | Create `app/admin/master/layout.tsx` (client): After mount, if no token → `router.replace('/host/login')`; if token and `role !== 'master'` → `router.replace('/host/dashboard')`. Else render MAP shell (header + tabs + children). | [x]    |
+| B2  | MAP shell: Tabs **Pending approval** (with badge count), **Experiences** (disabled/placeholder), **Hosts** (disabled/placeholder). Badge from `getPendingCount`. Content area = `children`.                                          | [x]    |
+| B3  | `app/admin/master/page.tsx`: Redirect to `/admin/master/pending` or show minimal dashboard.                                                                                                                                          | [x]    |
 
 ### C. Pending approval tab
 
