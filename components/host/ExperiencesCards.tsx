@@ -82,6 +82,8 @@ export default function ExperiencesCards({ events }: ExperiencesCardsProps) {
             key={event._id}
             event={toEventCardData(event)}
             actions={actions}
+            approvalStatus={event.approvalStatus}
+            rejectedReason={event.rejectedReason}
           />
         );
       })}

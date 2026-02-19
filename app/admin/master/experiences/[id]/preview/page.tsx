@@ -3,16 +3,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 
 import EventLandingPage from "@/components/event-landing/EventLandingPage";
 import { Button } from "@/components/ui/button";
 import { ROLES } from "@/lib/constants";
-import { getExperienceForPreview } from "@/lib/master-experiences-client";
+import {
+  getExperienceForPreview,
+  isMasterForbidden,
+} from "@/lib/master-experiences-client";
 import { useAuthStore } from "@/store/auth-store";
-import { useParams } from "next/navigation";
 
 const MasterExperiencePreviewPage = () => {
   const { id: eventId } = useParams<{ id: string }>();
+  const router = useRouter();
   const token = useAuthStore((s) => s.token);
   const role = useAuthStore((s) => s.role);
 
@@ -20,11 +26,25 @@ const MasterExperiencePreviewPage = () => {
     data: event,
     isLoading,
     isError,
+    error: previewError,
   } = useQuery({
     queryKey: ["master", "preview", eventId],
     queryFn: () => getExperienceForPreview(eventId!, token!),
     enabled: !!token && role === ROLES.MASTER && !!eventId,
   });
+
+  const hasHandled403 = useRef(false);
+  useEffect(() => {
+    if (
+      previewError &&
+      isMasterForbidden(previewError) &&
+      !hasHandled403.current
+    ) {
+      hasHandled403.current = true;
+      router.replace("/host/dashboard");
+      toast.error("Access denied");
+    }
+  }, [previewError, router]);
 
   if (!eventId) {
     return (

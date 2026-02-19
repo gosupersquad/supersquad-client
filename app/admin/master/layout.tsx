@@ -10,14 +10,17 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 import ButtonWithBadge from "@/components/custom/ButtonWithBadge";
 import ThemeToggle from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { ROLES } from "@/lib/constants";
-import { getPendingCount } from "@/lib/master-experiences-client";
+import {
+  getPendingCount,
+  isMasterForbidden,
+} from "@/lib/master-experiences-client";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
 
@@ -41,11 +44,24 @@ const MasterLayout = ({ children }: { children: React.ReactNode }) => {
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const [mounted, setMounted] = useState(false);
 
-  const { data: pendingCount = 0 } = useQuery({
+  const { data: pendingCount = 0, error: pendingCountError } = useQuery({
     queryKey: ["master", "pending-count"],
     queryFn: () => getPendingCount(token!),
     enabled: !!token && role === ROLES.MASTER,
   });
+
+  const hasHandled403 = useRef(false);
+  useEffect(() => {
+    if (
+      pendingCountError &&
+      isMasterForbidden(pendingCountError) &&
+      !hasHandled403.current
+    ) {
+      hasHandled403.current = true;
+      router.replace("/host/dashboard");
+      toast.error("Access denied");
+    }
+  }, [pendingCountError, router]);
 
   const navItems: NavItem[] = [
     {

@@ -1,4 +1,3 @@
-import axios from "axios";
 import type {
   ApiResponse,
   CreateEventPayload,
@@ -6,6 +5,10 @@ import type {
   EventTicket,
   UpdateEventPayload,
 } from "@/types";
+import axios from "axios";
+
+import { ApprovalStatus } from "@/components/custom/ApprovalBadge";
+
 import { getApiBaseUrl } from "./api-client";
 
 export interface EventResponse {
@@ -26,7 +29,7 @@ export interface EventResponse {
   isFreeRsvp?: boolean;
   isActive: boolean;
   /** Admin approval; host list/get include these for dashboard status. */
-  approvalStatus?: "pending" | "approved" | "rejected";
+  approvalStatus?: ApprovalStatus;
   rejectedReason?: string;
   createdAt: string;
   updatedAt: string;

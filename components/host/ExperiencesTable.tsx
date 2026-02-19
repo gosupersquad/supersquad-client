@@ -3,6 +3,7 @@
 import { Calendar, ExternalLink, Pencil } from "lucide-react";
 import Link from "next/link";
 
+import ApprovalBadge from "@/components/custom/ApprovalBadge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -41,7 +42,7 @@ const ExperiencesTable = ({
         <TableRow>
           <TableHead>Title</TableHead>
           <TableHead>Status</TableHead>
-
+          <TableHead>Approval</TableHead>
           <TableHead>Spots</TableHead>
           <TableHead>Dates</TableHead>
 
@@ -104,6 +105,14 @@ const ExperiencesTable = ({
                     {event.isActive ? "Active" : "Inactive"}
                   </span>
                 </div>
+              </TableCell>
+
+              <TableCell>
+                <ApprovalBadge
+                  approvalStatus={event.approvalStatus ?? "pending"}
+                  rejectedReason={event.rejectedReason}
+                  variant="table"
+                />
               </TableCell>
 
               <TableCell>

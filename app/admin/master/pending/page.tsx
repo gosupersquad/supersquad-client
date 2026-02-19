@@ -5,19 +5,21 @@ import Fuse from "fuse.js";
 import { Check, Loader2, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
+import { getFirstImageUrl } from "@/components/checkout/CheckoutHero";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ROLES } from "@/lib/constants";
 import {
+  isMasterForbidden,
   listPendingExperiences,
   setApproval,
   type MasterEventListItem,
 } from "@/lib/master-experiences-client";
 import { useAuthStore } from "@/store/auth-store";
-import { getFirstImageUrl } from "@/components/checkout/CheckoutHero";
 
 interface PendingCardProps {
   item: MasterEventListItem;
@@ -26,6 +28,16 @@ interface PendingCardProps {
 
 const PendingCard = ({ item, token }: PendingCardProps) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
+
+  const handleMasterError = (e: Error) => {
+    if (isMasterForbidden(e)) {
+      router.replace("/host/dashboard");
+      toast.error("Access denied");
+    } else {
+      toast.error(e.message || "Something went wrong");
+    }
+  };
 
   const approve = useMutation({
     mutationFn: () => setApproval(item.id, { approved: true }, token),
@@ -34,7 +46,7 @@ const PendingCard = ({ item, token }: PendingCardProps) => {
       queryClient.invalidateQueries({ queryKey: ["master", "pending-count"] });
       toast.success("Approved");
     },
-    onError: (e: Error) => toast.error(e.message || "Failed to approve"),
+    onError: handleMasterError,
   });
 
   const reject = useMutation({
@@ -45,7 +57,7 @@ const PendingCard = ({ item, token }: PendingCardProps) => {
       queryClient.invalidateQueries({ queryKey: ["master", "pending-count"] });
       toast.success("Rejected");
     },
-    onError: (e: Error) => toast.error(e.message || "Failed to reject"),
+    onError: handleMasterError,
   });
 
   const handleReject = () => {
@@ -130,16 +142,30 @@ const PendingCard = ({ item, token }: PendingCardProps) => {
 };
 
 const MasterPendingPage = () => {
+  const router = useRouter();
   const token = useAuthStore((s) => s.token);
   const role = useAuthStore((s) => s.role);
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: list = [], isLoading } = useQuery({
+  const {
+    data: list = [],
+    isLoading,
+    error: listError,
+  } = useQuery({
     queryKey: ["master", "pending"],
     queryFn: () => listPendingExperiences(token!, "pending"),
     enabled: !!token && role === ROLES.MASTER,
   });
+
+  const hasHandled403 = useRef(false);
+  useEffect(() => {
+    if (listError && isMasterForbidden(listError) && !hasHandled403.current) {
+      hasHandled403.current = true;
+      router.replace("/host/dashboard");
+      toast.error("Access denied");
+    }
+  }, [listError, router]);
 
   const fuse = useMemo(() => {
     if (list.length === 0) return null;

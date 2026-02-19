@@ -3,8 +3,12 @@
 import { Calendar, MapPin } from "lucide-react";
 import Link from "next/link";
 
+import type { ApprovalStatus } from "@/components/custom/ApprovalBadge";
+import ApprovalBadge from "@/components/custom/ApprovalBadge";
 import type { EventCardData } from "@/lib/utils";
 import { formatEventDates } from "@/lib/utils";
+
+import { getFirstImageUrl } from "../checkout/CheckoutHero";
 
 interface EventCardProps {
   event: EventCardData;
@@ -12,24 +16,38 @@ interface EventCardProps {
   linkHref?: string;
   /** Optional actions (e.g. Edit + View live) rendered top-right. */
   actions?: React.ReactNode;
+  /** Optional approval status for host dashboard; Rejected + reason shows message button. */
+  approvalStatus?: ApprovalStatus;
+  rejectedReason?: string | null;
 }
 
 export type { EventCardData };
 
-function getCardImageUrl(event: EventCardData): string | null {
-  const image = event.media?.find((m) => m.type === "image");
-  return image?.url ?? null;
-}
-
-const EventCard = ({ event, linkHref, actions }: EventCardProps) => {
+const EventCard = ({
+  event,
+  linkHref,
+  actions,
+  approvalStatus,
+  rejectedReason,
+}: EventCardProps) => {
   const { datesText } = formatEventDates(event.startDate, event.endDate);
 
-  const imageUrl = getCardImageUrl(event);
+  const imageUrl = getFirstImageUrl(event.media);
   const isSoldOut =
     event.spotsAvailable !== undefined && event.spotsAvailable === 0;
 
   const content = (
     <div className="relative overflow-hidden rounded-xl">
+      {approvalStatus && (
+        <div className="absolute top-2 left-2 z-10">
+          <ApprovalBadge
+            approvalStatus={approvalStatus}
+            rejectedReason={rejectedReason}
+            variant="card"
+          />
+        </div>
+      )}
+
       {imageUrl ? (
         <div
           className="bg-muted aspect-4/3 w-full rounded-t-xl bg-cover bg-center lg:h-[50vh]"
@@ -70,6 +88,7 @@ const EventCard = ({ event, linkHref, actions }: EventCardProps) => {
               </span>
             </div>
           )}
+
           <div className="flex h-full flex-col justify-end">
             <h3 className="truncate text-lg font-semibold">{event.title}</h3>
 

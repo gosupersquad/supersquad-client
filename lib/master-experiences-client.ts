@@ -116,3 +116,8 @@ export async function setApproval(
 
   return data.data;
 }
+
+/** True when the server returned 403 (e.g. host hit master endpoint). Use with onError to redirect. */
+export function isMasterForbidden(error: unknown): boolean {
+  return axios.isAxiosError(error) && error.response?.status === 403;
+}

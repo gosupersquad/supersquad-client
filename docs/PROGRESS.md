@@ -73,17 +73,17 @@ Use this list step-by-step; tick and review as we go. Order is intentional.
 
 ### E. Host dashboard – approval status
 
-| #   | Task                                                                                                                                    | Status                                                  |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------- | --- |
-| E1  | **ExperiencesTable:** Add column **Approval** (or integrate into Status): badge Pending (e.g. amber)                                    | Rejected (show `rejectedReason` in tooltip or subtitle) | Approved (e.g. green). Data already in event from list API. | [ ] |
-| E2  | **ExperiencesCards:** Add small approval badge per card (Pending / Rejected / Approved); Rejected: show reason on hover or under badge. | [ ]                                                     |
+| #   | Task                                                                                                                                                                                                 | Status |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| E1  | **ExperiencesTable:** Add column **Approval** (or integrate into Status): badge Pending (amber), Rejected (show `rejectedReason` in tooltip), Approved (green). Data already in event from list API. | [x]    |
+| E2  | **ExperiencesCards:** Add small approval badge per card (Pending / Rejected / Approved); Rejected: show reason on hover or under badge.                                                              | [x]    |
 
 ### F. Polish & review
 
 | #   | Task                                                                                                                                    | Status |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| F1  | 403 from MAP API (e.g. host hits master endpoint): redirect to `/host/dashboard` or show "Access denied". Optional.                     | [ ]    |
-| F2  | Review: no duplicate logic; event-landing reused for preview; one master client module; host table/cards only get one new column/badge. | [ ]    |
+| F1  | 403 from MAP API (e.g. host hits master endpoint): redirect to `/host/dashboard` and toast "Access denied".                             | [x]    |
+| F2  | Review: no duplicate logic; event-landing reused for preview; one master client module; host table/cards only get one new column/badge. | [x]    |
 
 ---
 
