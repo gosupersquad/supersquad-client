@@ -1,18 +1,16 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Fuse from "fuse.js";
-import { Calendar, ExternalLink, Search } from "lucide-react";
+import { Calendar, ExternalLink, Loader2, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-import { Input } from "@/components/ui/input";
-
-import { ApprovalStatus } from "@/components/custom/ApprovalBadge";
 import EventCard from "@/components/host/EventCard";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -26,10 +24,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ROLES } from "@/lib/constants";
+import { APPROVAL_STATUSES, ApprovalStatus, ROLES } from "@/lib/constants";
 import {
   isMasterForbidden,
   listAllExperiences,
+  setApproval,
   type MasterEventListItem,
 } from "@/lib/master-admin/experiences-client";
 import {
@@ -61,6 +60,18 @@ function SpotsCell({ item }: { item: MasterEventListItem }) {
   );
 }
 
+function getApprovalTextColor(status: ApprovalStatus) {
+  switch (status) {
+    case APPROVAL_STATUSES.APPROVED:
+      return "text-green-400";
+    case APPROVAL_STATUSES.REJECTED:
+      return "text-red-400";
+    case APPROVAL_STATUSES.PENDING:
+    default:
+      return "text-amber-400";
+  }
+}
+
 export default function MasterExperiencesPage() {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
@@ -77,6 +88,72 @@ export default function MasterExperiencesPage() {
     queryFn: () => listAllExperiences(token!),
     enabled: !!token && role === ROLES.MASTER,
   });
+
+  const queryClient = useQueryClient();
+
+  const setApprovalMutation = useMutation({
+    mutationFn: ({
+      id,
+      approvalStatus,
+      rejectedReason,
+    }: {
+      id: string;
+      approvalStatus: ApprovalStatus;
+      rejectedReason?: string;
+    }) => setApproval(id, { approvalStatus, rejectedReason }, token!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["master", "pending"] });
+      queryClient.invalidateQueries({ queryKey: ["master", "pending-count"] });
+      queryClient.invalidateQueries({ queryKey: EXPERIENCES_QUERY_KEY });
+      toast.success("Status updated");
+    },
+    onError: (e: Error) => {
+      if (isMasterForbidden(e)) {
+        router.replace("/host/dashboard");
+        toast.error("Access denied");
+      } else {
+        toast.error(e.message || "Failed to update status");
+      }
+    },
+  });
+
+  const handleApprovalChange = (
+    event: MasterEventListItem,
+    value: ApprovalStatus,
+  ) => {
+    const current = event.approvalStatus ?? APPROVAL_STATUSES.PENDING;
+    if (value === current) return;
+
+    if (value === APPROVAL_STATUSES.REJECTED) {
+      const confirmed = window.confirm(
+        "Reject this event? The host will see your reason (you can add it in the next step).",
+      );
+      if (!confirmed) return;
+
+      const reason = window.prompt("Reason for rejection (optional):", "");
+      if (reason === null) return;
+
+      setApprovalMutation.mutate({
+        id: event.id,
+        approvalStatus: APPROVAL_STATUSES.REJECTED,
+        rejectedReason: reason.trim() || undefined,
+      });
+    } else if (value === APPROVAL_STATUSES.APPROVED) {
+      const confirmed = window.confirm(
+        "Mark this event as approved? It can go live if the host has published it.",
+      );
+
+      if (!confirmed) return;
+      setApprovalMutation.mutate({ id: event.id, approvalStatus: value });
+    } else {
+      const confirmed = window.confirm(
+        "Set this event back to pending? It will need approval again before going live.",
+      );
+
+      if (!confirmed) return;
+      setApprovalMutation.mutate({ id: event.id, approvalStatus: value });
+    }
+  };
 
   const filteredEvents = useMemo(() => {
     if (!searchQuery.trim()) return events;
@@ -152,6 +229,8 @@ export default function MasterExperiencesPage() {
                       <TableHead>Dates</TableHead>
 
                       <TableHead>Duration</TableHead>
+                      <TableHead>Approval</TableHead>
+
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -201,6 +280,54 @@ export default function MasterExperiencesPage() {
                           </TableCell>
 
                           <TableCell>{duration ?? "–"}</TableCell>
+
+                          <TableCell>
+                            <div className="relative flex items-center gap-1">
+                              {setApprovalMutation.isPending &&
+                              setApprovalMutation.variables?.id === event.id ? (
+                                <Loader2 className="text-muted-foreground size-4 shrink-0 animate-spin" />
+                              ) : null}
+
+                              <select
+                                className={`border-input bg-background focus:ring-ring rounded-md border px-2 py-1.5 text-sm ${getApprovalTextColor(event.approvalStatus as ApprovalStatus)} focus:ring-2 focus:outline-none`}
+                                value={
+                                  event.approvalStatus ??
+                                  APPROVAL_STATUSES.PENDING
+                                }
+                                onChange={(e) =>
+                                  handleApprovalChange(
+                                    event,
+                                    e.target.value as ApprovalStatus,
+                                  )
+                                }
+                                disabled={
+                                  setApprovalMutation.isPending &&
+                                  setApprovalMutation.variables?.id === event.id
+                                }
+                              >
+                                <option
+                                  value={APPROVAL_STATUSES.PENDING}
+                                  className="text-black dark:text-white"
+                                >
+                                  Pending
+                                </option>
+
+                                <option
+                                  value={APPROVAL_STATUSES.APPROVED}
+                                  className="text-black dark:text-white"
+                                >
+                                  Approved
+                                </option>
+
+                                <option
+                                  value={APPROVAL_STATUSES.REJECTED}
+                                  className="text-black dark:text-white"
+                                >
+                                  Rejected
+                                </option>
+                              </select>
+                            </div>
+                          </TableCell>
 
                           <TableCell>
                             <Tooltip>

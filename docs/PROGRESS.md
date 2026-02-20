@@ -31,75 +31,61 @@
 
 ## Implemented (summary)
 
-- **Host:** Login, layout (guard + HostShell), dashboard, experiences list (table + cards, search, toggle status, edit, view live), **approval column + badges** (shared `ApprovalBadge`; Rejected shows info icon → click opens Dialog with reason; card variant has prominent icon on bright media), event create/edit (4-step form, media upload, discount codes in checkout), discount codes CRUD, leads (list + detail, Confirmed/Abandoned toggle).
-- **Public:** Event landing (SSR), checkout (tickets, attendees, coupons, Pay & Reserve / free RSVP), payment status page (verify, order summary).
-- **MAP:** Pending page (cards, search, approve/reject with reason), preview page (same event landing, pricing bar visible but disabled), 403 → redirect + toast.
-- **Auth:** Login with role; redirect by role; store has `role` for refresh/guards.
+- **Host:** Login, layout (guard + HostShell), dashboard, experiences list (table + cards, Fuse search, toggle status, edit, view live), approval column + badges (ApprovalBadge; Rejected + reason via Dialog), event create/edit (4-step form), discount codes CRUD, leads (list + detail, Confirmed/Abandoned toggle).
+- **Public:** Event landing (SSR), checkout, payment status page (verify, order summary).
+- **MAP:** Pending (cards, Fuse search, approve/reject, preview link); Preview page (event landing, pricing bar disabled); **Hosts** (list cards, Fuse name/username, Create/Update modals via HostFormBase + CreateHostForm/EditHostForm, isActive toggle); **All experiences** (`/admin/master/experiences` – table desktop, cards mobile, Fuse search title/slug/host, View live only; list API `approvalStatus=all`; list includes location + totalSpots); 403 → redirect + toast.
+- **Auth:** Host deactivation: server `requireAuth` re-checks Host.isActive for role=host → 403 "account deactivated"; client QueryProvider QueryCache/MutationCache onError → clearAuth, toast, router.push('/host/login').
 
 ---
 
-## Frontend work – MAP & approval status (actionable todos)
+## Current context (paste before summarization)
 
-Use this list step-by-step; tick and review as we go. Order is intentional.
-
-### A. Types & data (client)
-
-| #   | Task                                                                                                                                                                                                                                                                                 | Status |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| A1  | Add `approvalStatus` and `rejectedReason` to `EventResponse` in `lib/experiences-client.ts` (or shared event type) so host list/get responses are typed.                                                                                                                             | [x]    |
-| A2  | Create **master API client** (e.g. `lib/master-experiences-client.ts`): `listPendingExperiences(token)`, `getPendingCount(token)`, `getExperienceForPreview(id, token)`, `setApproval(id, { approved, rejectedReason? }, token)`. Use `getApiBaseUrl()` and `Authorization: Bearer`. | [x]    |
-
-### B. MAP layout & guard
-
-| #   | Task                                                                                                                                                                                                                                 | Status |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| B1  | Create `app/admin/master/layout.tsx` (client): After mount, if no token → `router.replace('/host/login')`; if token and `role !== 'master'` → `router.replace('/host/dashboard')`. Else render MAP shell (header + tabs + children). | [x]    |
-| B2  | MAP shell: Tabs **Pending approval** (with badge count), **Experiences** (disabled/placeholder), **Hosts** (disabled/placeholder). Badge from `getPendingCount`. Content area = `children`.                                          | [x]    |
-| B3  | `app/admin/master/page.tsx`: Redirect to `/admin/master/pending` or show minimal dashboard.                                                                                                                                          | [x]    |
-
-### C. Pending approval tab
-
-| #   | Task                                                                                                                                                                                                             | Status |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| C1  | `app/admin/master/pending/page.tsx`: useQuery list (`listPendingExperiences`), useQuery count (`getPendingCount`). Loading/empty states.                                                                         | [x]    |
-| C2  | Cards (not table): image, Title, Host, **Preview** (link), **Approve** (green), **Reject** (→ confirm + reason). Fuse search by title/slug/host. Title, description, padding aligned with host experiences page. | [x]    |
-| C3  | Reject: `window.confirm` before reject; then `window.prompt` for optional reason → setApproval(approved: false, rejectedReason) → invalidate → toast.                                                            | [x]    |
-
-### D. Preview page
-
-| #   | Task                                                                                                                                    | Status |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| D1  | `app/admin/master/experiences/[id]/preview/page.tsx`: useParams id, useQuery `getExperienceForPreview(id)`.                             | [x]    |
-| D2  | Render **same event-landing component** as public; pricing bar **shown** with button disabled ("Preview only"). "Back to Pending" link. | [x]    |
-
-### E. Host dashboard – approval status
-
-| #   | Task                                                                                                                                                                                                                   | Status |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| E1  | **ExperiencesTable:** Add column **Approval** with shared **ApprovalBadge** (Pending amber, Approved green, Rejected red). When Rejected + reason: info icon button opens Dialog with reason (click, mobile-friendly). | [x]    |
-| E2  | **ExperiencesCards:** Approval badge per card via shared **ApprovalBadge** (`variant="card"`). Rejected + reason: info icon (prominent on card overlay) opens Dialog on click. No duplicate logic.                     | [x]    |
-
-### F. Polish & review
-
-| #   | Task                                                                                                                                    | Status |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| F1  | 403 from MAP API (e.g. host hits master endpoint): redirect to `/host/dashboard` and toast "Access denied".                             | [x]    |
-| F2  | Review: no duplicate logic; event-landing reused for preview; one master client module; host table/cards only get one new column/badge. | [x]    |
+- **MAP All experiences page:** `app/admin/master/experiences/page.tsx`. useQuery `listAllExperiences(token)` (GET experiences?approvalStatus=all). Desktop: Table (Title, Host, Spots left spotsAvailable/totalSpots, Dates, Duration, Actions = View live to `/hosts/{host.username}/events/{slug}`). Mobile: EventCard with `toEventCardData`, `hostName={event.host.name}`, `location: event.location ?? ""`. Fuse search keys: title, slug, host.name, host.username. No table column for location; location only in card view.
+- **Server:** `listForMaster(approvalStatus)` and `listAllForMaster()`; both return MasterEventListItem with id, title, slug, **location**, host, approvalStatus, spotsAvailable, **totalSpots**, startDate, endDate, createdAt, media. Controller: approvalStatus === 'all' → listAllForMaster(), else listForMaster(approvalStatus ?? 'pending').
+- **EventCard:** Optional prop `hostName?: string | null`; when set, show host name below title (admin/master view). Location from event card data (used in MAP cards).
+- **Master event list type:** `MasterEventListItem` in `lib/master-admin/experiences-client.ts` has location, totalSpots. `listAllExperiences(token)` calls API with params approvalStatus: 'all'.
 
 ---
 
-## MAP – Host CRUD (next)
+## Frontend work – MAP & approval (done)
 
-- **Plan doc:** [PROGRESS-MAP-HOSTS.md](./PROGRESS-MAP-HOSTS.md) – Host Create, Read (list), Update for MAP. HLD/LLD, wireframe, backend (B1–B5) and frontend (F1–F6) tasks. **Approve before implementation.** All `/admin/master` routes use document title **Master Admin - Supersquad** (set in MAP layout).
+| #     | Task                                                                                                                                           | Status |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| A1    | approvalStatus/rejectedReason on EventResponse; master client (listPendingExperiences, getPendingCount, getExperienceForPreview, setApproval). | [x]    |
+| A2    | (same)                                                                                                                                         | [x]    |
+| B1–B3 | MAP layout, guard, tabs (Pending, Experiences, Hosts), badge count.                                                                            | [x]    |
+| C1–C3 | Pending page: list, count, cards, Preview/Approve/Reject, Fuse search.                                                                         | [x]    |
+| D1–D2 | Preview page: same event landing, pricing bar disabled.                                                                                        | [x]    |
+| E1–E2 | Host table/cards: Approval column + ApprovalBadge; Rejected + reason Dialog.                                                                   | [x]    |
+| F1–F2 | 403 MAP → redirect + toast; review.                                                                                                            | [x]    |
 
 ---
 
-## Reference (for implementation)
+## MAP – Host CRUD (done)
 
-- **Backend MAP APIs:** `GET .../admin/master/experiences?approvalStatus=pending`, `GET .../experiences/count?approvalStatus=pending`, `GET .../experiences/:id`, `PATCH .../experiences/:id/approval` (body: `{ approved, rejectedReason? }`). All require Bearer token and role = master.
-- **Host list/get:** Responses include `approvalStatus` and `rejectedReason` (server already returns them).
-- **Reuse:** Event-landing component for MAP preview; host table/card design system; auth store and redirect pattern. Do **not** reuse HostShell for MAP (different nav); build minimal MAP shell with tabs only.
+- **Plan:** [PROGRESS-MAP-HOSTS.md](./PROGRESS-MAP-HOSTS.md). F1–F6 done. Hosts list, Create/Update modals, HostFormBase + CreateHostForm/EditHostForm, isActive toggle, Fuse search (name/username).
 
 ---
 
-_Last updated: E/F done. Shared ApprovalBadge (table + card); rejection reason via click (Dialog + info icon); card info icon prominent on bright media. Preview: pricing bar shown, button disabled. D–F complete._
+## MAP – All experiences (done)
+
+- **Page:** `/admin/master/experiences`. List all events (all hosts). Table (desktop), cards (mobile), Fuse search, View live only. API: GET experiences?approvalStatus=all; list includes location + totalSpots. EventCard receives hostName for admin view.
+
+---
+
+## Todos / next (high level)
+
+- Trips (when in scope).
+- Any further MAP or host polish as needed.
+
+---
+
+## Reference
+
+- **Backend MAP:** GET .../experiences?approvalStatus=pending|approved|rejected|**all**, GET .../experiences/count, GET .../experiences/:id, PATCH .../experiences/:id/approval. GET .../hosts, GET .../hosts/:id, POST/PUT .../hosts. All require Bearer + role=master.
+- **Host list/get:** Include approvalStatus, rejectedReason.
+- **Reuse:** EventCard (with optional hostName), Event-landing for preview; do not reuse HostShell for MAP.
+
+---
+
+_Last updated: MAP All experiences done (table + cards, Fuse, location in list + EventCard hostName). Host deactivation + QueryProvider 403 handling. FINAL_IMPLEMENTATION_PLAN v1.21._

@@ -1,6 +1,7 @@
-import type { ApiResponse, MediaItem } from "@/types";
+import type { ApiResponse, MediaItem, PublicEvent } from "@/types";
+
+import { ApprovalStatus } from "../constants";
 import type { EventResponse } from "../experiences-client";
-import type { PublicEvent } from "@/types";
 import { createMasterApi } from "./api";
 
 export { isMasterForbidden } from "./api";
@@ -21,8 +22,9 @@ export interface MasterEventListItem {
   media: MediaItem[];
 }
 
+
 export interface SetApprovalPayload {
-  approved: boolean;
+  approvalStatus: ApprovalStatus;
   rejectedReason?: string;
 }
 

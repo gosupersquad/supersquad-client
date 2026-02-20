@@ -40,7 +40,8 @@ const PendingCard = ({ item, token }: PendingCardProps) => {
   };
 
   const approve = useMutation({
-    mutationFn: () => setApproval(item.id, { approved: true }, token),
+    mutationFn: () =>
+      setApproval(item.id, { approvalStatus: "approved" }, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["master", "pending"] });
       queryClient.invalidateQueries({ queryKey: ["master", "pending-count"] });
@@ -51,7 +52,11 @@ const PendingCard = ({ item, token }: PendingCardProps) => {
 
   const reject = useMutation({
     mutationFn: (rejectedReason?: string) =>
-      setApproval(item.id, { approved: false, rejectedReason }, token),
+      setApproval(
+        item.id,
+        { approvalStatus: "rejected", rejectedReason },
+        token,
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["master", "pending"] });
       queryClient.invalidateQueries({ queryKey: ["master", "pending-count"] });
