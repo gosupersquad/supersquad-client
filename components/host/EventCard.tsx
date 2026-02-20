@@ -19,6 +19,8 @@ interface EventCardProps {
   /** Optional approval status for host dashboard; Rejected + reason shows message button. */
   approvalStatus?: ApprovalStatus;
   rejectedReason?: string | null;
+  /** When set (e.g. admin/master view), show host name on the card. */
+  hostName?: string | null;
 }
 
 export type { EventCardData };
@@ -29,6 +31,7 @@ const EventCard = ({
   actions,
   approvalStatus,
   rejectedReason,
+  hostName,
 }: EventCardProps) => {
   const { datesText } = formatEventDates(event.startDate, event.endDate);
 
@@ -66,6 +69,12 @@ const EventCard = ({
           <div className="absolute right-0 bottom-0 left-0 p-4 text-white">
             <h3 className="truncate text-lg font-semibold">{event.title}</h3>
 
+            {hostName && (
+              <p className="mt-0.5 truncate text-sm text-white/80">
+                {hostName}
+              </p>
+            )}
+
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/90">
               <span className="flex items-center gap-1.5">
                 <MapPin className="size-3.5 shrink-0" />
@@ -91,7 +100,11 @@ const EventCard = ({
 
           <div className="flex h-full flex-col justify-end">
             <h3 className="truncate text-lg font-semibold">{event.title}</h3>
-
+            {hostName && (
+              <p className="text-muted-foreground mt-0.5 truncate text-sm">
+                {hostName}
+              </p>
+            )}
             <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
               <span className="flex items-center gap-1.5">
                 <MapPin className="size-3.5 shrink-0" />

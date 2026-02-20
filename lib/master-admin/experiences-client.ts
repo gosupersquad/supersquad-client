@@ -10,6 +10,7 @@ export interface MasterEventListItem {
   id: string;
   title: string;
   slug: string;
+  location: string;
   host: { name: string; username: string };
   approvalStatus: string;
   spotsAvailable: number;

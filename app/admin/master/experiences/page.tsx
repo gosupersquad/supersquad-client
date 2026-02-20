@@ -236,7 +236,7 @@ export default function MasterExperiencesPage() {
 
                     const cardData = toEventCardData({
                       ...event,
-                      location: "",
+                      location: event.location ?? "",
                     });
 
                     const actions = (
@@ -269,6 +269,7 @@ export default function MasterExperiencesPage() {
                         key={event.id}
                         event={cardData}
                         actions={actions}
+                        hostName={event.host.name}
                         approvalStatus={event.approvalStatus as ApprovalStatus}
                       />
                     );
