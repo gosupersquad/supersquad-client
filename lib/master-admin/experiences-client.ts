@@ -5,7 +5,7 @@ import { createMasterApi } from "./api";
 
 export { isMasterForbidden } from "./api";
 
-/** Slim list item for pending-approval cards. */
+/** Slim list item for pending-approval cards and all-experiences list. */
 export interface MasterEventListItem {
   id: string;
   title: string;
@@ -13,6 +13,7 @@ export interface MasterEventListItem {
   host: { name: string; username: string };
   approvalStatus: string;
   spotsAvailable: number;
+  totalSpots: number;
   startDate: string;
   endDate: string;
   createdAt: string;
@@ -35,6 +36,23 @@ export async function listPendingExperiences(
   const { data } = await api.get<ApiResponse<MasterEventListItem[]>>(
     "/experiences",
     { params: { approvalStatus } }
+  );
+
+  if (!Array.isArray(data.data)) {
+    throw new Error("Invalid response from server");
+  }
+
+  return data.data;
+}
+
+/**
+ * List all experiences (all hosts, all approval statuses). Master only. For MAP "All experiences" page.
+ */
+export async function listAllExperiences(token: string): Promise<MasterEventListItem[]> {
+  const api = createMasterApi(token);
+  const { data } = await api.get<ApiResponse<MasterEventListItem[]>>(
+    "/experiences",
+    { params: { approvalStatus: "all" } }
   );
 
   if (!Array.isArray(data.data)) {
