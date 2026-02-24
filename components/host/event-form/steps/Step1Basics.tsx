@@ -25,13 +25,10 @@ import { EventFormMode } from "../EventFormBase";
 const step1Schema = z
   .object({
     title: z.string().min(1, "Title is required"),
-    // slug: z.string().optional(),
     location: z.string().min(1, "Location is required"),
     description: z.string().min(1, "Description is required"),
-    spotsAvailable: z.coerce.number().int().min(0, "Must be 0 or more"),
     startDate: z.string().min(1, "Start date is required"),
     endDate: z.string().min(1, "End date is required"),
-    // dateDisplayText: z.string().optional(),
     isActive: z.boolean(),
   })
   .refine(
@@ -70,13 +67,10 @@ const Step1Basics = ({ mode }: Step1BasicsProps) => {
     resolver: zodResolver(step1Schema) as Resolver<Step1Values>,
     defaultValues: {
       title: basics.title,
-      // slug: basics.slug,
       location: basics.location,
       description: basics.description,
-      spotsAvailable: basics.spotsAvailable,
       startDate: basics.startDate,
       endDate: basics.endDate,
-      // dateDisplayText: basics.dateDisplayText,
       isActive: basics.isActive,
     },
   });
@@ -90,13 +84,10 @@ const Step1Basics = ({ mode }: Step1BasicsProps) => {
   const onSubmit = (data: Step1Values) => {
     setBasics({
       title: data.title,
-      // slug: data.slug ?? "",
       location: data.location,
       description: data.description,
-      spotsAvailable: data.spotsAvailable,
       startDate: data.startDate,
       endDate: data.endDate,
-      // dateDisplayText: data.dateDisplayText ?? "",
       isActive: data.isActive,
     });
     nextStep();
@@ -181,34 +172,6 @@ const Step1Basics = ({ mode }: Step1BasicsProps) => {
                 placeholder="Describe your event"
                 rows={4}
                 className="min-h-[100px] resize-y"
-                aria-invalid={fieldState.invalid}
-              />
-
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-
-        <Controller
-          name="spotsAvailable"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="event-spots">
-                Spots available <RequiredMark />
-              </FieldLabel>
-
-              <Input
-                {...field}
-                id="event-spots"
-                type="number"
-                min={0}
-                placeholder="0"
-                value={field.value === 0 ? "" : field.value}
-                onChange={(e) => {
-                  const v = e.target.valueAsNumber;
-                  field.onChange(Number.isFinite(v) ? v : 0);
-                }}
                 aria-invalid={fieldState.invalid}
               />
 

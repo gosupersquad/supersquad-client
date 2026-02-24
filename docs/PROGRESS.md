@@ -40,9 +40,9 @@
 
 ## Current context (paste before summarization)
 
-- **Event create/edit flow (unified):** **3 steps** – (1) Basics + media (title, location, description, start/end datetime, media max 6; no slug, dateDisplayText, isActive in form). (2) Tickets + capacity: **isFreeRsvp** switch, tickets screen, **spotsAvailable** (capacity). (3) FAQs + custom questions. Create → on success redirect to event landing. Edit uses same 3 steps (mimics create). Drop **dateDisplayText** from flow.
-- **Event landing + host preview:** Backend: `GET /hosts/:username/events/:eventSlug` – if **Authorization present and requester is host owner**, return event in **any** approval state. If **no token (public)**, return event only when `approvalStatus === 'approved'`. Frontend: event landing page – if token present and host is owner, show **sticky alert (top-center)**: pending = "Under review"; rejected = different copy; approved = public (no alert). Public sees page only when approved.
-- **MAP All experiences:** Desktop MasterExperiencesTable (Approval select, View live); mobile EventCard; Fuse search. List API `approvalStatus=all`; list includes location, totalSpots, approvalStatus.
+- **Event form (implemented):** See **Implemented – Event create/edit flow (3 steps)** below. Store 3 steps; EventFormBase uses `mode`; submit labels from mode; Step4Pricing = step 2 only (Next); Step3Faqs = step 3 only (Submit). No slug/dateDisplayText in type or payload; isActive in store for edit.
+- **Event landing + host preview:** Backend: optional auth on GET event; owner or master → any state; public → approved only. Frontend (FE7): sticky alert for host owner by approvalStatus; not yet implemented.
+- **MAP All experiences:** MasterExperiencesTable, EventCard, Fuse; list `approvalStatus=all`.
 
 ---
 
@@ -69,6 +69,21 @@
 ## MAP – All experiences (done)
 
 - **Page:** `/admin/master/experiences`. List all events (all hosts). Table (desktop), cards (mobile), Fuse search, View live only. API: GET experiences?approvalStatus=all; list includes location + totalSpots. EventCard receives hostName for admin view.
+
+---
+
+## Implemented – Event create/edit flow (3 steps)
+
+**Preserve this section; it is the source of truth for the current form implementation.**
+
+- **Store** (`event-form-store.ts`): `TOTAL_STEPS = 3`. `defaultBasics`: title, location, description, spotsAvailable (0), startDate, endDate, isFreeRsvp (false), isActive (true). No slug, no dateDisplayText in defaults. Step order: 1 = basics + media, 2 = tickets + capacity, 3 = faqs + custom questions.
+- **Types** (`types/index.ts`): `EventFormBasics` has title, location, description, spotsAvailable, startDate, endDate, isFreeRsvp?, isActive?. No slug, no dateDisplayText (never set on frontend). isActive kept for edit form.
+- **EventFormBase**: Props: `mode: "create" | "edit"`, `onSubmit`, `isSubmitting`. Submit labels are **not** passed from parent; derived via `SUBMIT_LABELS[mode]` (create: "Create event" / "Creating…", edit: "Update event" / "Updating…"). Step 1: `<Step1Basics mode={mode} />`. Step 2: `<Step4Pricing />` (no props). Step 3: `<Step3Faqs onSubmit submitLabel submitLoadingLabel isSubmitting />` (labels from SUBMIT_LABELS[mode]).
+- **Step4Pricing**: Used only as **step 2**. No props. Renders: tickets, capacity (spotsAvailable), isFreeRsvp, CustomQuestionsSection; footer = Back + **Next** only (no Submit, no `isLastStep`). Exports `buildEventCreatePayload(basics, media, faqs, tickets, customQuestions)`; payload does **not** include slug or dateDisplayText.
+- **Step3Faqs**: Used only as **step 3**. Required props: `onSubmit`, `submitLabel`, `submitLoadingLabel`, `isSubmitting`. Renders: FAQs, CustomQuestionsSection; footer = Back + **Submit**. Validates FAQs, tickets, custom questions; builds payload via `buildEventCreatePayload`; calls `onSubmit(payload)`.
+- **CreateEventForm / EditEventForm**: Pass to EventFormBase only `mode`, `onSubmit`, `isSubmitting`. Do not pass submitLabel or submitLoadingLabel.
+- **EditEventForm** `setBasics`: Sets title, location, description, spotsAvailable, startDate, endDate, isFreeRsvp, isActive. Does **not** set slug or dateDisplayText.
+- **Design rule:** One role per step. Step 2 never submits; no conditional "last step" flag. Submit only on step 3.
 
 ---
 
@@ -100,8 +115,8 @@
 
 **Reference**
 
-- **Server:** `POST /api/v1/admin/experiences` – CreateEventPayload (slug optional). `GET /api/v1/hosts/:username/events/:eventSlug` – with auth + owner → any state; without auth → approved only.
-- **Client:** `EventFormBase` + 3 steps; store TOTAL_STEPS = 3. Create → submit from step 3 → redirect to event landing. Edit → same 3 steps, submit = update. Event landing: host owner + token → sticky alert by approvalStatus; public → approved only.
+- **Server:** `POST /api/v1/admin/experiences` – CreateEventPayload (slug optional). `GET /api/v1/hosts/:username/events/:eventSlug` – optionalAuth; owner or master → any state; no auth → approved only.
+- **Client:** See **Implemented – Event create/edit flow (3 steps)** for store, EventFormBase, Step4Pricing, Step3Faqs, CreateEventForm, EditEventForm. Create success → currently redirect to `/host/experiences` (FE4 may change to event landing). Edit success → redirect or toast per FE4.
 
 ---
 
@@ -122,4 +137,4 @@
 
 ---
 
-_Last updated: Event create/edit 3-step flow + landing host preview. Actionable todos BE1–BE2, FE1–FE7._
+_Last updated: PROGRESS.md updated with **Implemented – Event create/edit flow (3 steps)** section so context survives summarization. BE1–BE2 done; FE1 done; FE2–FE7 pending. Submit labels from mode in EventFormBase; no isLastStep; step 2 = Next only, step 3 = Submit only._

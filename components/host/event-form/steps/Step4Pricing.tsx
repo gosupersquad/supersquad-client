@@ -18,8 +18,6 @@ import type {
   MediaItem,
 } from "@/types";
 
-import CustomQuestionsSection from "./CustomQuestionsSection";
-
 /** Slugify label for ticket code: lowercase, hyphens, alphanumeric only. */
 function slugifyCode(label: string): string {
   return (
@@ -90,20 +88,13 @@ export const buildEventCreatePayload = (
       : undefined,
 });
 
-/** Step 2 only: tickets + capacity + custom questions. Back + Next (submit is step 3). */
+/** Step 2 only: tickets + capacity. Back + Next (submit is step 3). Custom questions are on step 3 only. */
 const Step4Pricing = () => {
-  const {
-    basics,
-    tickets,
-    customQuestions,
-    setTickets,
-    setCustomQuestions,
-    setBasics,
-    prevStep,
-    nextStep,
-  } = useEventFormStore();
+  const { basics, tickets, setTickets, setBasics, prevStep, nextStep } =
+    useEventFormStore();
 
   const isSubmitting = false;
+  const spotsAvailable = basics.spotsAvailable ?? 0;
 
   const updateTicket = (index: number, updates: Partial<EventTicket>) => {
     setTickets(
@@ -272,16 +263,33 @@ const Step4Pricing = () => {
         </Button>
       </FieldGroup>
 
-      <CustomQuestionsSection
-        customQuestions={customQuestions}
-        setCustomQuestions={setCustomQuestions}
-        isSubmitting={isSubmitting}
-      />
+      <FieldGroup className="gap-4">
+        <FieldLabel htmlFor="event-capacity">
+          Spots available <RequiredMark />
+        </FieldLabel>
+
+        <Input
+          id="event-capacity"
+          type="number"
+          min={0}
+          step={1}
+          placeholder="0"
+          value={spotsAvailable === 0 ? "" : spotsAvailable}
+          onChange={(e) => {
+            const v = e.target.valueAsNumber;
+            setBasics({
+              spotsAvailable: Number.isFinite(v) && v >= 0 ? v : 0,
+            });
+          }}
+          disabled={isSubmitting}
+        />
+      </FieldGroup>
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="outline" onClick={prevStep}>
           Back
         </Button>
+
         <Button type="button" onClick={nextStep}>
           Next
         </Button>
