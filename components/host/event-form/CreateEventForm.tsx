@@ -41,9 +41,8 @@ const CreateEventForm = () => {
 
   return (
     <EventFormBase
+      mode="create"
       onSubmit={(payload) => mutation.mutate(payload)}
-      submitLabel="Create event"
-      submitLoadingLabel="Creating…"
       isSubmitting={mutation.isPending}
     />
   );

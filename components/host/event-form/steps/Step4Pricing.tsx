@@ -60,19 +60,11 @@ export const buildEventCreatePayload = (
   customQuestions: EventQuestion[],
 ): CreateEventPayload => ({
   title: basics.title,
-  ...(basics.slug?.trim() ? { slug: basics.slug.trim() } : {}),
-
   location: basics.location,
   description: basics.description,
-
   spotsAvailable: basics.spotsAvailable,
-
   startDate: basics.startDate,
   endDate: basics.endDate,
-  ...(basics.dateDisplayText?.trim() && {
-    dateDisplayText: basics.dateDisplayText.trim(),
-  }),
-
   media,
   faqs,
 
@@ -98,30 +90,20 @@ export const buildEventCreatePayload = (
       : undefined,
 });
 
-export interface Step4PricingProps {
-  onSubmit: (payload: CreateEventPayload) => void;
-  submitLabel: string;
-  submitLoadingLabel: string;
-  isSubmitting: boolean;
-}
-
-const Step4Pricing = ({
-  onSubmit,
-  submitLabel,
-  submitLoadingLabel,
-  isSubmitting,
-}: Step4PricingProps) => {
+/** Step 2 only: tickets + capacity + custom questions. Back + Next (submit is step 3). */
+const Step4Pricing = () => {
   const {
     basics,
-    media,
-    faqs,
     tickets,
     customQuestions,
     setTickets,
     setCustomQuestions,
     setBasics,
     prevStep,
+    nextStep,
   } = useEventFormStore();
+
+  const isSubmitting = false;
 
   const updateTicket = (index: number, updates: Partial<EventTicket>) => {
     setTickets(
@@ -151,46 +133,6 @@ const Step4Pricing = ({
     }
 
     setTickets(tickets.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = () => {
-    const hasInvalidTicket = tickets.some(
-      (t) => !t.label.trim() || typeof t.price !== "number" || t.price < 0,
-    );
-
-    if (hasInvalidTicket) {
-      toast.error("Each ticket needs a label and a valid price (≥ 0).");
-      return;
-    }
-
-    const hasInvalidQuestion = customQuestions.some((q) => !q.label.trim());
-    if (hasInvalidQuestion) {
-      toast.error("Custom questions must have a label or be removed.");
-      return;
-    }
-
-    const hasInvalidDropdown = customQuestions.some(
-      (q) =>
-        (q.type ?? "string") === "dropDown" &&
-        (!q.options?.length || !q.options.some((o) => o.trim())),
-    );
-
-    if (hasInvalidDropdown) {
-      toast.error(
-        "Dropdown questions must have at least one option with text.",
-      );
-      return;
-    }
-
-    const payload = buildEventCreatePayload(
-      basics,
-      media,
-      faqs,
-      tickets,
-      customQuestions,
-    );
-
-    onSubmit(payload);
   };
 
   return (
@@ -337,17 +279,11 @@ const Step4Pricing = ({
       />
 
       <div className="flex justify-end gap-3 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={prevStep}
-          disabled={isSubmitting}
-        >
+        <Button type="button" variant="outline" onClick={prevStep}>
           Back
         </Button>
-
-        <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
-          {isSubmitting ? submitLoadingLabel : submitLabel}
+        <Button type="button" onClick={nextStep}>
+          Next
         </Button>
       </div>
     </div>

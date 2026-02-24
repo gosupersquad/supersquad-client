@@ -58,13 +58,11 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
 
     setBasics({
       title: event.title,
-      slug: event.slug ?? "",
       location: event.location,
       description: event.description,
       spotsAvailable: event.spotsAvailable,
       startDate,
       endDate,
-      dateDisplayText: event.dateDisplayText ?? "",
       isFreeRsvp: event.isFreeRsvp ?? false,
       isActive: event.isActive,
     });
@@ -139,9 +137,8 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
 
   return (
     <EventFormBase
+      mode="edit"
       onSubmit={(payload) => mutation.mutate(payload)}
-      submitLabel="Update event"
-      submitLoadingLabel="Updating…"
       isSubmitting={mutation.isPending}
     />
   );

@@ -10,17 +10,15 @@ import type {
   MediaItem,
 } from "@/types";
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 
 const defaultBasics: EventFormBasics = {
   title: "",
-  slug: "",
   location: "",
   description: "",
   spotsAvailable: 0,
   startDate: "",
   endDate: "",
-  dateDisplayText: "",
   isFreeRsvp: false,
   isActive: true,
 };

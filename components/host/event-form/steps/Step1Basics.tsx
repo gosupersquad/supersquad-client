@@ -20,17 +20,18 @@ import { formatDateToISO, parseISOToDate, startOfToday } from "@/lib/utils";
 import { useEventFormStore } from "@/store/event-form-store";
 
 import "react-datepicker/dist/react-datepicker.css";
+import { EventFormMode } from "../EventFormBase";
 
 const step1Schema = z
   .object({
     title: z.string().min(1, "Title is required"),
-    slug: z.string().optional(),
+    // slug: z.string().optional(),
     location: z.string().min(1, "Location is required"),
     description: z.string().min(1, "Description is required"),
     spotsAvailable: z.coerce.number().int().min(0, "Must be 0 or more"),
     startDate: z.string().min(1, "Start date is required"),
     endDate: z.string().min(1, "End date is required"),
-    dateDisplayText: z.string().optional(),
+    // dateDisplayText: z.string().optional(),
     isActive: z.boolean(),
   })
   .refine(
@@ -57,7 +58,11 @@ const step1Schema = z
 
 type Step1Values = z.infer<typeof step1Schema>;
 
-const Step1Basics = () => {
+export interface Step1BasicsProps {
+  mode: EventFormMode;
+}
+
+const Step1Basics = ({ mode }: Step1BasicsProps) => {
   const { basics, setBasics, nextStep, prevStep, step } = useEventFormStore();
   const isFirstStep = step === 1;
 
@@ -65,13 +70,13 @@ const Step1Basics = () => {
     resolver: zodResolver(step1Schema) as Resolver<Step1Values>,
     defaultValues: {
       title: basics.title,
-      slug: basics.slug,
+      // slug: basics.slug,
       location: basics.location,
       description: basics.description,
       spotsAvailable: basics.spotsAvailable,
       startDate: basics.startDate,
       endDate: basics.endDate,
-      dateDisplayText: basics.dateDisplayText,
+      // dateDisplayText: basics.dateDisplayText,
       isActive: basics.isActive,
     },
   });
@@ -85,13 +90,13 @@ const Step1Basics = () => {
   const onSubmit = (data: Step1Values) => {
     setBasics({
       title: data.title,
-      slug: data.slug ?? "",
+      // slug: data.slug ?? "",
       location: data.location,
       description: data.description,
       spotsAvailable: data.spotsAvailable,
       startDate: data.startDate,
       endDate: data.endDate,
-      dateDisplayText: data.dateDisplayText ?? "",
+      // dateDisplayText: data.dateDisplayText ?? "",
       isActive: data.isActive,
     });
     nextStep();
@@ -121,7 +126,7 @@ const Step1Basics = () => {
           )}
         />
 
-        <Controller
+        {/* <Controller
           name="slug"
           control={form.control}
           render={({ field, fieldState }) => (
@@ -138,7 +143,7 @@ const Step1Basics = () => {
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
-        />
+        /> */}
 
         <Controller
           name="location"
@@ -276,7 +281,7 @@ const Step1Basics = () => {
           />
         </div>
 
-        <Controller
+        {/* <Controller
           name="dateDisplayText"
           control={form.control}
           render={({ field, fieldState }) => (
@@ -295,27 +300,29 @@ const Step1Basics = () => {
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
-        />
+        /> */}
 
-        <Controller
-          name="isActive"
-          control={form.control}
-          render={({ field }) => (
-            <Field orientation="horizontal" className="items-center gap-2">
-              <input
-                type="checkbox"
-                id="event-active"
-                checked={field.value}
-                onChange={(e) => field.onChange(e.target.checked)}
-                className="border-border size-4 rounded"
-              />
+        {mode === "edit" && (
+          <Controller
+            name="isActive"
+            control={form.control}
+            render={({ field }) => (
+              <Field orientation="horizontal" className="items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="event-active"
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                  className="border-border size-4 rounded"
+                />
 
-              <FieldLabel htmlFor="event-active" className="font-normal">
-                Active (show on listing)
-              </FieldLabel>
-            </Field>
-          )}
-        />
+                <FieldLabel htmlFor="event-active" className="font-normal">
+                  Active (show on listing)
+                </FieldLabel>
+              </Field>
+            )}
+          />
+        )}
 
         <div className="flex justify-end gap-3 pt-2">
           {!isFirstStep && (

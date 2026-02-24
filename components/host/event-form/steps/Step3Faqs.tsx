@@ -7,10 +7,35 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useEventFormStore } from "@/store/event-form-store";
-import type { ExperienceFAQ } from "@/types";
+import type { CreateEventPayload, ExperienceFAQ } from "@/types";
 
-const Step3Faqs = () => {
-  const { faqs, setFaqs, nextStep, prevStep } = useEventFormStore();
+import CustomQuestionsSection from "./CustomQuestionsSection";
+import { buildEventCreatePayload } from "./Step4Pricing";
+
+/** Step 3 only: FAQs + custom questions. Always the last step; Back + Submit. */
+export interface Step3FaqsProps {
+  onSubmit: (payload: CreateEventPayload) => void;
+  submitLabel: string;
+  submitLoadingLabel: string;
+  isSubmitting: boolean;
+}
+
+const Step3Faqs = ({
+  onSubmit,
+  submitLabel,
+  submitLoadingLabel,
+  isSubmitting,
+}: Step3FaqsProps) => {
+  const {
+    basics,
+    media,
+    faqs,
+    tickets,
+    customQuestions,
+    setFaqs,
+    setCustomQuestions,
+    prevStep,
+  } = useEventFormStore();
 
   const addFaq = () => {
     setFaqs([...faqs, { question: "", answer: "" }]);
@@ -26,17 +51,49 @@ const Step3Faqs = () => {
     setFaqs(faqs.filter((_, i) => i !== index));
   };
 
-  const handleNext = () => {
+  const handleSubmit = () => {
     if (faqs.length > 0) {
       const incomplete = faqs.some(
         (f) => !f.question.trim() || !f.answer.trim(),
       );
-
       if (incomplete)
         return toast.error("Please fill question and answer for each FAQ.");
     }
 
-    nextStep();
+    const hasInvalidTicket = tickets.some(
+      (t) => !t.label.trim() || typeof t.price !== "number" || t.price < 0,
+    );
+    if (hasInvalidTicket) {
+      toast.error("Each ticket needs a label and a valid price (≥ 0).");
+      return;
+    }
+
+    const hasInvalidQuestion = customQuestions.some((q) => !q.label.trim());
+    if (hasInvalidQuestion) {
+      toast.error("Custom questions must have a label or be removed.");
+      return;
+    }
+
+    const hasInvalidDropdown = customQuestions.some(
+      (q) =>
+        (q.type ?? "string") === "dropDown" &&
+        (!q.options?.length || !q.options.some((o) => o.trim())),
+    );
+    if (hasInvalidDropdown) {
+      toast.error(
+        "Dropdown questions must have at least one option with text.",
+      );
+      return;
+    }
+
+    const payload = buildEventCreatePayload(
+      basics,
+      media,
+      faqs,
+      tickets,
+      customQuestions,
+    );
+    onSubmit(payload);
   };
 
   return (
@@ -73,13 +130,18 @@ const Step3Faqs = () => {
         </Button>
       </FieldGroup>
 
+      <CustomQuestionsSection
+        customQuestions={customQuestions}
+        setCustomQuestions={setCustomQuestions}
+        isSubmitting={isSubmitting}
+      />
+
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="outline" onClick={prevStep}>
           Back
         </Button>
-
-        <Button type="button" onClick={handleNext}>
-          Next
+        <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting ? submitLoadingLabel : submitLabel}
         </Button>
       </div>
     </div>

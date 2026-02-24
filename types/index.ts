@@ -72,18 +72,16 @@ export interface CreateEventPayload {
 /** Payload for PUT /api/v1/admin/experiences/:id (update). Partial of create. */
 export type UpdateEventPayload = Partial<CreateEventPayload>;
 
-/** Step 1 form values (basics). */
+/** Step 1 form values (basics). slug, dateDisplayText, isActive not collected in new create flow (server/default). */
 export interface EventFormBasics {
   title: string;
-  slug: string;
   location: string;
   description: string;
   spotsAvailable: number;
   startDate: string;
   endDate: string;
-  dateDisplayText: string;
   isFreeRsvp?: boolean;
-  isActive: boolean;
+  isActive?: boolean;
 }
 
 /** Host as returned by public event API (populated hostId). */
