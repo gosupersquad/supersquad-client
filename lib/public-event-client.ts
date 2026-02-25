@@ -1,39 +1,36 @@
-import { getApiBaseUrl } from "./api-client";
+import type { ApiResponse } from "@/types";
 import type { PublicEvent } from "@/types";
+import axios from "axios";
 
-export interface PublicEventApiResponse {
-  success: boolean;
-  data: PublicEvent;
-  message?: string;
-}
+import { getApiBaseUrl } from "./api-client";
 
 /**
  * Fetch a single public event by host username and event slug.
- * No auth required. Used for the event landing page.
+ * Optional token: when provided (e.g. host owner or master), backend returns event in any approval state.
+ * When no token (public), backend returns only when approved and active; else 404.
  */
 export async function getPublicEvent(
   username: string,
-  eventSlug: string
+  eventSlug: string,
+  token?: string | null,
 ): Promise<PublicEvent> {
   const base = getApiBaseUrl();
+  const url = `${base}/hosts/${encodeURIComponent(username)}/events/${encodeURIComponent(eventSlug)}`;
 
-  const res = await fetch(
-    `${base}/hosts/${encodeURIComponent(username)}/events/${encodeURIComponent(eventSlug)}`
-  );
+  try {
+    const { data } = await axios.get<ApiResponse<PublicEvent>>(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
 
-  if (!res.ok) {
-    if (res.status === 404) {
-      throw new Error("Event not found");
+    if (!data.data) {
+      throw new Error("Invalid response");
     }
 
-    throw new Error("Failed to load event");
+    return data.data;
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      throw new Error("Event not found");
+    }
+    throw err;
   }
-
-  const json: PublicEventApiResponse = await res.json();
-
-  if (!json.success || !json.data) {
-    throw new Error("Invalid response");
-  }
-
-  return json.data;
 }

@@ -1,3 +1,5 @@
+import { ApprovalStatus } from "@/lib/constants";
+
 /** Server API response wrapper: { statusCode, data, message, success }. */
 export interface ApiResponse<T> {
   data: T;
@@ -113,6 +115,9 @@ export interface PublicEvent {
   /** When true, no payment; reserve creates a paid booking and redirects to success. */
   isFreeRsvp?: boolean;
   isActive: boolean;
+  /** Present when fetched with auth (owner/master). Used for sticky approval alert. */
+  approvalStatus?: ApprovalStatus
+  rejectedReason?: string;
 }
 
 // --- Booking (for checkout; mirrors server) ---

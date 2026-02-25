@@ -1,8 +1,5 @@
-import { notFound } from "next/navigation";
-
 import { getPublicEvent } from "@/lib/public-event-client";
-import EventLandingPage from "@/components/event-landing/EventLandingPage";
-import { PublicEvent } from "@/types";
+import EventLandingClient from "@/components/event-landing/EventLandingClient";
 
 type Props = {
   params: Promise<{ username: string; eventSlug: string }>;
@@ -27,19 +24,8 @@ export const generateMetadata = async ({ params }: Props) => {
 
 const EventPage = async ({ params }: Props) => {
   const { username, eventSlug } = await params;
-  let event: PublicEvent;
 
-  try {
-    event = await getPublicEvent(username, eventSlug);
-  } catch {
-    notFound();
-  }
-
-  if (!event?.isActive) {
-    notFound();
-  }
-
-  return <EventLandingPage event={event} />;
+  return <EventLandingClient username={username} eventSlug={eventSlug} />;
 };
 
 export default EventPage;

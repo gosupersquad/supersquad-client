@@ -17,6 +17,7 @@ const CreateEventForm = () => {
   const queryClient = useQueryClient();
 
   const token = useAuthStore((s) => s.token);
+  const username = useAuthStore((s) => s.user?.username);
   const reset = useEventFormStore((s) => s.reset);
 
   const mutation = useMutation({
@@ -24,11 +25,18 @@ const CreateEventForm = () => {
       if (!token) throw new Error("Not signed in");
       return createEvent(payload, token);
     },
-    onSuccess: () => {
+    onSuccess: (event) => {
       reset();
       queryClient.invalidateQueries({ queryKey: ["experiences"] });
-      router.push("/host/experiences");
       toast.success("Event created");
+
+      if (username && event?.slug) {
+        router.replace(
+          `/hosts/${encodeURIComponent(username)}/events/${encodeURIComponent(event.slug)}`,
+        );
+      } else {
+        router.replace("/host/experiences");
+      }
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : "Failed to save event");

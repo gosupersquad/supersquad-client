@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { AlertCircle, X } from "lucide-react";
+
 import type { PublicEvent } from "@/types";
 
 import EventDetails from "./EventDetails";
@@ -22,8 +25,39 @@ const EventLandingPage = ({
 }: EventLandingPageProps) => {
   const host = event.hostId;
 
+  const [approvalAlertDismissed, setApprovalAlertDismissed] = useState(false);
+  const showApprovalAlert =
+    !approvalAlertDismissed &&
+    (event.approvalStatus === "pending" || event.approvalStatus === "rejected");
+
   return (
     <div className="bg-background text-foreground min-h-screen overflow-x-hidden">
+      {showApprovalAlert && (
+        <div
+          className="sticky top-0 z-50 flex items-center justify-center gap-2 border-b border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm font-medium text-amber-800 dark:text-amber-200"
+          role="status"
+        >
+          <AlertCircle className="size-4 shrink-0" aria-hidden />
+
+          <span>
+            {event.approvalStatus === "pending"
+              ? "Your event is under review"
+              : event.rejectedReason
+                ? `Rejected: ${event.rejectedReason}`
+                : "Your event has been rejected"}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setApprovalAlertDismissed(true)}
+            className="ml-1 rounded p-1 transition-colors hover:bg-amber-500/20"
+            aria-label="Dismiss"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
+
       <EventHeader />
 
       <div className="mx-auto max-w-6xl pb-4 md:px-6">
@@ -48,12 +82,13 @@ const EventLandingPage = ({
         </main>
       </div>
 
-      {!preview && (
-        <EventPricingBar
-          tickets={event.tickets}
-          spotsAvailable={event.spotsAvailable}
-        />
-      )}
+      {!preview ||
+        (!showApprovalAlert && (
+          <EventPricingBar
+            tickets={event.tickets}
+            spotsAvailable={event.spotsAvailable}
+          />
+        ))}
     </div>
   );
 };

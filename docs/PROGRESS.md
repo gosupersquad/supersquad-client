@@ -101,11 +101,11 @@
 | #   | Task                                                                                                                                                                                                                                                         | Status |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
 | FE1 | **Store:** `event-form-store.ts` – set `TOTAL_STEPS = 3`. Defaults: remove `slug`, `dateDisplayText`, `isActive` from basics (or keep in type but never set from form). Step order: 1 = basics + media, 2 = tickets + capacity, 3 = faqs + custom questions. | [x]    |
-| FE2 | **Step 1 (Basics + media):** One step with title, location, description, start datetime, end datetime, media upload **max 6**. Reuse/merge Step1Basics + Step2Media; remove slug, dateDisplayText, isActive from UI and validation.                          | [ ]    |
-| FE3 | **Step 2 (Tickets + capacity):** isFreeRsvp switch, tickets screen (add/remove, label, price), **spotsAvailable** (capacity) input. Reuse logic from Step4Pricing; submit stays on step 3.                                                                   | [ ]    |
-| FE4 | **Step 3 (FAQs + questions):** FAQs + custom questions in one step. Submit: build payload from store, call create/update API. Create success → redirect to event landing. Edit success → redirect to experiences or success toast (decide and document).     | [ ]    |
-| FE5 | **EventFormBase:** Render 3 steps only; step names e.g. "Basics & media", "Tickets & capacity", "FAQs & questions". **Edit flow:** Load event into store; same 3 steps; submit = update API.                                                                 | [ ]    |
-| FE6 | **Payload builder:** Build create/update payload from store. Omit slug, dateDisplayText. Send spotsAvailable; server sets totalSpots = spotsAvailable on create. Include isFreeRsvp, tickets, media, faqs, customQuestions.                                  | [ ]    |
+| FE2 | **Step 1 (Basics + media):** One step with title, location, description, start datetime, end datetime, media upload **max 6**. Reuse/merge Step1Basics + Step2Media; remove slug, dateDisplayText, isActive from UI and validation.                          | [x]    |
+| FE3 | **Step 2 (Tickets + capacity):** isFreeRsvp switch, tickets screen (add/remove, label, price), **spotsAvailable** (capacity) input. Reuse logic from Step4Pricing; submit stays on step 3.                                                                   | [x]    |
+| FE4 | **Step 3 (FAQs + questions):** FAQs + custom questions in one step. Submit: build payload from store, call create/update API. Create success → redirect to event landing with sticky success alert. Edit success → redirect to experiences + toast.          | [x]    |
+| FE5 | **EventFormBase:** Render 3 steps only; step names e.g. "Basics & media", "Tickets & capacity", "FAQs & questions". **Edit flow:** Load event into store; same 3 steps; submit = update API.                                                                 | [x]    |
+| FE6 | **Payload builder:** Build create/update payload from store. Omit slug, dateDisplayText. Send spotsAvailable; server sets totalSpots = spotsAvailable on create. Include isFreeRsvp, tickets, media, faqs, customQuestions.                                  | [x]    |
 
 **Frontend – Event landing (host preview + alert)**
 
@@ -116,7 +116,7 @@
 **Reference**
 
 - **Server:** `POST /api/v1/admin/experiences` – CreateEventPayload (slug optional). `GET /api/v1/hosts/:username/events/:eventSlug` – optionalAuth; owner or master → any state; no auth → approved only.
-- **Client:** See **Implemented – Event create/edit flow (3 steps)** for store, EventFormBase, Step4Pricing, Step3Faqs, CreateEventForm, EditEventForm. Create success → currently redirect to `/host/experiences` (FE4 may change to event landing). Edit success → redirect or toast per FE4.
+- **Client:** See **Implemented – Event create/edit flow (3 steps)** for store, EventFormBase, Step4Pricing, Step3Faqs, CreateEventForm, EditEventForm. Create success → redirect to event landing `/hosts/[username]/events/[slug]?created=1` with sticky success alert; edit success → redirect to `/host/experiences` + toast.
 
 ---
 
@@ -137,4 +137,4 @@
 
 ---
 
-_Last updated: PROGRESS.md updated with **Implemented – Event create/edit flow (3 steps)** section so context survives summarization. BE1–BE2 done; FE1 done; FE2–FE7 pending. Submit labels from mode in EventFormBase; no isLastStep; step 2 = Next only, step 3 = Submit only._
+_Last updated: FE1–FE6 done. Create success → redirect to event landing with ?created=1 and sticky "Event created successfully" alert (dismissible). Edit success → redirect to /host/experiences + toast. FE7 (sticky alert for approval status on landing) still pending._
