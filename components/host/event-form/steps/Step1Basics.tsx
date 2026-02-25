@@ -16,7 +16,11 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { formatDateToISO, parseISOToDate, startOfToday } from "@/lib/utils";
+import {
+  formatDateTimeToISO,
+  parseISOToDateTime,
+  startOfToday,
+} from "@/lib/utils";
 import { useEventFormStore } from "@/store/event-form-store";
 
 import "react-datepicker/dist/react-datepicker.css";
@@ -34,7 +38,7 @@ const step1Schema = z
   })
   .refine(
     (data) => {
-      const start = parseISOToDate(data.startDate);
+      const start = parseISOToDateTime(data.startDate);
       return start !== null && start >= startOfToday();
     },
     {
@@ -44,8 +48,8 @@ const step1Schema = z
   )
   .refine(
     (data) => {
-      const start = parseISOToDate(data.startDate);
-      const end = parseISOToDate(data.endDate);
+      const start = parseISOToDateTime(data.startDate);
+      const end = parseISOToDateTime(data.endDate);
       return start !== null && end !== null && end >= start;
     },
     {
@@ -70,8 +74,8 @@ const Step1Basics = ({ mode }: Step1BasicsProps) => {
       title: basics.title,
       location: basics.location,
       description: basics.description,
-      startDate: basics.startDate,
-      endDate: basics.endDate,
+      startDate: basics.startDate || "",
+      endDate: basics.endDate || "",
       isActive: basics.isActive,
     },
   });
@@ -174,14 +178,27 @@ const Step1Basics = ({ mode }: Step1BasicsProps) => {
 
                 <DatePicker
                   id="event-start"
-                  selected={field.value ? parseISOToDate(field.value) : null}
+                  selected={
+                    field.value ? parseISOToDateTime(field.value) : null
+                  }
                   onChange={(date: Date | null) =>
-                    field.onChange(date ? formatDateToISO(date) : "")
+                    field.onChange(date ? formatDateTimeToISO(date) : "")
                   }
                   minDate={startOfToday()}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="DD/MM/YYYY"
-                  className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  showTimeSelect
+                  timeIntervals={15}
+                  timeCaption="Time"
+                  autoComplete="off"
+                  dateFormat="dd/MM/yyyy HH:mm"
+                  placeholderText="DD/MM/YYYY, time"
+                  customInput={
+                    <input
+                      className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                      inputMode="none"
+                      readOnly
+                      aria-invalid={fieldState.invalid ? "true" : "false"}
+                    />
+                  }
                   aria-invalid={fieldState.invalid ? "true" : "false"}
                 />
 
@@ -191,11 +208,14 @@ const Step1Basics = ({ mode }: Step1BasicsProps) => {
               </Field>
             )}
           />
+
           <Controller
             name="endDate"
             control={form.control}
             render={({ field, fieldState }) => {
-              const startParsed = startDate ? parseISOToDate(startDate) : null;
+              const startParsed = startDate
+                ? parseISOToDateTime(startDate)
+                : null;
               const minEnd = startParsed ?? startOfToday();
 
               return (
@@ -206,14 +226,27 @@ const Step1Basics = ({ mode }: Step1BasicsProps) => {
 
                   <DatePicker
                     id="event-end"
-                    selected={field.value ? parseISOToDate(field.value) : null}
+                    selected={
+                      field.value ? parseISOToDateTime(field.value) : null
+                    }
                     onChange={(date: Date | null) =>
-                      field.onChange(date ? formatDateToISO(date) : "")
+                      field.onChange(date ? formatDateTimeToISO(date) : "")
                     }
                     minDate={minEnd}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="DD/MM/YYYY"
-                    className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                    showTimeSelect
+                    timeIntervals={15}
+                    autoComplete="off"
+                    timeCaption="Time"
+                    dateFormat="dd/MM/yyyy HH:mm"
+                    placeholderText="DD/MM/YYYY, time"
+                    customInput={
+                      <input
+                        className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        inputMode="none"
+                        readOnly
+                        aria-invalid={fieldState.invalid ? "true" : "false"}
+                      />
+                    }
                     aria-invalid={fieldState.invalid ? "true" : "false"}
                   />
 

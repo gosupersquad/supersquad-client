@@ -44,9 +44,25 @@ export function parseISOToDate(iso: string): Date | null {
   }
 }
 
+/** Parse ISO string (date or datetime) to Date. Returns null if invalid or empty. */
+export function parseISOToDateTime(iso: string): Date | null {
+  if (!iso || iso.length < 10) return null
+  try {
+    const d = parseISO(iso)
+    return Number.isNaN(d.getTime()) ? null : d
+  } catch {
+    return null
+  }
+}
+
 /** Format Date to YYYY-MM-DD for API/store. */
 export function formatDateToISO(date: Date): string {
   return format(date, "yyyy-MM-dd")
+}
+
+/** Format Date to ISO datetime (YYYY-MM-DDTHH:mm) for API/store. */
+export function formatDateTimeToISO(date: Date): string {
+  return format(date, "yyyy-MM-dd'T'HH:mm")
 }
 
 /**
