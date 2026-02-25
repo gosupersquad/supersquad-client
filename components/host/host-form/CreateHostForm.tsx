@@ -64,7 +64,7 @@ const CreateHostForm = ({ onSuccess, onCancel }: CreateHostFormProps) => {
         return;
       }
     }
-    mutation.mutate({ ...createPayload, image: imageUrl });
+    await mutation.mutateAsync({ ...createPayload, image: imageUrl });
   };
 
   return (

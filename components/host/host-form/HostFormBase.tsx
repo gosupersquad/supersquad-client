@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -16,6 +16,12 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type {
@@ -70,7 +76,7 @@ export interface HostFormBaseProps {
   onSubmit: (
     payload: CreateHostPayload | UpdateHostPayload,
     imageFile: File | null,
-  ) => void;
+  ) => void | Promise<void>;
 
   isSubmitting: boolean;
   onCancel: () => void;
@@ -95,6 +101,7 @@ const HostFormBase = ({
   existingImageUrl,
 }: HostFormBaseProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const schema =
     mode === "create" ? createHostFormSchema : updateHostFormSchema;
@@ -108,7 +115,7 @@ const HostFormBase = ({
     form.reset(defaultValues as CreateHostFormValues);
   }, [defaultValues, form]);
 
-  const handleSubmit = form.handleSubmit((data) => {
+  const handleSubmit = form.handleSubmit(async (data) => {
     if (mode === "create") {
       const payload: CreateHostPayload = {
         name: data.name.trim(),
@@ -122,7 +129,7 @@ const HostFormBase = ({
           : undefined,
       };
 
-      onSubmit(payload, imageFile);
+      await Promise.resolve(onSubmit(payload, imageFile));
     } else {
       const d = data as UpdateHostFormValues;
 
@@ -138,7 +145,7 @@ const HostFormBase = ({
       };
 
       if (d.password && d.password.length > 0) payload.password = d.password;
-      onSubmit(payload, imageFile);
+      await Promise.resolve(onSubmit(payload, imageFile));
     }
   });
 
@@ -224,17 +231,38 @@ const HostFormBase = ({
                 )}
               </FieldLabel>
 
-              <Input
-                {...field}
-                id={p("password")}
-                type="password"
-                placeholder={
-                  mode === "create"
-                    ? "Min 6 characters"
-                    : "Leave blank to keep current"
-                }
-                aria-invalid={fieldState.invalid}
-              />
+              <InputGroup>
+                <InputGroupInput
+                  {...field}
+                  id={p("password")}
+                  type={showPassword ? "text" : "password"}
+                  placeholder={
+                    mode === "create"
+                      ? "Min 6 characters"
+                      : "Leave blank to keep current"
+                  }
+                  aria-invalid={fieldState.invalid}
+                />
+
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowPassword((p) => !p)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
 
               {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>

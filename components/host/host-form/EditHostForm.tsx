@@ -78,7 +78,7 @@ const EditHostForm = ({ hostId, onSuccess, onCancel }: EditHostFormProps) => {
       }
     }
 
-    mutation.mutate({
+    await mutation.mutateAsync({
       id: hostId,
       payload: {
         ...updatePayload,
