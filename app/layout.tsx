@@ -21,6 +21,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Supersquad",
   description: "Supersquad – experiences and events",
+  icons: {
+    icon: "https://admin.gosupersquad.com/vite.svg",
+  },
 };
 
 export default function RootLayout({
