@@ -21,6 +21,7 @@ import { useEventFormStore } from "@/store/event-form-store";
 
 import "react-datepicker/dist/react-datepicker.css";
 import { EventFormMode } from "../EventFormBase";
+import EventMediaUpload from "./Step2Media";
 
 const step1Schema = z
   .object({
@@ -116,25 +117,6 @@ const Step1Basics = ({ mode }: Step1BasicsProps) => {
             </Field>
           )}
         />
-
-        {/* <Controller
-          name="slug"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="event-slug">Slug (optional)</FieldLabel>
-
-              <Input
-                {...field}
-                id="event-slug"
-                placeholder="Auto-generated from title if empty"
-                aria-invalid={fieldState.invalid}
-              />
-
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        /> */}
 
         <Controller
           name="location"
@@ -244,27 +226,6 @@ const Step1Basics = ({ mode }: Step1BasicsProps) => {
           />
         </div>
 
-        {/* <Controller
-          name="dateDisplayText"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="event-date-display">
-                Date display text (optional)
-              </FieldLabel>
-
-              <Input
-                {...field}
-                id="event-date-display"
-                placeholder="e.g. March 15–17, 2026"
-                aria-invalid={fieldState.invalid}
-              />
-
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        /> */}
-
         {mode === "edit" && (
           <Controller
             name="isActive"
@@ -286,6 +247,8 @@ const Step1Basics = ({ mode }: Step1BasicsProps) => {
             )}
           />
         )}
+
+        <EventMediaUpload maxItems={6} />
 
         <div className="flex justify-end gap-3 pt-2">
           {!isFirstStep && (

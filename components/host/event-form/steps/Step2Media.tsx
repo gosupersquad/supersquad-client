@@ -1,6 +1,6 @@
 "use client";
 
-import { Upload } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -18,68 +18,90 @@ const ACCEPT = {
   "video/*": [".mp4", ".webm", ".mov"],
 };
 
-const Step2Media = () => {
+const DEFAULT_MAX = 6;
+
+export interface EventMediaUploadProps {
+  /** Max number of items (default 6). */
+  maxItems?: number;
+}
+
+/**
+ * Media upload for event form: 3-column grid of thumbnails with remove (X) on each,
+ * dropzone below, and count. Uses event form store (media, setMedia).
+ */
+const EventMediaUpload = ({
+  maxItems = DEFAULT_MAX,
+}: EventMediaUploadProps) => {
   const token = useAuthStore((s) => s.token);
-  const { media, setMedia, nextStep, prevStep } = useEventFormStore();
+  const { media, setMedia } = useEventFormStore();
   const [isUploading, setIsUploading] = useState(false);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       if (!acceptedFiles.length || !token) return;
-      setIsUploading(true);
 
+      const current = useEventFormStore.getState().media;
+      if (current.length >= maxItems) return;
+
+      setIsUploading(true);
       try {
         const { items } = await uploadMedia(acceptedFiles, token);
-        const current = useEventFormStore.getState().media;
+        const next = [...current, ...items].slice(0, maxItems);
 
-        setMedia([...current, ...items]);
-        toast.success(`Added ${items.length} file(s)`);
+        setMedia(next);
+        if (next.length > current.length) {
+          toast.success(`Added ${next.length - current.length} file(s)`);
+        }
+
+        if (items.length > next.length - current.length) {
+          toast(`Only ${maxItems} items allowed; some were not added.`);
+        }
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Upload failed");
       } finally {
         setIsUploading(false);
       }
     },
-
-    [token, setMedia],
+    [token, setMedia, maxItems],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: ACCEPT,
     multiple: true,
-    disabled: isUploading || !token,
+    disabled: isUploading || !token || media.length >= maxItems,
   });
 
-  const removeItem = (index: number) => {
+  const removeAt = (index: number) => {
     setMedia(media.filter((_, i) => i !== index));
   };
 
+  const canAdd = media.length < maxItems;
+
   return (
-    <div className="space-y-6">
-      <FieldGroup className="gap-4">
-        <FieldLabel>Media</FieldLabel>
+    <FieldGroup className="gap-4">
+      <FieldLabel>Media</FieldLabel>
+      <p className="text-muted-foreground text-sm">
+        Make it real. Drop in images or video that capture what your
+        event&apos;s all about.
+      </p>
 
-        <p className="text-muted-foreground text-sm">
-          Add images and videos. Order is preserved. You can skip this step and
-          add media later.
-        </p>
+      {media.length > 0 && (
+        <div className="grid grid-cols-3 gap-3">
+          {media.map((item, index) => (
+            <MediaGridCell
+              key={`${item.url}-${index}`}
+              item={item}
+              onRemove={() => removeAt(index)}
+            />
+          ))}
+        </div>
+      )}
 
-        {media.length > 0 && (
-          <ul className="flex flex-col gap-3">
-            {media.map((item, index) => (
-              <MediaRow
-                key={`${item.url}-${index}`}
-                item={item}
-                onRemove={() => removeItem(index)}
-              />
-            ))}
-          </ul>
-        )}
-
+      {canAdd && (
         <div
           {...getRootProps()}
-          className={`flex min-h-[180px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition-colors ${
+          className={`flex min-h-[140px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 transition-colors ${
             isDragActive
               ? "border-primary bg-primary/5"
               : "border-muted-foreground/25 bg-muted/30 hover:border-muted-foreground/50 hover:bg-muted/50"
@@ -87,40 +109,35 @@ const Step2Media = () => {
         >
           <input {...getInputProps()} />
 
-          <Upload className="text-muted-foreground size-10" aria-hidden />
+          {isUploading ? (
+            <Loader2
+              className="text-muted-foreground size-8 animate-spin"
+              aria-hidden
+            />
+          ) : (
+            <Upload className="text-muted-foreground size-8" aria-hidden />
+          )}
 
           <p className="text-foreground text-center text-sm font-medium">
-            {isUploading
-              ? "Uploading…"
-              : "Drag & drop files here, or click to select"}
-          </p>
-
-          <p className="text-muted-foreground text-center text-xs">
-            Supports images (JPG, PNG, GIF, WebP) and videos (MP4, WebM, MOV)
+            {isUploading ? "Uploading…" : "Drag & drop or click to add media"}
           </p>
         </div>
+      )}
 
-        {!token && (
-          <p className="text-destructive text-sm">
-            You must be signed in to upload media.
-          </p>
-        )}
-      </FieldGroup>
+      <p className="text-muted-foreground text-sm">
+        {media.length}/{maxItems} added
+      </p>
 
-      <div className="flex justify-end gap-3 pt-2">
-        <Button type="button" variant="outline" onClick={prevStep}>
-          Back
-        </Button>
-
-        <Button type="button" onClick={nextStep}>
-          Next
-        </Button>
-      </div>
-    </div>
+      {!token && (
+        <p className="text-destructive text-sm">
+          You must be signed in to upload media.
+        </p>
+      )}
+    </FieldGroup>
   );
 };
 
-const MediaRow = ({
+const MediaGridCell = ({
   item,
   onRemove,
 }: {
@@ -128,42 +145,36 @@ const MediaRow = ({
   onRemove: () => void;
 }) => {
   return (
-    <li className="border-border bg-card flex items-center gap-3 rounded-lg border p-3">
-      <div className="bg-muted size-14 shrink-0 overflow-hidden rounded-md">
-        {item.type === "image" ? (
-          // <img src={item.url} alt="" className="size-full object-cover" />
-          <Image
-            src={item.url}
-            alt="image"
-            className="size-full object-cover"
-            width={60}
-            height={60}
-          />
-        ) : (
-          <div className="text-muted-foreground flex size-full items-center justify-center">
-            <span className="text-xs font-medium">Video</span>
-          </div>
-        )}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <span className="text-muted-foreground text-xs font-medium uppercase">
-          {item.type}
-        </span>
-        <p className="truncate text-sm">{item.url}</p>
-      </div>
+    <div className="bg-muted relative aspect-square overflow-hidden rounded-lg">
+      {item.type === "image" ? (
+        <Image
+          src={item.url}
+          alt=""
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 33vw, 200px"
+        />
+      ) : (
+        <div className="text-muted-foreground flex size-full items-center justify-center text-sm font-medium">
+          Video
+        </div>
+      )}
 
       <Button
         type="button"
         variant="ghost"
-        size="xs"
-        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-        onClick={onRemove}
+        size="icon"
+        className="absolute top-1.5 right-1.5 size-8 rounded-full bg-black/50 text-white hover:bg-black/70 hover:text-white"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+        aria-label="Remove"
       >
-        Remove
+        <X className="size-4" />
       </Button>
-    </li>
+    </div>
   );
 };
 
-export default Step2Media;
+export default EventMediaUpload;
