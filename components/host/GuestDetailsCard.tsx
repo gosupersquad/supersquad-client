@@ -127,6 +127,32 @@ const GuestDetailsCard = ({ attendee, booking }: GuestDetailsCardProps) => {
         </div>
       </div>
 
+      {/* Custom question answers */}
+      {attendee.customAnswers &&
+        Object.keys(attendee.customAnswers).length > 0 && (
+          <div className="border-border mt-4 space-y-2 border-t pt-4">
+            <span className="text-muted-foreground text-sm font-medium">
+              Questionnaire
+            </span>
+
+            <dl className="space-y-2">
+              {Object.entries(attendee.customAnswers).map(
+                ([question, answer]) => (
+                  <div key={question}>
+                    <dt className="text-muted-foreground text-xs">
+                      {question}
+                    </dt>
+
+                    <dd className="mt-0.5 text-sm font-medium">
+                      {answer || "—"}
+                    </dd>
+                  </div>
+                ),
+              )}
+            </dl>
+          </div>
+        )}
+
       {/* Ticket (type + list price) and booking total (amount actually paid for this order) */}
       <div className="border-border mt-4 flex flex-wrap gap-4 border-t pt-4">
         <div>

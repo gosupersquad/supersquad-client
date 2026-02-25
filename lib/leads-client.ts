@@ -23,6 +23,8 @@ export interface LeadsAttendee {
   email: string;
   phone: string;
   instagram?: string;
+  /** Custom question answers: question label → answer. */
+  customAnswers?: Record<string, string>;
 }
 
 /** Single booking in leads detail. */
