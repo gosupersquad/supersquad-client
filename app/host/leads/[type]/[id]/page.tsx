@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, Search } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Search } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 
 import EventCard from "@/components/host/EventCard";
 import GuestDetailsCard from "@/components/host/GuestDetailsCard";
+import { exportLeadsToCsv } from "@/lib/leads-csv";
 import {
   getLeadsDetail,
   type LeadsAttendee,
@@ -83,6 +84,16 @@ export default function HostLeadsDetailPage() {
         (attendee.instagram?.toLowerCase().includes(q) ?? false),
     );
   }, [attendeesByView, searchQuery]);
+
+  const handleExportCsv = () => {
+    if (filteredAttendees.length === 0) {
+      toast.error("No leads to export");
+      return;
+    }
+
+    exportLeadsToCsv(filteredAttendees, detail!.slug);
+    toast.success("CSV downloaded");
+  };
 
   if (type !== "event") {
     return (
@@ -249,14 +260,28 @@ export default function HostLeadsDetailPage() {
         )}
       </section>
 
-      {/* Guest details: search + cards (only for current view) */}
+      {/* Guest details: search + export + cards (only for current view) */}
       {attendeesByView.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold">Guest details</h2>
-
-          <p className="text-muted-foreground mt-0.5 text-sm">
-            One card per attendee
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold">Guest details</h2>
+              <p className="text-muted-foreground mt-0.5 text-sm">
+                One card per attendee
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleExportCsv}
+              disabled={filteredAttendees.length === 0}
+              className="gap-2"
+            >
+              <Download className="size-4" />
+              Export CSV
+            </Button>
+          </div>
 
           <div className="relative mt-3">
             <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />

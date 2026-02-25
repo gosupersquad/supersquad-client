@@ -41,7 +41,8 @@
 ## Current context (paste before summarization)
 
 - **Event form (implemented):** See **Implemented – Event create/edit flow (3 steps)** below. Store 3 steps; EventFormBase uses `mode`; submit labels from mode; Step4Pricing = step 2 only (Next); Step3Faqs = step 3 only (Submit). No slug/dateDisplayText in type or payload; isActive in store for edit.
-- **Event landing + host preview:** Backend: optional auth on GET event; owner or master → any state; public → approved only. Frontend (FE7): sticky alert for host owner by approvalStatus; not yet implemented.
+- **Event landing + host preview (FE7 done):** Client fetch via EventLandingClient with optional token; owner/master see any state. Sticky approval alert (pending/rejected); pricing CTA hidden when not approved. Create success: toast then router.replace to event landing; back does not return to create form.
+- **Leads:** GuestDetailsCard shows customAnswers. Export to CSV planned (client-side; current view; fixed + dynamic custom question columns).
 - **MAP All experiences:** MasterExperiencesTable, EventCard, Fuse; list `approvalStatus=all`.
 
 ---
@@ -109,20 +110,20 @@
 
 **Frontend – Event landing (host preview + alert)**
 
-| #   | Task                                                                                                                                                                                                                                                                                                                                                                                                 | Status |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| FE7 | **Event landing page** (`/hosts/[username]/events/[eventSlug]`): If **token present** and current user is **host owner** of this event or master admin, fetch event (backend returns any state). Show **sticky alert (top-center)**: pending → "Under review"; rejected → "Rejected" + optional reason; approved → no alert. No token or not owner → current behaviour (public: only when approved). | [ ]    |
+| #   | Task                                                                                                                                                                                                                                                                                                                                                                                        | Status |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| FE7 | **Event landing page** (`/hosts/[username]/events/[eventSlug]`): If **token present** and current user is **host owner** of this event or master admin, fetch event (backend returns any state). Show **sticky alert (top-center)**: pending → "Under review"; rejected → "Rejected" + optional reason; approved → no alert. Pricing CTA hidden when approvalStatus is pending or rejected. | [x]    |
 
 **Reference**
 
 - **Server:** `POST /api/v1/admin/experiences` – CreateEventPayload (slug optional). `GET /api/v1/hosts/:username/events/:eventSlug` – optionalAuth; owner or master → any state; no auth → approved only.
-- **Client:** See **Implemented – Event create/edit flow (3 steps)** for store, EventFormBase, Step4Pricing, Step3Faqs, CreateEventForm, EditEventForm. Create success → redirect to event landing `/hosts/[username]/events/[slug]?created=1` with sticky success alert; edit success → redirect to `/host/experiences` + toast.
+- **Client:** See **Implemented – Event create/edit flow (3 steps)** for store, EventFormBase, Step4Pricing, Step3Faqs, CreateEventForm, EditEventForm. Create success → toast "Event created" then **router.replace** to event landing (no query param); edit success → router.replace to `/host/experiences` + toast. Event landing: **EventLandingClient** fetches with `getPublicEvent(username, eventSlug, token)`; sticky approval alert; CTA hidden when not approved. Leads: GuestDetailsCard shows customAnswers; export to CSV planned.
 
 ---
 
 ## Todos / next (high level)
 
-- Event create/edit flow (3 steps) + event landing host preview (sticky alert, backend conditional GET).
+- **Leads export to CSV:** Client-side export of current view's leads (filteredAttendees or attendeesByView); fixed columns (name, email, phone, instagram, ticket, booking id, payment status, total, createdAt) + dynamic columns from customAnswers keys; e.g. @json2csv/plainjs; download filename `leads-{slug}-{date}.csv`.
 - Trips (when in scope).
 - Any further MAP or host polish as needed.
 
@@ -137,4 +138,4 @@
 
 ---
 
-_Last updated: FE1–FE6 done. Create success → redirect to event landing with ?created=1 and sticky "Event created successfully" alert (dismissible). Edit success → redirect to /host/experiences + toast. FE7 (sticky alert for approval status on landing) still pending._
+_Last updated: FE1–FE7 done. Create success → toast + router.replace to event landing. Event landing: client fetch (EventLandingClient) with optional token; sticky approval alert; CTA hidden when not approved. Leads: GuestDetailsCard shows customAnswers; export to CSV planned (client-side)._
