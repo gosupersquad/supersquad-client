@@ -82,13 +82,14 @@ const EventLandingPage = ({
         </main>
       </div>
 
-      {!preview ||
-        (!showApprovalAlert && (
+      {!preview &&
+        event.approvalStatus !== "pending" &&
+        event.approvalStatus !== "rejected" && (
           <EventPricingBar
             tickets={event.tickets}
             spotsAvailable={event.spotsAvailable}
           />
-        ))}
+        )}
     </div>
   );
 };
