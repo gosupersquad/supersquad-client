@@ -24,6 +24,7 @@ export interface ExperienceFAQ {
  * Single ticket type for an event.
  * code: generated from label (e.g. slug) for linking; sent on create/update.
  * label: user-facing (e.g. "Standard", "Premium").
+ * totalSpots / spotsAvailable: form sets both from one "Spots" input per ticket.
  */
 export interface EventTicket {
   code: string;
@@ -32,6 +33,8 @@ export interface EventTicket {
   currency: "INR";
   /** Optional description (e.g. benefits) shown on landing and checkout. */
   description?: string;
+  totalSpots: number;
+  spotsAvailable: number;
 }
 
 /** Custom question type: free text or dropdown. Must match server QUESTION_TYPES. */
@@ -54,13 +57,25 @@ export interface ExperiencePricing {
   currency: "INR";
 }
 
-/** Payload for POST /api/v1/admin/experiences (create). */
+/** One discount code item when creating event (experienceId set by server). */
+export interface CreateEventDiscountCodeItem {
+  code: string;
+  type: "percentage" | "flat";
+  amount: number;
+  currency?: "INR";
+  maxUsage?: number;
+  startsAt?: string;
+  expiresAt?: string;
+  isActive?: boolean;
+  isPublic?: boolean;
+}
+
+/** Payload for POST /api/v1/admin/experiences (create). No top-level spots; tickets have totalSpots/spotsAvailable. */
 export interface CreateEventPayload {
   title: string;
   slug?: string;
   location: string;
   description: string;
-  spotsAvailable: number;
   startDate: string; // ISO
   endDate: string;
   dateDisplayText?: string;
@@ -69,21 +84,24 @@ export interface CreateEventPayload {
   tickets: EventTicket[];
   customQuestions?: EventQuestion[];
   isFreeRsvp?: boolean;
+  /** Optional; server creates each with experienceId = new event id. */
+  discountCodes?: CreateEventDiscountCodeItem[];
 }
 
 /** Payload for PUT /api/v1/admin/experiences/:id (update). Partial of create. */
 export type UpdateEventPayload = Partial<CreateEventPayload>;
 
-/** Step 1 form values (basics). slug, dateDisplayText, isActive not collected in new create flow (server/default). */
+/** Form basics. No global spots for paid path; freeSpots only when isFreeRsvp (Step 2 single "Spots"). */
 export interface EventFormBasics {
   title: string;
   location: string;
   description: string;
-  spotsAvailable: number;
   startDate: string;
   endDate: string;
   isFreeRsvp?: boolean;
   isActive?: boolean;
+  /** Only for free RSVP: single "Spots" input in Step 2 → used for free-rsvp ticket. */
+  freeSpots?: number;
 }
 
 /** Host as returned by public event API (populated hostId). */

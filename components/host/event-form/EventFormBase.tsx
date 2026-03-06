@@ -9,12 +9,15 @@ import type { CreateEventPayload } from "@/types";
 
 import Step1Basics from "./steps/Step1Basics";
 import Step3Faqs from "./steps/Step3Faqs";
+import Step3Placeholder from "./steps/Step3Placeholder";
 import Step4Pricing from "./steps/Step4Pricing";
 
+/** Step order: 1 = Media, 2 = Event details, 3 = Tickets, 4 = FAQs + questions + coupons. */
 const STEP_NAMES = [
-  "Basics & media",
-  "Tickets & capacity",
-  "FAQs & questions",
+  "Media",
+  "Event details",
+  "Tickets",
+  "One last step",
 ] as const;
 
 export type EventFormMode = "create" | "edit";
@@ -70,7 +73,9 @@ const EventFormBase = ({
 
         {step === 2 && <Step4Pricing />}
 
-        {step === 3 && (
+        {step === 3 && <Step3Placeholder />}
+
+        {step === 4 && (
           <Step3Faqs
             onSubmit={onSubmit}
             submitLabel={submitLabel}

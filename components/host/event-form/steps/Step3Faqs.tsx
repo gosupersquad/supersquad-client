@@ -32,6 +32,7 @@ const Step3Faqs = ({
     faqs,
     tickets,
     customQuestions,
+    discountCodeDrafts,
     setFaqs,
     setCustomQuestions,
     prevStep,
@@ -61,10 +62,20 @@ const Step3Faqs = ({
     }
 
     const hasInvalidTicket = tickets.some(
-      (t) => !t.label.trim() || typeof t.price !== "number" || t.price < 0,
+      (t) =>
+        !t.label.trim() ||
+        typeof t.price !== "number" ||
+        t.price < 0 ||
+        typeof t.totalSpots !== "number" ||
+        t.totalSpots < 0 ||
+        typeof t.spotsAvailable !== "number" ||
+        t.spotsAvailable < 0 ||
+        t.spotsAvailable > t.totalSpots,
     );
     if (hasInvalidTicket) {
-      toast.error("Each ticket needs a label and a valid price (≥ 0).");
+      toast.error(
+        "Each ticket needs a label, valid price (≥ 0), and spots (spots available ≤ total).",
+      );
       return;
     }
 
@@ -86,12 +97,21 @@ const Step3Faqs = ({
       return;
     }
 
+    if (
+      basics.isFreeRsvp &&
+      (basics.freeSpots == null || basics.freeSpots < 0)
+    ) {
+      toast.error("Free RSVP events need a spots value (≥ 0).");
+      return;
+    }
+
     const payload = buildEventCreatePayload(
       basics,
       media,
       faqs,
       tickets,
       customQuestions,
+      discountCodeDrafts.length > 0 ? discountCodeDrafts : undefined,
     );
     onSubmit(payload);
   };

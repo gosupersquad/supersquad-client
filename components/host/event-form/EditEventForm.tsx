@@ -60,18 +60,33 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
       title: event.title,
       location: event.location,
       description: event.description,
-      spotsAvailable: event.spotsAvailable,
       startDate,
       endDate,
       isFreeRsvp: event.isFreeRsvp ?? false,
       isActive: event.isActive,
+      ...(event.isFreeRsvp && event.spotsAvailable != null
+        ? { freeSpots: event.spotsAvailable }
+        : {}),
     });
     setMedia(event.media ?? []);
     setFaqs(event.faqs ?? []);
     setTickets(
       event.tickets?.length
-        ? event.tickets
-        : [{ code: "standard", label: "Standard", price: 0, currency: "INR" }],
+        ? event.tickets.map((t) => ({
+            ...t,
+            totalSpots: t.totalSpots ?? 0,
+            spotsAvailable: t.spotsAvailable ?? 0,
+          }))
+        : [
+            {
+              code: "standard",
+              label: "Standard",
+              price: 0,
+              currency: "INR",
+              totalSpots: 0,
+              spotsAvailable: 0,
+            },
+          ],
     );
     setCustomQuestions(event.customQuestions ?? []);
     setStep(1);

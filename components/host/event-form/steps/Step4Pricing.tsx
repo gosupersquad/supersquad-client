@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useEventFormStore } from "@/store/event-form-store";
 import type {
+  CreateEventDiscountCodeItem,
   CreateEventPayload,
   EventFormBasics,
   EventQuestion,
@@ -56,37 +57,51 @@ export const buildEventCreatePayload = (
   faqs: ExperienceFAQ[],
   tickets: EventTicket[],
   customQuestions: EventQuestion[],
-): CreateEventPayload => ({
-  title: basics.title,
-  location: basics.location,
-  description: basics.description,
-  spotsAvailable: basics.spotsAvailable,
-  startDate: basics.startDate,
-  endDate: basics.endDate,
-  media,
-  faqs,
+  discountCodes?: CreateEventDiscountCodeItem[],
+): CreateEventPayload => {
+  const freeSpots = basics.freeSpots ?? 0;
+  const ticketsPayload = basics.isFreeRsvp
+    ? [
+        {
+          code: "free-rsvp",
+          label: "Free RSVP",
+          price: 0,
+          currency: "INR" as const,
+          totalSpots: freeSpots,
+          spotsAvailable: freeSpots,
+        },
+      ]
+    : tickets.map((t) => ({ ...t }));
 
-  tickets: basics.isFreeRsvp
-    ? tickets.map((t) => ({ ...t, price: 0 }))
-    : tickets,
-  isFreeRsvp: basics.isFreeRsvp ?? false,
-  customQuestions:
-    customQuestions.length > 0
-      ? customQuestions.map((q) => {
-          const type = q.type ?? "string";
-          return {
-            label: q.label,
-            required: q.required,
-            type,
-            ...(type === "dropDown" && q.options?.length
-              ? {
-                  options: q.options.map((o) => o.trim()).filter(Boolean),
-                }
-              : {}),
-          };
-        })
-      : undefined,
-});
+  return {
+    title: basics.title,
+    location: basics.location,
+    description: basics.description,
+    startDate: basics.startDate,
+    endDate: basics.endDate,
+    media,
+    faqs,
+    tickets: ticketsPayload,
+    isFreeRsvp: basics.isFreeRsvp ?? false,
+    customQuestions:
+      customQuestions.length > 0
+        ? customQuestions.map((q) => {
+            const type = q.type ?? "string";
+            return {
+              label: q.label,
+              required: q.required,
+              type,
+              ...(type === "dropDown" && q.options?.length
+                ? {
+                    options: q.options.map((o) => o.trim()).filter(Boolean),
+                  }
+                : {}),
+            };
+          })
+        : undefined,
+    ...(discountCodes?.length ? { discountCodes } : {}),
+  };
+};
 
 /** Step 2 only: tickets + capacity. Back + Next (submit is step 3). Custom questions are on step 3 only. */
 const Step4Pricing = () => {
@@ -94,7 +109,7 @@ const Step4Pricing = () => {
     useEventFormStore();
 
   const isSubmitting = false;
-  const spotsAvailable = basics.spotsAvailable ?? 0;
+  const freeSpots = basics.freeSpots ?? 0;
 
   const updateTicket = (index: number, updates: Partial<EventTicket>) => {
     setTickets(
@@ -114,7 +129,17 @@ const Step4Pricing = () => {
   const addTicket = () => {
     const base = "New ticket";
     const code = ensureUniqueCode(tickets, base, tickets.length);
-    setTickets([...tickets, { code, label: base, price: 0, currency: "INR" }]);
+    setTickets([
+      ...tickets,
+      {
+        code,
+        label: base,
+        price: 0,
+        currency: "INR",
+        totalSpots: 0,
+        spotsAvailable: 0,
+      },
+    ]);
   };
 
   const removeTicket = (index: number) => {
@@ -230,6 +255,27 @@ const Step4Pricing = () => {
               </div>
 
               <Field className="mt-3">
+                <FieldLabel htmlFor={`ticket-spots-${index}`}>
+                  Spots <RequiredMark />
+                </FieldLabel>
+
+                <Input
+                  id={`ticket-spots-${index}`}
+                  type="number"
+                  min={0}
+                  step={1}
+                  placeholder="0"
+                  value={ticket.totalSpots === 0 ? "" : ticket.totalSpots}
+                  onChange={(e) => {
+                    const v = e.target.valueAsNumber;
+                    const n = Number.isFinite(v) && v >= 0 ? v : 0;
+                    updateTicket(index, { totalSpots: n, spotsAvailable: n });
+                  }}
+                  disabled={isSubmitting}
+                />
+              </Field>
+
+              <Field className="mt-3">
                 <FieldLabel htmlFor={`ticket-description-${index}`}>
                   Description (optional)
                 </FieldLabel>
@@ -263,27 +309,29 @@ const Step4Pricing = () => {
         </Button>
       </FieldGroup>
 
-      <FieldGroup className="gap-4">
-        <FieldLabel htmlFor="event-capacity">
-          Spots available <RequiredMark />
-        </FieldLabel>
+      {basics.isFreeRsvp && (
+        <FieldGroup className="gap-4">
+          <FieldLabel htmlFor="event-capacity">
+            Spots (free RSVP) <RequiredMark />
+          </FieldLabel>
 
-        <Input
-          id="event-capacity"
-          type="number"
-          min={0}
-          step={1}
-          placeholder="0"
-          value={spotsAvailable === 0 ? "" : spotsAvailable}
-          onChange={(e) => {
-            const v = e.target.valueAsNumber;
-            setBasics({
-              spotsAvailable: Number.isFinite(v) && v >= 0 ? v : 0,
-            });
-          }}
-          disabled={isSubmitting}
-        />
-      </FieldGroup>
+          <Input
+            id="event-capacity"
+            type="number"
+            min={0}
+            step={1}
+            placeholder="0"
+            value={freeSpots === 0 ? "" : freeSpots}
+            onChange={(e) => {
+              const v = e.target.valueAsNumber;
+              setBasics({
+                freeSpots: Number.isFinite(v) && v >= 0 ? v : 0,
+              });
+            }}
+            disabled={isSubmitting}
+          />
+        </FieldGroup>
+      )}
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="outline" onClick={prevStep}>

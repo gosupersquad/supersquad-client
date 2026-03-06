@@ -71,6 +71,8 @@ export interface DiscountCodeResponse {
   startsAt?: string;
   expiresAt?: string;
   isActive: boolean;
+  /** When true, show in checkout offers; when false, valid only when user enters code. */
+  isPublic?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -85,6 +87,7 @@ export interface CreateDiscountCodePayload {
   startsAt?: string;
   expiresAt?: string;
   isActive?: boolean;
+  isPublic?: boolean;
 }
 
 /** Update payload (partial). Code not sent on edit. */
@@ -95,6 +98,7 @@ export interface UpdateDiscountCodePayload {
   startsAt?: string;
   expiresAt?: string;
   isActive?: boolean;
+  isPublic?: boolean;
 }
 
 export async function listDiscountCodes(

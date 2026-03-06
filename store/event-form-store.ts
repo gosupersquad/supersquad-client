@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import type {
+  CreateEventDiscountCodeItem,
   EventFormBasics,
   EventQuestion,
   EventTicket,
@@ -10,17 +11,18 @@ import type {
   MediaItem,
 } from "@/types";
 
-const TOTAL_STEPS = 3;
+/** Step order: 1 = Media, 2 = Event details, 3 = Tickets, 4 = FAQs + questions + coupons. */
+const TOTAL_STEPS = 4;
 
 const defaultBasics: EventFormBasics = {
   title: "",
   location: "",
   description: "",
-  spotsAvailable: 0,
   startDate: "",
   endDate: "",
   isFreeRsvp: false,
   isActive: true,
+  freeSpots: undefined,
 };
 
 const defaultTicket: EventTicket = {
@@ -28,6 +30,8 @@ const defaultTicket: EventTicket = {
   label: "Standard",
   price: 0,
   currency: "INR",
+  totalSpots: 0,
+  spotsAvailable: 0,
 };
 
 interface EventFormState {
@@ -37,6 +41,8 @@ interface EventFormState {
   faqs: ExperienceFAQ[];
   tickets: EventTicket[];
   customQuestions: EventQuestion[];
+  /** Create flow only: coupon drafts sent with event payload on submit. */
+  discountCodeDrafts: CreateEventDiscountCodeItem[];
 }
 
 interface EventFormActions {
@@ -46,6 +52,7 @@ interface EventFormActions {
   setFaqs: (faqs: ExperienceFAQ[]) => void;
   setTickets: (tickets: EventTicket[]) => void;
   setCustomQuestions: (questions: EventQuestion[]) => void;
+  setDiscountCodeDrafts: (drafts: CreateEventDiscountCodeItem[]) => void;
   nextStep: () => void;
   prevStep: () => void;
   reset: () => void;
@@ -60,6 +67,7 @@ const initialState: EventFormState = {
   faqs: [],
   tickets: [defaultTicket],
   customQuestions: [],
+  discountCodeDrafts: [],
 };
 
 const STORAGE_KEY = "supersquad-event-form";
@@ -87,6 +95,8 @@ export const createEventFormSlice: StateCreator<
   setTickets: (tickets) => set({ tickets }),
 
   setCustomQuestions: (customQuestions) => set({ customQuestions }),
+
+  setDiscountCodeDrafts: (discountCodeDrafts) => set({ discountCodeDrafts }),
 
   nextStep: () =>
     set((state) => ({
