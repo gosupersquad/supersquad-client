@@ -14,8 +14,10 @@ interface EventCardProps {
   event: EventCardData;
   /** When set, the whole card is a link (e.g. leads → detail). */
   linkHref?: string;
-  /** Optional actions (e.g. Edit + View live) rendered top-right. */
+  /** Optional actions (legacy). */
   actions?: React.ReactNode;
+  /** Optional actions rendered under title + dates. */
+  footerActions?: React.ReactNode;
   /** Optional approval status for host dashboard; Rejected + reason shows message button. */
   approvalStatus?: ApprovalStatus;
   rejectedReason?: string | null;
@@ -29,6 +31,7 @@ const EventCard = ({
   event,
   linkHref,
   actions,
+  footerActions,
   approvalStatus,
   rejectedReason,
   hostName,
@@ -38,6 +41,8 @@ const EventCard = ({
   const imageUrl = getFirstImageUrl(event.media);
   const isSoldOut =
     event.spotsAvailable !== undefined && event.spotsAvailable === 0;
+
+  const resolvedFooterActions = footerActions ?? actions;
 
   const content = (
     <div className="relative overflow-hidden rounded-xl">
@@ -86,6 +91,12 @@ const EventCard = ({
                 <span>{datesText}</span>
               </span>
             </div>
+
+            {resolvedFooterActions ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {resolvedFooterActions}
+              </div>
+            ) : null}
           </div>
         </div>
       ) : (
@@ -116,13 +127,15 @@ const EventCard = ({
                 <span>{datesText}</span>
               </span>
             </div>
+
+            {resolvedFooterActions ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {resolvedFooterActions}
+              </div>
+            ) : null}
           </div>
         </div>
       )}
-
-      {actions ? (
-        <div className="absolute top-2 right-2 flex gap-1.5">{actions}</div>
-      ) : null}
     </div>
   );
 

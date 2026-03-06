@@ -1,18 +1,13 @@
 "use client";
 
-import { ExternalLink, Pencil } from "lucide-react";
-import Link from "next/link";
+import { BarChart3, ExternalLink, Pencil } from "lucide-react";
 
 import EventCard from "@/components/host/EventCard";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import type { EventResponse } from "@/lib/experiences-client";
 import { toEventCardData } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
+
+import FooterActionBtn from "./FooterActionBtn";
 
 interface ExperiencesCardsProps {
   events: EventResponse[];
@@ -24,64 +19,41 @@ export default function ExperiencesCards({ events }: ExperiencesCardsProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-1">
       {events.map((event) => {
+        const cardData = toEventCardData(event);
         const viewLiveHref =
           user?.username && event.slug
             ? `/hosts/${user.username}/events/${event.slug}`
             : null;
 
-        const actions = (
+        const footerActions = (
           <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="h-8 w-8 border-0 bg-black/70 text-white shadow-sm hover:bg-black/80"
-                  asChild
-                >
-                  <Link href={`/host/experiences/${event._id}/edit?type=event`}>
-                    <Pencil className="size-4" />
-                  </Link>
-                </Button>
-              </TooltipTrigger>
+            <FooterActionBtn
+              href={`/host/leads/event/${cardData.id}`}
+              icon={<BarChart3 className="size-4" />}
+              label="Analytics"
+            />
 
-              <TooltipContent>
-                <p>Edit event</p>
-              </TooltipContent>
-            </Tooltip>
+            <FooterActionBtn
+              href={`/host/experiences/${cardData.id}/edit?type=event`}
+              icon={<Pencil className="size-4" />}
+              label="Edit"
+            />
 
-            {viewLiveHref && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="h-8 w-8 border-0 bg-black/70 text-white shadow-sm hover:bg-black/80"
-                    asChild
-                  >
-                    <Link
-                      href={viewLiveHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink className="size-4" />
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-
-                <TooltipContent>
-                  <p>View live</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+            {viewLiveHref ? (
+              <FooterActionBtn
+                href={viewLiveHref}
+                icon={<ExternalLink className="size-4" />}
+                label="View"
+              />
+            ) : null}
           </>
         );
 
         return (
           <EventCard
             key={event._id}
-            event={toEventCardData(event)}
-            actions={actions}
+            event={cardData}
+            footerActions={footerActions}
             approvalStatus={event.approvalStatus}
             rejectedReason={event.rejectedReason}
           />

@@ -3,13 +3,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Fuse from "fuse.js";
 import { Loader2, Search } from "lucide-react";
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
 import ExperiencesCards from "@/components/host/ExperiencesCards";
 import ExperiencesTable from "@/components/host/ExperiencesTable";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { listEvents, toggleEventStatus } from "@/lib/experiences-client";
 import { useAuthStore } from "@/store/auth-store";
@@ -23,6 +21,7 @@ const HostExperiencesPage = () => {
 
   const token = useAuthStore((s) => s.token);
   const clearAuth = useAuthStore((s) => s.clearAuth);
+  const hostName = useAuthStore((s) => s.user!.name);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -114,24 +113,14 @@ const HostExperiencesPage = () => {
   return (
     <div className="space-y-4 p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Experiences</h1>
-
-          <p className="text-muted-foreground mt-1">
-            List and manage your events.
-          </p>
-        </div>
-
-        <Button asChild>
-          <Link href="/host/experiences/new?type=event">Create event</Link>
-        </Button>
+        <h1 className="text-2xl font-semibold">{hostName}</h1>
       </div>
 
       <div className="relative">
         <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
 
         <Input
-          placeholder="Search by title or slug…"
+          placeholder="Search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9 sm:w-80"

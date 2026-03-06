@@ -3,20 +3,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Fuse from "fuse.js";
 import { ExternalLink, Search } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 import EventCard from "@/components/host/EventCard";
+import FooterActionBtn from "@/components/host/FooterActionBtn";
 import MasterExperiencesTable from "@/components/master/MasterExperiencesTable";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { APPROVAL_STATUSES, ApprovalStatus, ROLES } from "@/lib/constants";
 import {
   isMasterForbidden,
@@ -198,36 +192,19 @@ export default function MasterExperiencesPage() {
                       location: event.location ?? "",
                     });
 
-                    const actions = (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="secondary"
-                            size="icon"
-                            className="h-8 w-8 border-0 bg-black/70 text-white shadow-sm hover:bg-black/80"
-                            asChild
-                          >
-                            <Link
-                              href={viewLiveHref}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <ExternalLink className="size-4" />
-                            </Link>
-                          </Button>
-                        </TooltipTrigger>
-
-                        <TooltipContent>
-                          <p>View live page</p>
-                        </TooltipContent>
-                      </Tooltip>
+                    const footerActions = (
+                      <FooterActionBtn
+                        href={viewLiveHref}
+                        icon={<ExternalLink className="size-4" />}
+                        label="View"
+                      />
                     );
 
                     return (
                       <EventCard
                         key={event.id}
                         event={cardData}
-                        actions={actions}
+                        footerActions={footerActions}
                         hostName={event.host.name}
                         approvalStatus={event.approvalStatus as ApprovalStatus}
                       />
