@@ -69,7 +69,8 @@ export interface Step2EventDetailsProps {
  * Description. If isFreeRsvp: one "Spots" input → basics.freeSpots. Back / Next.
  */
 const Step2EventDetails = ({ mode }: Step2EventDetailsProps) => {
-  const { basics, setBasics, nextStep, prevStep } = useEventFormStore();
+  const { basics, setBasics, setStep, nextStep, prevStep } =
+    useEventFormStore();
   const isFreeRsvp = basics.isFreeRsvp ?? false;
 
   const form = useForm<Step2Values>({
@@ -103,7 +104,9 @@ const Step2EventDetails = ({ mode }: Step2EventDetailsProps) => {
         ? { freeSpots: data.freeSpots }
         : {}),
     });
-    nextStep();
+
+    if (isFreeRsvp) setStep(4);
+    else nextStep();
   };
 
   return (

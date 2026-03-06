@@ -10,6 +10,7 @@ import type { CreateEventPayload } from "@/types";
 import Step1Media from "./steps/Step1Media";
 import Step2EventDetails from "./steps/Step2EventDetails";
 import Step3Faqs from "./steps/Step3Faqs";
+import Step3TicketsSkip from "./steps/Step3TicketsSkip";
 import Step4Pricing from "./steps/Step4Pricing";
 
 /** Step order: 1 = Media, 2 = Event details, 3 = Tickets, 4 = FAQs + questions + coupons. */
@@ -42,7 +43,7 @@ const EventFormBase = ({
   isSubmitting,
 }: EventFormBaseProps) => {
   const router = useRouter();
-  const { step } = useEventFormStore();
+  const { step, basics } = useEventFormStore();
   const { label: submitLabel, loadingLabel: submitLoadingLabel } =
     SUBMIT_LABELS[mode];
 
@@ -73,7 +74,8 @@ const EventFormBase = ({
 
         {step === 2 && <Step2EventDetails mode={mode} />}
 
-        {step === 3 && <Step4Pricing />}
+        {step === 3 &&
+          (basics.isFreeRsvp ? <Step3TicketsSkip /> : <Step4Pricing />)}
 
         {step === 4 && (
           <Step3Faqs

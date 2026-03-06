@@ -76,7 +76,7 @@
 
 - [x] **Step 1 – Media:** New component (or rename). Content: media upload (existing), Free RSVP toggle. Reads/writes store: media, basics.isFreeRsvp. Back / Next.
 - [x] **Step 2 – Event details:** New component. Fields: Event name, Venue (location), Start date+time, End date+time, Description. If isFreeRsvp: one "Spots" input → store in basics (e.g. for later use as free-rsvp ticket spots). If paid: no spots. Back / Next.
-- [ ] **Step 3 – Tickets:** Shown only when **not** isFreeRsvp. Per ticket: Title (map to/from `label`), Price, Spots (one number → set both totalSpots and spotsAvailable), Description. Add/remove ticket types. When isFreeRsvp: skip step (don’t render or skip on next from Step 2). Back / Next.
+- [x] **Step 3 – Tickets:** Shown only when **not** isFreeRsvp. Per ticket: Title (map to/from `label`), Price, Spots (one number → set both totalSpots and spotsAvailable), Description. Add/remove ticket types. When isFreeRsvp: skip step (don’t render or skip on next from Step 2). Back / Next.
 - [ ] **Step 4 – One last step:** FAQs + Custom questions (existing behaviour) + **Coupons section.** Submit only on Step 4. Create flow: coupons = discountCodeDrafts in store; "Add coupon" adds to drafts; edit/remove drafts in UI; submit builds payload with event + discountCodes. Edit flow: fetch coupons for event (list by experienceId or filter); show list; "Add coupon" opens modal → POST create with eventId; Edit opens modal → PUT; Delete calls DELETE. Reuse DiscountCodeFormModal and any list/row UI from discount-codes page. Step names in header: e.g. "Media", "Event details", "Tickets", "One last step" (no misleading "Step1Basics" etc.).
 
 ### EventFormBase and payload

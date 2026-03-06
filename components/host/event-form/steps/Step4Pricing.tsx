@@ -6,7 +6,6 @@ import RequiredMark from "@/components/custom/required-mark";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useEventFormStore } from "@/store/event-form-store";
 import type {
@@ -103,13 +102,11 @@ export const buildEventCreatePayload = (
   };
 };
 
-/** Step 2 only: tickets + capacity. Back + Next (submit is step 3). Custom questions are on step 3 only. */
+/** Step 3 – Tickets (shown only when not isFreeRsvp). Per ticket: Title (label), Price, Spots, Description. Back + Next. */
 const Step4Pricing = () => {
-  const { basics, tickets, setTickets, setBasics, prevStep, nextStep } =
-    useEventFormStore();
+  const { tickets, setTickets, prevStep, nextStep } = useEventFormStore();
 
   const isSubmitting = false;
-  const freeSpots = basics.freeSpots ?? 0;
 
   const updateTicket = (index: number, updates: Partial<EventTicket>) => {
     setTickets(
@@ -154,27 +151,6 @@ const Step4Pricing = () => {
   return (
     <div className="space-y-8">
       <FieldGroup className="gap-4">
-        <div className="border-border flex items-center justify-between gap-4 rounded-lg border p-4">
-          <FieldLabel className="text-muted-foreground font-normal">
-            Free RSVP — no payment required; guests reserve a spot and go
-            straight to confirmation.
-          </FieldLabel>
-
-          <Switch
-            checked={basics.isFreeRsvp ?? false}
-            onCheckedChange={(checked) => {
-              setBasics({ isFreeRsvp: checked === true });
-
-              if (checked === true) {
-                setTickets(tickets.map((t) => ({ ...t, price: 0 })));
-              }
-            }}
-            disabled={isSubmitting}
-          />
-        </div>
-      </FieldGroup>
-
-      <FieldGroup className="gap-4">
         <FieldLabel>Tickets</FieldLabel>
 
         <p className="text-muted-foreground text-sm">
@@ -208,7 +184,7 @@ const Step4Pricing = () => {
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor={`ticket-label-${index}`}>
-                    Label <RequiredMark />
+                    Title <RequiredMark />
                   </FieldLabel>
 
                   <Input
@@ -225,8 +201,7 @@ const Step4Pricing = () => {
 
                 <Field>
                   <FieldLabel htmlFor={`ticket-price-${index}`}>
-                    Price (₹){" "}
-                    {!(basics.isFreeRsvp ?? false) && <RequiredMark />}
+                    Price (₹) <RequiredMark />
                   </FieldLabel>
 
                   <Input
@@ -235,21 +210,14 @@ const Step4Pricing = () => {
                     min={0}
                     step={1}
                     placeholder="0"
-                    value={
-                      basics.isFreeRsvp
-                        ? 0
-                        : ticket.price === 0
-                          ? ""
-                          : ticket.price
-                    }
+                    value={ticket.price === 0 ? "" : ticket.price}
                     onChange={(e) => {
-                      if (basics.isFreeRsvp) return;
                       const v = e.target.valueAsNumber;
                       updateTicket(index, {
                         price: Number.isFinite(v) ? v : 0,
                       });
                     }}
-                    disabled={isSubmitting || (basics.isFreeRsvp ?? false)}
+                    disabled={isSubmitting}
                   />
                 </Field>
               </div>
@@ -308,30 +276,6 @@ const Step4Pricing = () => {
           Add ticket type
         </Button>
       </FieldGroup>
-
-      {basics.isFreeRsvp && (
-        <FieldGroup className="gap-4">
-          <FieldLabel htmlFor="event-capacity">
-            Spots (free RSVP) <RequiredMark />
-          </FieldLabel>
-
-          <Input
-            id="event-capacity"
-            type="number"
-            min={0}
-            step={1}
-            placeholder="0"
-            value={freeSpots === 0 ? "" : freeSpots}
-            onChange={(e) => {
-              const v = e.target.valueAsNumber;
-              setBasics({
-                freeSpots: Number.isFinite(v) && v >= 0 ? v : 0,
-              });
-            }}
-            disabled={isSubmitting}
-          />
-        </FieldGroup>
-      )}
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="outline" onClick={prevStep}>
