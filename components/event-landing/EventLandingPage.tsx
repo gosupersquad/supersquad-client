@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { AlertCircle, X } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import Link from "next/link";
 
 import type { PublicEvent } from "@/types";
 
@@ -25,10 +25,8 @@ const EventLandingPage = ({
 }: EventLandingPageProps) => {
   const host = event.hostId;
 
-  const [approvalAlertDismissed, setApprovalAlertDismissed] = useState(false);
   const showApprovalAlert =
-    !approvalAlertDismissed &&
-    (event.approvalStatus === "pending" || event.approvalStatus === "rejected");
+    event.approvalStatus === "pending" || event.approvalStatus === "rejected";
 
   return (
     <div className="bg-background text-foreground min-h-screen overflow-x-hidden">
@@ -47,14 +45,12 @@ const EventLandingPage = ({
                 : "Your event has been rejected"}
           </span>
 
-          <button
-            type="button"
-            onClick={() => setApprovalAlertDismissed(true)}
-            className="ml-1 rounded p-1 transition-colors hover:bg-amber-500/20"
-            aria-label="Dismiss"
+          <Link
+            href="/host/experiences"
+            className="ml-3 shrink-0 rounded-md border border-amber-600/50 bg-amber-500/25 px-3 py-1.5 text-sm font-semibold text-amber-900 shadow-sm transition-colors hover:bg-amber-500/40 active:bg-amber-500/50 dark:text-amber-100"
           >
-            <X className="size-4" />
-          </button>
+            Back to Dashboard
+          </Link>
         </div>
       )}
 
