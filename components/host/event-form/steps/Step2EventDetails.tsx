@@ -1,0 +1,340 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import DatePicker from "react-datepicker";
+import type { Resolver } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
+
+import RequiredMark from "@/components/custom/required-mark";
+import { Button } from "@/components/ui/button";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  formatDateTimeToISO,
+  parseISOToDateTime,
+  startOfToday,
+} from "@/lib/utils";
+import { useEventFormStore } from "@/store/event-form-store";
+
+import "react-datepicker/dist/react-datepicker.css";
+import { EventFormMode } from "../EventFormBase";
+
+const step2Schema = z
+  .object({
+    title: z.string().min(1, "Event name is required"),
+    location: z.string().min(1, "Venue is required"),
+    description: z.string().min(1, "Description is required"),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().min(1, "End date is required"),
+    isActive: z.boolean(),
+    freeSpots: z.number().int().min(0).optional(),
+  })
+  .refine(
+    (data) => {
+      const start = parseISOToDateTime(data.startDate);
+      return start !== null && start >= startOfToday();
+    },
+    {
+      message: "Start date cannot be in the past",
+      path: ["startDate"],
+    },
+  )
+  .refine(
+    (data) => {
+      const start = parseISOToDateTime(data.startDate);
+      const end = parseISOToDateTime(data.endDate);
+      return start !== null && end !== null && end >= start;
+    },
+    {
+      message: "End date cannot be before start date",
+      path: ["endDate"],
+    },
+  );
+
+type Step2Values = z.infer<typeof step2Schema>;
+
+export interface Step2EventDetailsProps {
+  mode: EventFormMode;
+}
+
+/**
+ * Step 2 – Event details: Event name, Venue (location), Start/End date+time,
+ * Description. If isFreeRsvp: one "Spots" input → basics.freeSpots. Back / Next.
+ */
+const Step2EventDetails = ({ mode }: Step2EventDetailsProps) => {
+  const { basics, setBasics, nextStep, prevStep } = useEventFormStore();
+  const isFreeRsvp = basics.isFreeRsvp ?? false;
+
+  const form = useForm<Step2Values>({
+    resolver: zodResolver(step2Schema) as Resolver<Step2Values>,
+    defaultValues: {
+      title: basics.title,
+      location: basics.location,
+      description: basics.description,
+      startDate: basics.startDate || "",
+      endDate: basics.endDate || "",
+      isActive: basics.isActive ?? true,
+      freeSpots: basics.freeSpots ?? 0,
+    },
+  });
+
+  const startDate = useWatch({
+    control: form.control,
+    name: "startDate",
+    defaultValue: "",
+  });
+
+  const onSubmit = (data: Step2Values) => {
+    setBasics({
+      title: data.title,
+      location: data.location,
+      description: data.description,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      isActive: data.isActive,
+      ...(isFreeRsvp && data.freeSpots != null
+        ? { freeSpots: data.freeSpots }
+        : {}),
+    });
+    nextStep();
+  };
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <FieldGroup className="gap-4">
+        <Controller
+          name="title"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="event-title">
+                Event name <RequiredMark />
+              </FieldLabel>
+
+              <Input
+                {...field}
+                id="event-title"
+                placeholder="e.g. Padel Social"
+                aria-invalid={fieldState.invalid}
+              />
+
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="location"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="event-venue">
+                Venue <RequiredMark />
+              </FieldLabel>
+
+              <Input
+                {...field}
+                id="event-venue"
+                placeholder="e.g. Mumbai"
+                aria-invalid={fieldState.invalid}
+              />
+
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="description"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="event-description">
+                Description <RequiredMark />
+              </FieldLabel>
+
+              <Textarea
+                {...field}
+                id="event-description"
+                placeholder="Describe your event"
+                rows={4}
+                className="min-h-[100px] resize-y"
+                aria-invalid={fieldState.invalid}
+              />
+
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Controller
+            name="startDate"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="event-start">
+                  Start date <RequiredMark />
+                </FieldLabel>
+
+                <DatePicker
+                  id="event-start"
+                  selected={
+                    field.value ? parseISOToDateTime(field.value) : null
+                  }
+                  onChange={(date: Date | null) =>
+                    field.onChange(date ? formatDateTimeToISO(date) : "")
+                  }
+                  minDate={startOfToday()}
+                  showTimeSelect
+                  timeIntervals={15}
+                  timeCaption="Time"
+                  autoComplete="off"
+                  dateFormat="dd/MM/yyyy HH:mm"
+                  placeholderText="DD/MM/YYYY, time"
+                  customInput={
+                    <input
+                      className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                      inputMode="none"
+                      readOnly
+                      aria-invalid={fieldState.invalid ? "true" : "false"}
+                    />
+                  }
+                  aria-invalid={fieldState.invalid ? "true" : "false"}
+                />
+
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="endDate"
+            control={form.control}
+            render={({ field, fieldState }) => {
+              const startParsed = startDate
+                ? parseISOToDateTime(startDate)
+                : null;
+              const minEnd = startParsed ?? startOfToday();
+
+              return (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="event-end">
+                    End date <RequiredMark />
+                  </FieldLabel>
+
+                  <DatePicker
+                    id="event-end"
+                    selected={
+                      field.value ? parseISOToDateTime(field.value) : null
+                    }
+                    onChange={(date: Date | null) =>
+                      field.onChange(date ? formatDateTimeToISO(date) : "")
+                    }
+                    minDate={minEnd}
+                    showTimeSelect
+                    timeIntervals={15}
+                    autoComplete="off"
+                    timeCaption="Time"
+                    dateFormat="dd/MM/yyyy HH:mm"
+                    placeholderText="DD/MM/YYYY, time"
+                    customInput={
+                      <input
+                        className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        inputMode="none"
+                        readOnly
+                        aria-invalid={fieldState.invalid ? "true" : "false"}
+                      />
+                    }
+                    aria-invalid={fieldState.invalid ? "true" : "false"}
+                  />
+
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              );
+            }}
+          />
+        </div>
+
+        {isFreeRsvp && (
+          <Controller
+            name="freeSpots"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="event-spots">
+                  Spots <RequiredMark />
+                </FieldLabel>
+
+                <Input
+                  id="event-spots"
+                  type="number"
+                  min={0}
+                  step={1}
+                  placeholder="0"
+                  value={field.value === 0 ? "" : field.value}
+                  onChange={(e) => {
+                    const v = e.target.valueAsNumber;
+                    field.onChange(Number.isFinite(v) && v >= 0 ? v : 0);
+                  }}
+                  aria-invalid={fieldState.invalid}
+                />
+
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Total spots for this free RSVP event.
+                </p>
+
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+        )}
+
+        {mode === "edit" && (
+          <Controller
+            name="isActive"
+            control={form.control}
+            render={({ field }) => (
+              <Field orientation="horizontal" className="items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="event-active"
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                  className="border-border size-4 rounded"
+                />
+
+                <FieldLabel htmlFor="event-active" className="font-normal">
+                  Active (show on listing)
+                </FieldLabel>
+              </Field>
+            )}
+          />
+        )}
+
+        <div className="flex justify-end gap-3 pt-2">
+          <Button type="button" variant="outline" onClick={prevStep}>
+            Back
+          </Button>
+
+          <Button type="submit">Next</Button>
+        </div>
+      </FieldGroup>
+    </form>
+  );
+};
+
+export default Step2EventDetails;

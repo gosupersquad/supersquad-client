@@ -8,8 +8,8 @@ import { TOTAL_STEPS, useEventFormStore } from "@/store/event-form-store";
 import type { CreateEventPayload } from "@/types";
 
 import Step1Media from "./steps/Step1Media";
+import Step2EventDetails from "./steps/Step2EventDetails";
 import Step3Faqs from "./steps/Step3Faqs";
-import Step3Placeholder from "./steps/Step3Placeholder";
 import Step4Pricing from "./steps/Step4Pricing";
 
 /** Step order: 1 = Media, 2 = Event details, 3 = Tickets, 4 = FAQs + questions + coupons. */
@@ -71,9 +71,9 @@ const EventFormBase = ({
       <div className="mx-auto max-w-2xl px-4 py-6">
         {step === 1 && <Step1Media />}
 
-        {step === 2 && <Step4Pricing />}
+        {step === 2 && <Step2EventDetails mode={mode} />}
 
-        {step === 3 && <Step3Placeholder />}
+        {step === 3 && <Step4Pricing />}
 
         {step === 4 && (
           <Step3Faqs
