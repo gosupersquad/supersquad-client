@@ -31,111 +31,86 @@
 
 ## Implemented (summary)
 
-- **Host:** Login, layout (guard + HostShell), dashboard, experiences list (table + cards, Fuse search, toggle status, edit, view live), approval column + badges (ApprovalBadge; Rejected + reason via Dialog), event create/edit (4-step form), discount codes CRUD, leads (list + detail, Confirmed/Abandoned toggle).
+- **Host:** Login, layout (guard + HostShell), dashboard, experiences list (table + cards, Fuse search, toggle status, edit, view live), approval column + badges (ApprovalBadge; Rejected + reason via Dialog), event create/edit **(current: 3-step form; refactor to 4-step in progress)**, discount codes CRUD (dedicated page), leads (list + detail, Confirmed/Abandoned toggle).
 - **Public:** Event landing (SSR), checkout, payment status page (verify, order summary).
-- **MAP:** Pending (cards, Fuse search, approve/reject, preview link); Preview page (event landing, pricing bar disabled); **Hosts** (list cards, Fuse name/username, Create/Update modals via HostFormBase + CreateHostForm/EditHostForm, isActive toggle); **All experiences** (`/admin/master/experiences` – table desktop, cards mobile, Fuse search title/slug/host, View live only; list API `approvalStatus=all`; list includes location + totalSpots); 403 → redirect + toast.
-- **Auth:** Host deactivation: server `requireAuth` re-checks Host.isActive for role=host → 403 "account deactivated"; client QueryProvider QueryCache/MutationCache onError → clearAuth, toast, router.push('/host/login').
+- **MAP:** Pending (cards, Fuse search, approve/reject, preview); Preview page (event landing, pricing bar disabled); Hosts (list, Create/Update modals, isActive, Fuse); All experiences (table/cards, Fuse, View live); 403 → redirect + toast.
+- **Auth:** Host deactivation: server 403 "account deactivated"; client QueryProvider onError → clearAuth, toast, router.push('/host/login').
+
+---
+
+## Event form refactor – target (4 steps)
+
+**Goal:** New step order and fields; spots at ticket level; coupons CRUD in Step 4 (create: in-memory drafts + bulk payload; edit: list from API + full CRUD in modal). Backend provides virtuals for event.totalSpots / event.spotsAvailable and ticket-level totalSpots/spotsAvailable.
+
+### Step names and content
+
+1. **Media** – Add images (existing upload, max 6). Free RSVP toggle.
+2. **Event details** – Event name, **Venue** (backend field `location`; UI label "Venue"), Start date+time, End date+time, Description. If Free RSVP: single "Spots" input (used for implicit free-rsvp ticket). If Paid: no spots here.
+3. **Tickets** – Shown only when **paid**. Per ticket: **Title** (backend `label`; UI label "Title"), Price, Spots (totalSpots/spotsAvailable both set from this), Description. Add/remove ticket types. When Free RSVP: skip this step (backend gets one ticket code `free-rsvp`, label "Free RSVP", spots from Step 2).
+4. **One last step** – FAQs, Custom questions, **Coupons (full CRUD)**. Create flow: coupons are drafts in state; submit sends event + `discountCodes[]` in one payload; backend creates event then creates each discount code. Edit flow: list coupons for this event (API: list with experienceId filter or client filter); Add coupon (modal) → POST create with eventId; Edit/Delete per row (reuse existing modal/components).
+
+### Coupons in Step 4
+
+- **Create event:** Step 4 shows FAQs, custom questions, and coupon drafts (add/edit/remove in UI, stored in form state). On Submit, payload includes `discountCodes` array; backend creates event then creates each code with experienceId = new event id. No eventId until submit; bulk payload is the agreed approach.
+- **Edit event:** Step 4 lists coupons for this event (fetch list filtered by experienceId). Full CRUD: Add coupon (modal, POST with current eventId), Edit (modal, PUT), Delete (DELETE). Reuse existing discount code modal and table/card components where possible.
+- **Venue:** Frontend label/placeholder "Venue" only; API keeps `location`.
+
+### Ticket UI
+
+- Backend keeps field name `label`. All form and display labels say **"Title"** for ticket name.
+
+### Discount code visibility
+
+- New field `isPublic` (default true). Public = show in checkout offers; private = valid only when user enters code. Backend adds field; form (modal) exposes it when creating/editing coupons.
+
+---
+
+## Frontend todos – Event form refactor
+
+### Store and types
+
+- [ ] **Store** (`event-form-store.ts`): `TOTAL_STEPS = 4`. Step order: 1 = Media, 2 = Event details, 3 = Tickets, 4 = FAQs + questions + coupons. Add state for coupon drafts (create flow): e.g. `discountCodeDrafts: Array<{ code, type, amount, ... }>`. Basics: keep title, location (venue), description, startDate, endDate, isFreeRsvp, isActive; remove or repurpose single `spotsAvailable` for free RSVP only (Step 2 single "Spots" when isFreeRsvp). Tickets: each ticket has label, price, currency, description?, totalSpots, spotsAvailable (form sets both from one "Spots" input per ticket).
+- [ ] **Types:** EventFormBasics: no global spotsAvailable for paid path; optional single "spots" for free (e.g. `freeSpots` or reuse `spotsAvailable` only when isFreeRsvp). EventTicket type: add `totalSpots` and `spotsAvailable`. CreateEventPayload: tickets with totalSpots/spotsAvailable; no top-level spotsAvailable (or only for free RSVP); optional `discountCodes?: Array<...>` for create. Client types for discount code create payload include `isPublic` when backend is ready.
+
+### Step components (rename and rewire)
+
+- [ ] **Step 1 – Media:** New component (or rename). Content: media upload (existing), Free RSVP toggle. Reads/writes store: media, basics.isFreeRsvp. Back / Next.
+- [ ] **Step 2 – Event details:** New component. Fields: Event name, Venue (location), Start date+time, End date+time, Description. If isFreeRsvp: one "Spots" input → store in basics (e.g. for later use as free-rsvp ticket spots). If paid: no spots. Back / Next.
+- [ ] **Step 3 – Tickets:** Shown only when **not** isFreeRsvp. Per ticket: Title (map to/from `label`), Price, Spots (one number → set both totalSpots and spotsAvailable), Description. Add/remove ticket types. When isFreeRsvp: skip step (don’t render or skip on next from Step 2). Back / Next.
+- [ ] **Step 4 – One last step:** FAQs + Custom questions (existing behaviour) + **Coupons section.** Submit only on Step 4. Create flow: coupons = discountCodeDrafts in store; "Add coupon" adds to drafts; edit/remove drafts in UI; submit builds payload with event + discountCodes. Edit flow: fetch coupons for event (list by experienceId or filter); show list; "Add coupon" opens modal → POST create with eventId; Edit opens modal → PUT; Delete calls DELETE. Reuse DiscountCodeFormModal and any list/row UI from discount-codes page. Step names in header: e.g. "Media", "Event details", "Tickets", "One last step" (no misleading "Step1Basics" etc.).
+
+### EventFormBase and payload
+
+- [ ] **EventFormBase:** Render 4 steps with new step names. Step 1 = Media, Step 2 = Event details, Step 3 = Tickets (or skip when free), Step 4 = FAQs + questions + coupons. Submit on Step 4 only; submit label/loading from mode (create/edit).
+- [ ] **Payload builder:** For paid: build tickets with label, price, currency, description?, totalSpots, spotsAvailable (from each ticket’s "Spots" input). No event-level spotsAvailable. For free: build one ticket { code: 'free-rsvp', label: 'Free RSVP', price: 0, currency: 'INR', totalSpots, spotsAvailable } from Step 2 "Spots". Include optional discountCodes on create. Omit slug, dateDisplayText.
+- [ ] **CreateEventForm:** On submit, send payload with discountCodes if any drafts. Success: toast, router.replace to event landing (or as today). Reset store.
+- [ ] **EditEventForm:** Load event into store; map tickets (with totalSpots/spotsAvailable) into form; if backend still returns event.totalSpots/spotsAvailable (virtuals), no change needed for display. Step 4: load coupons for this event (GET list with experienceId or filter). Full CRUD via modal + API.
+
+### Discount codes list by event
+
+- [ ] **List coupons for event:** Use existing list discount codes API with optional `experienceId` query (if backend adds it), or fetch full host list and filter client-side by `experienceId === eventId` for Step 4 (edit). Show list in Step 4 with Add / Edit / Delete.
+
+### Other
+
+- [ ] **Checkout / landing:** Any display of ticket "label" in UI can stay as-is (backend still returns `label`); only form labels say "Title". Event totalSpots/spotsAvailable: backend will return virtuals; ensure client types and components expect them from API (no change if API shape unchanged).
+- [ ] **Leads / analytics:** When backend moves to ticket-level spots and virtuals, event response will still expose totalSpots and spotsAvailable (virtuals). Leads/analytics that show "spots booked / totalSpots" or per-ticket breakdown will need ticket.totalSpots / ticket.spotsAvailable when that’s added to API responses.
 
 ---
 
 ## Current context (paste before summarization)
 
-- **Event form (implemented):** See **Implemented – Event create/edit flow (3 steps)** below. Store 3 steps; EventFormBase uses `mode`; submit labels from mode; Step4Pricing = step 2 only (Next); Step3Faqs = step 3 only (Submit). No slug/dateDisplayText in type or payload; isActive in store for edit.
-- **Event landing + host preview (FE7 done):** Client fetch via EventLandingClient with optional token; owner/master see any state. Sticky approval alert (pending/rejected); pricing CTA hidden when not approved. Create success: toast then router.replace to event landing; back does not return to create form.
-- **Leads:** GuestDetailsCard shows customAnswers. Export to CSV planned (client-side; current view; fixed + dynamic custom question columns).
-- **MAP All experiences:** MasterExperiencesTable, EventCard, Fuse; list `approvalStatus=all`.
-
----
-
-## Frontend work – MAP & approval (done)
-
-| #     | Task                                                                                                                                           | Status |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| A1    | approvalStatus/rejectedReason on EventResponse; master client (listPendingExperiences, getPendingCount, getExperienceForPreview, setApproval). | [x]    |
-| A2    | (same)                                                                                                                                         | [x]    |
-| B1–B3 | MAP layout, guard, tabs (Pending, Experiences, Hosts), badge count.                                                                            | [x]    |
-| C1–C3 | Pending page: list, count, cards, Preview/Approve/Reject, Fuse search.                                                                         | [x]    |
-| D1–D2 | Preview page: same event landing, pricing bar disabled.                                                                                        | [x]    |
-| E1–E2 | Host table/cards: Approval column + ApprovalBadge; Rejected + reason Dialog.                                                                   | [x]    |
-| F1–F2 | 403 MAP → redirect + toast; review.                                                                                                            | [x]    |
-
----
-
-## MAP – Host CRUD (done)
-
-- **Plan:** [PROGRESS-MAP-HOSTS.md](./PROGRESS-MAP-HOSTS.md). F1–F6 done. Hosts list, Create/Update modals, HostFormBase + CreateHostForm/EditHostForm, isActive toggle, Fuse search (name/username).
-
----
-
-## MAP – All experiences (done)
-
-- **Page:** `/admin/master/experiences`. List all events (all hosts). Table (desktop), cards (mobile), Fuse search, View live only. API: GET experiences?approvalStatus=all; list includes location + totalSpots. EventCard receives hostName for admin view.
-
----
-
-## Implemented – Event create/edit flow (3 steps)
-
-**Preserve this section; it is the source of truth for the current form implementation.**
-
-- **Store** (`event-form-store.ts`): `TOTAL_STEPS = 3`. `defaultBasics`: title, location, description, spotsAvailable (0), startDate, endDate, isFreeRsvp (false), isActive (true). No slug, no dateDisplayText in defaults. Step order: 1 = basics + media, 2 = tickets + capacity, 3 = faqs + custom questions.
-- **Types** (`types/index.ts`): `EventFormBasics` has title, location, description, spotsAvailable, startDate, endDate, isFreeRsvp?, isActive?. No slug, no dateDisplayText (never set on frontend). isActive kept for edit form.
-- **EventFormBase**: Props: `mode: "create" | "edit"`, `onSubmit`, `isSubmitting`. Submit labels are **not** passed from parent; derived via `SUBMIT_LABELS[mode]` (create: "Create event" / "Creating…", edit: "Update event" / "Updating…"). Step 1: `<Step1Basics mode={mode} />`. Step 2: `<Step4Pricing />` (no props). Step 3: `<Step3Faqs onSubmit submitLabel submitLoadingLabel isSubmitting />` (labels from SUBMIT_LABELS[mode]).
-- **Step4Pricing**: Used only as **step 2**. No props. Renders: tickets, capacity (spotsAvailable), isFreeRsvp, CustomQuestionsSection; footer = Back + **Next** only (no Submit, no `isLastStep`). Exports `buildEventCreatePayload(basics, media, faqs, tickets, customQuestions)`; payload does **not** include slug or dateDisplayText.
-- **Step3Faqs**: Used only as **step 3**. Required props: `onSubmit`, `submitLabel`, `submitLoadingLabel`, `isSubmitting`. Renders: FAQs, CustomQuestionsSection; footer = Back + **Submit**. Validates FAQs, tickets, custom questions; builds payload via `buildEventCreatePayload`; calls `onSubmit(payload)`.
-- **CreateEventForm / EditEventForm**: Pass to EventFormBase only `mode`, `onSubmit`, `isSubmitting`. Do not pass submitLabel or submitLoadingLabel.
-- **EditEventForm** `setBasics`: Sets title, location, description, spotsAvailable, startDate, endDate, isFreeRsvp, isActive. Does **not** set slug or dateDisplayText.
-- **Design rule:** One role per step. Step 2 never submits; no conditional "last step" flag. Submit only on step 3.
-
----
-
-## Todos – Event create/edit flow + landing (actionable)
-
-**Backend**
-
-| #   | Task                                                                                                                                                                                                                                                                                                                                 | Status |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| BE1 | **Public event GET:** `GET /api/v1/hosts/:username/events/:eventSlug`. If request has `Authorization` and the authenticated user is the **host owner** of this event or master admin, return the event in **any** approval state. If no auth (public), return event only when `approvalStatus === 'approved'` (else 404 or no body). | [x]    |
-| BE2 | Optional: In `server/src/models/event.model.ts`, add short comments for fields not collected in new create form (e.g. slug server-generated, isActive default, dateDisplayText dropped). No schema change, no removal.                                                                                                               | [x]    |
-
-**Frontend – Form (create + edit same 3 steps)**
-
-| #   | Task                                                                                                                                                                                                                                                         | Status |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| FE1 | **Store:** `event-form-store.ts` – set `TOTAL_STEPS = 3`. Defaults: remove `slug`, `dateDisplayText`, `isActive` from basics (or keep in type but never set from form). Step order: 1 = basics + media, 2 = tickets + capacity, 3 = faqs + custom questions. | [x]    |
-| FE2 | **Step 1 (Basics + media):** One step with title, location, description, start datetime, end datetime, media upload **max 6**. Reuse/merge Step1Basics + Step2Media; remove slug, dateDisplayText, isActive from UI and validation.                          | [x]    |
-| FE3 | **Step 2 (Tickets + capacity):** isFreeRsvp switch, tickets screen (add/remove, label, price), **spotsAvailable** (capacity) input. Reuse logic from Step4Pricing; submit stays on step 3.                                                                   | [x]    |
-| FE4 | **Step 3 (FAQs + questions):** FAQs + custom questions in one step. Submit: build payload from store, call create/update API. Create success → redirect to event landing with sticky success alert. Edit success → redirect to experiences + toast.          | [x]    |
-| FE5 | **EventFormBase:** Render 3 steps only; step names e.g. "Basics & media", "Tickets & capacity", "FAQs & questions". **Edit flow:** Load event into store; same 3 steps; submit = update API.                                                                 | [x]    |
-| FE6 | **Payload builder:** Build create/update payload from store. Omit slug, dateDisplayText. Send spotsAvailable; server sets totalSpots = spotsAvailable on create. Include isFreeRsvp, tickets, media, faqs, customQuestions.                                  | [x]    |
-
-**Frontend – Event landing (host preview + alert)**
-
-| #   | Task                                                                                                                                                                                                                                                                                                                                                                                        | Status |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| FE7 | **Event landing page** (`/hosts/[username]/events/[eventSlug]`): If **token present** and current user is **host owner** of this event or master admin, fetch event (backend returns any state). Show **sticky alert (top-center)**: pending → "Under review"; rejected → "Rejected" + optional reason; approved → no alert. Pricing CTA hidden when approvalStatus is pending or rejected. | [x]    |
-
-**Reference**
-
-- **Server:** `POST /api/v1/admin/experiences` – CreateEventPayload (slug optional). `GET /api/v1/hosts/:username/events/:eventSlug` – optionalAuth; owner or master → any state; no auth → approved only.
-- **Client:** See **Implemented – Event create/edit flow (3 steps)** for store, EventFormBase, Step4Pricing, Step3Faqs, CreateEventForm, EditEventForm. Create success → toast "Event created" then **router.replace** to event landing (no query param); edit success → router.replace to `/host/experiences` + toast. Event landing: **EventLandingClient** fetches with `getPublicEvent(username, eventSlug, token)`; sticky approval alert; CTA hidden when not approved. Leads: GuestDetailsCard shows customAnswers; export to CSV planned.
-
----
-
-## Todos / next (high level)
-
-- **Leads export to CSV:** Client-side export of current view's leads (filteredAttendees or attendeesByView); fixed columns (name, email, phone, instagram, ticket, booking id, payment status, total, createdAt) + dynamic columns from customAnswers keys; e.g. @json2csv/plainjs; download filename `leads-{slug}-{date}.csv`.
-- Trips (when in scope).
-- Any further MAP or host polish as needed.
+- **Event form refactor (planned):** 4 steps: Media (media + Free RSVP), Event details (name, venue, dates, description, spots when free), Tickets when paid (Title, price, spots, description), One last step (FAQs, custom questions, coupons CRUD). Spots at ticket level; event.totalSpots/spotsAvailable as backend virtuals. Create: coupon drafts in payload; edit: coupons from API, full CRUD in Step 4. Venue = location in API; UI label "Venue". Ticket UI label "Title", backend keeps `label`.
+- **Event landing:** EventLandingClient, sticky approval alert, CTA hidden when not approved. Create success → router.replace to event landing.
+- **Leads:** GuestDetailsCard shows customAnswers. Export to CSV planned.
+- **MAP:** Pending, Hosts, All experiences done; 403 handling.
 
 ---
 
 ## Reference
 
-- **Backend MAP:** GET .../experiences?approvalStatus=pending|approved|rejected|**all**, GET .../experiences/count, GET .../experiences/:id, PATCH .../experiences/:id/approval. GET .../hosts, GET .../hosts/:id, POST/PUT .../hosts. All require Bearer + role=master.
-- **Host list/get:** Include approvalStatus, rejectedReason.
-- **Reuse:** EventCard (with optional hostName), Event-landing for preview; do not reuse HostShell for MAP.
-- **Event landing GET:** With token + host owner → return event any approval state. No token → return only when approved. Event landing UI: host owner sees sticky alert (pending/rejected copy); approved or public sees no alert.
+- **Backend (after refactor):** Event create payload: tickets with totalSpots, spotsAvailable; optional discountCodes; no event-level spotsAvailable. Event doc: totalSpots/spotsAvailable virtuals. List discount codes: optional ?experienceId=. DiscountCode: isPublic (default true).
+- **Reuse:** EventCard, Event-landing for preview; DiscountCodeFormModal and discount code list/table for Step 4 coupons. Do not reuse HostShell for MAP.
 
 ---
 
-_Last updated: FE1–FE7 done. Create success → toast + router.replace to event landing. Event landing: client fetch (EventLandingClient) with optional token; sticky approval alert; CTA hidden when not approved. Leads: GuestDetailsCard shows customAnswers; export to CSV planned (client-side)._
+_Last updated: Event form refactor planned (4-step, ticket-level spots, virtuals, coupons in Step 4). Backend and frontend todos captured; context docs updated._
