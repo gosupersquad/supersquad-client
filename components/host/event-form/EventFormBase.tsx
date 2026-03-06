@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { TOTAL_STEPS, useEventFormStore } from "@/store/event-form-store";
 import type { CreateEventPayload } from "@/types";
 
-import Step1Basics from "./steps/Step1Basics";
+import Step1Media from "./steps/Step1Media";
 import Step3Faqs from "./steps/Step3Faqs";
 import Step3Placeholder from "./steps/Step3Placeholder";
 import Step4Pricing from "./steps/Step4Pricing";
@@ -69,7 +69,7 @@ const EventFormBase = ({
       </div>
 
       <div className="mx-auto max-w-2xl px-4 py-6">
-        {step === 1 && <Step1Basics mode={mode} />}
+        {step === 1 && <Step1Media />}
 
         {step === 2 && <Step4Pricing />}
 
