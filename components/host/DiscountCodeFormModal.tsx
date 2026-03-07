@@ -1,59 +1,51 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 import toast from "react-hot-toast";
 
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import type {
-  CreateDiscountCodePayload,
-  DiscountCodeResponse,
-  DiscountType,
-  UpdateDiscountCodePayload,
-} from "@/lib/discount-codes-client";
 import {
   createDiscountCode,
   updateDiscountCode,
+  type CreateDiscountCodePayload,
+  type DiscountCodeResponse,
+  type UpdateDiscountCodePayload,
 } from "@/lib/discount-codes-client";
 import { cn } from "@/lib/utils";
 
-type FormState = {
-  code: string;
-  type: DiscountType;
-  amount: string;
-  maxUsage: string;
-  startsAt: string;
-  expiresAt: string;
-  isActive: boolean;
-};
+import DiscountCodeFormBase, {
+  emptyFormValues,
+  type DiscountCodeFormValues,
+} from "./discount-code-form/DiscountCodeFormBase";
 
-const emptyForm: FormState = {
-  code: "",
-  type: "flat",
-  amount: "",
-  maxUsage: "",
-  startsAt: "",
-  expiresAt: "",
-  isActive: true,
-};
+function apiItemToFormValues(d: DiscountCodeResponse): DiscountCodeFormValues {
+  return {
+    code: d.code,
+    type: d.type,
+    amount: d.amount,
+    currency: "INR",
+    maxUsage: d.maxUsage,
+    startsAt: d.startsAt,
+    expiresAt: d.expiresAt,
+    isActive: d.isActive,
+    isPublic: d.isPublic ?? true,
+  };
+}
 
-interface DiscountCodeFormModalProps {
+export interface DiscountCodeFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editing: DiscountCodeResponse | null;
   token: string;
   onSuccess: () => void;
+  /** When creating, link the code to this event. */
+  experienceId?: string;
 }
 
 const DiscountCodeFormModal = ({
@@ -62,99 +54,45 @@ const DiscountCodeFormModal = ({
   editing,
   token,
   onSuccess,
+  experienceId,
 }: DiscountCodeFormModalProps) => {
-  const [form, setForm] = useState<FormState>(emptyForm);
+  const isEdit = !!editing;
+  const defaultValues = useMemo<DiscountCodeFormValues>(
+    () => (editing ? apiItemToFormValues(editing) : emptyFormValues),
+    [editing],
+  );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isEdit = !!editing;
-
-  useEffect(() => {
-    if (!open) return;
-
-    if (editing) {
-      setForm({
-        code: editing.code,
-        type: editing.type,
-        amount: String(editing.amount),
-        maxUsage: editing.maxUsage != null ? String(editing.maxUsage) : "",
-        startsAt: editing.startsAt
-          ? new Date(editing.startsAt).toISOString().slice(0, 10)
-          : "",
-        expiresAt: editing.expiresAt
-          ? new Date(editing.expiresAt).toISOString().slice(0, 10)
-          : "",
-        isActive: editing.isActive,
-      });
-    } else {
-      setForm(emptyForm);
-    }
-  }, [open, editing]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const amountNum = Number(form.amount);
-
-    if (Number.isNaN(amountNum) || amountNum < 0) {
-      toast.error("Amount must be a positive number");
-      return;
-    }
-
-    if (form.type === "percentage" && amountNum > 100) {
-      toast.error("Percentage must be between 0 and 100");
-      return;
-    }
-
-    if (form.startsAt && form.expiresAt) {
-      if (new Date(form.expiresAt) <= new Date(form.startsAt)) {
-        toast.error("End date must be after start date");
-        return;
-      }
-    }
-
+  const handleSubmit = async (values: DiscountCodeFormValues) => {
     setIsSubmitting(true);
     try {
-      if (isEdit) {
+      if (isEdit && editing) {
         const payload: UpdateDiscountCodePayload = {
-          type: form.type,
-          amount: amountNum,
-          isActive: form.isActive,
+          type: values.type,
+          amount: values.amount,
+          isActive: values.isActive,
+          isPublic: values.isPublic,
         };
-
-        if (form.maxUsage.trim() !== "") {
-          const max = parseInt(form.maxUsage, 10);
-          if (!Number.isNaN(max) && max >= 0) payload.maxUsage = max;
-        }
-
-        if (form.startsAt) payload.startsAt = form.startsAt;
-        if (form.expiresAt) payload.expiresAt = form.expiresAt;
+        if (values.maxUsage != null) payload.maxUsage = values.maxUsage;
+        if (values.startsAt) payload.startsAt = values.startsAt;
+        if (values.expiresAt) payload.expiresAt = values.expiresAt;
 
         await updateDiscountCode(editing._id, payload, token);
         toast.success("Discount code updated");
       } else {
-        const code = form.code.trim().toUpperCase();
-
-        if (!code) {
-          toast.error("Code is required");
-          setIsSubmitting(false);
-          return;
-        }
-
         const payload: CreateDiscountCodePayload = {
-          code,
-          type: form.type,
-          amount: amountNum,
+          code: values.code,
+          type: values.type,
+          amount: values.amount,
           currency: "INR",
-          isActive: form.isActive,
+          isActive: values.isActive,
+          isPublic: values.isPublic,
         };
-
-        if (form.maxUsage.trim() !== "") {
-          const max = parseInt(form.maxUsage, 10);
-          if (!Number.isNaN(max) && max >= 0) payload.maxUsage = max;
-        }
-
-        if (form.startsAt) payload.startsAt = form.startsAt;
-        if (form.expiresAt) payload.expiresAt = form.expiresAt;
+        if (values.maxUsage != null) payload.maxUsage = values.maxUsage;
+        if (values.startsAt) payload.startsAt = values.startsAt;
+        if (values.expiresAt) payload.expiresAt = values.expiresAt;
+        if (experienceId) payload.experienceId = experienceId;
 
         await createDiscountCode(payload, token);
         toast.success("Discount code created");
@@ -189,146 +127,16 @@ const DiscountCodeFormModal = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="code">Code</Label>
-
-            <Input
-              id="code"
-              value={form.code}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  code: e.target.value.toUpperCase(),
-                }))
-              }
-              placeholder="e.g. SAVE20"
-              disabled={isEdit}
-              className={isEdit ? "bg-muted" : ""}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="type">Discount type</Label>
-
-            <select
-              id="type"
-              value={form.type}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  type: e.target.value as DiscountType,
-                }))
-              }
-              disabled={isEdit}
-              className="border-input bg-background focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label="Discount type"
-            >
-              <option value="flat">Flat (₹ off)</option>
-              <option value="percentage">Percentage (% off)</option>
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="amount">
-              {form.type === "percentage" ? "Percentage (%)" : "Amount (₹)"}
-            </Label>
-
-            <Input
-              id="amount"
-              type="number"
-              min={0}
-              max={form.type === "percentage" ? 100 : undefined}
-              step={form.type === "percentage" ? 1 : 0.1}
-              value={form.amount}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, amount: e.target.value }))
-              }
-              placeholder={form.type === "percentage" ? "10" : "100"}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="maxUsage">Max usage (optional)</Label>
-
-            <Input
-              id="maxUsage"
-              type="number"
-              min={0}
-              value={form.maxUsage}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, maxUsage: e.target.value }))
-              }
-              placeholder="Unlimited if empty"
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="startsAt">Start date (optional)</Label>
-
-              <Input
-                id="startsAt"
-                type="date"
-                value={form.startsAt}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, startsAt: e.target.value }))
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="expiresAt">End date (optional)</Label>
-
-              <Input
-                id="expiresAt"
-                type="date"
-                value={form.expiresAt}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, expiresAt: e.target.value }))
-                }
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="isActive"
-              checked={form.isActive}
-              onCheckedChange={(checked) =>
-                setForm((prev) => ({ ...prev, isActive: checked }))
-              }
-            />
-
-            <Label htmlFor="isActive">Active</Label>
-          </div>
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-              className="mr-2"
-            >
-              Cancel
-            </Button>
-
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  {isEdit ? "Updating…" : "Creating…"}
-                </>
-              ) : isEdit ? (
-                "Update"
-              ) : (
-                "Create"
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DiscountCodeFormBase
+          key={open ? (editing?._id ?? "create") : "closed"}
+          mode={isEdit ? "edit" : "create"}
+          defaultValues={defaultValues}
+          onSubmit={handleSubmit}
+          onCancel={() => onOpenChange(false)}
+          isSubmitting={isSubmitting}
+          submitLabel={isEdit ? "Update" : "Create"}
+          submitLoadingLabel={isEdit ? "Updating…" : "Creating…"}
+        />
       </DialogContent>
     </Dialog>
   );
