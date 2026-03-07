@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Calendar, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -12,11 +12,21 @@ import DiscountCodesTable from "@/components/host/DiscountCodesTable";
 import { Button } from "@/components/ui/button";
 import { FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   deleteDiscountCode,
   listDiscountCodes,
   toggleDiscountCodeStatus,
   type DiscountCodeResponse,
 } from "@/lib/discount-codes-client";
+import {
+  cn,
+  formatDiscountCodeUsage,
+  formatDiscountCodeValidity,
+} from "@/lib/utils";
 import { useAuthStore } from "@/store/auth-store";
 import { useEventFormStore } from "@/store/event-form-store";
 import type { CreateEventDiscountCodeItem } from "@/types";
@@ -27,6 +37,106 @@ export interface Step4CouponsSectionProps {
   isCreate: boolean;
   eventId?: string;
 }
+
+interface DiscountCodeCardProps {
+  draft: CreateEventDiscountCodeItem;
+  index: number;
+  onEdit: (index: number) => void;
+  onRemove: (index: number) => void;
+}
+
+const DiscountCodeCard = ({
+  draft,
+  index,
+  onEdit,
+  onRemove,
+}: DiscountCodeCardProps) => {
+  return (
+    <div className="border-border bg-card rounded-xl border p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">{draft.code}</p>
+
+          <p className="text-muted-foreground mt-0.5 text-sm">
+            {draft.type === "percentage"
+              ? `${draft.amount}% off`
+              : `₹${draft.amount} off`}
+          </p>
+
+          <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="size-3.5 shrink-0" />
+              {formatDiscountCodeValidity(draft)}
+            </span>
+
+            <span>Usage: {formatDiscountCodeUsage(draft)}</span>
+          </div>
+
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span
+              className={cn(
+                "inline-block rounded-full px-2 py-0.5 text-xs",
+                draft.type === "percentage"
+                  ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                  : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+              )}
+            >
+              {draft.type === "percentage" ? "Percentage" : "Flat"}
+            </span>
+
+            <span
+              className={cn(
+                "inline-block rounded-full px-2 py-0.5 text-xs",
+                draft.isPublic !== false
+                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                  : "bg-muted text-muted-foreground",
+              )}
+            >
+              {draft.isPublic !== false ? "Public" : "Private"}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(index)}
+              >
+                <Pencil className="size-4" />
+              </Button>
+            </TooltipTrigger>
+
+            <TooltipContent>
+              <p>Edit discount code</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => onRemove(index)}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </TooltipTrigger>
+
+            <TooltipContent>
+              <p>Delete discount code</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /** Coupons block for Step 4: draft list (create) or API list + modal (edit). */
 const Step4CouponsSection = ({
@@ -133,43 +243,17 @@ const Step4CouponsSection = ({
       {isCreate ? (
         <>
           {discountCodeDrafts.length > 0 && (
-            <ul className="border-border divide-border divide-y rounded-lg border">
+            <div className="grid gap-4 sm:grid-cols-1">
               {discountCodeDrafts.map((draft, index) => (
-                <li
+                <DiscountCodeCard
                   key={`${draft.code}-${index}`}
-                  className="flex flex-wrap items-center justify-between gap-2 px-3 py-2"
-                >
-                  <span className="font-medium">{draft.code}</span>
-
-                  <span className="text-muted-foreground text-sm">
-                    {draft.type === "percentage"
-                      ? `${draft.amount}% off`
-                      : `₹${draft.amount} off`}
-                  </span>
-
-                  <div className="flex gap-1">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditDraft(index)}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:bg-destructive/10"
-                      onClick={() => removeDraft(index)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                </li>
+                  draft={draft}
+                  index={index}
+                  onEdit={openEditDraft}
+                  onRemove={removeDraft}
+                />
               ))}
-            </ul>
+            </div>
           )}
 
           <Button

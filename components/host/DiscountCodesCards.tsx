@@ -53,15 +53,27 @@ const DiscountCodesCards = ({
                 <span>Usage: {formatDiscountCodeUsage(item)}</span>
               </div>
 
-              <span
-                className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs ${
-                  item.isActive
-                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                }`}
-              >
-                {item.isActive ? "Active" : "Inactive"}
-              </span>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span
+                  className={`inline-block rounded-full px-2 py-0.5 text-xs ${
+                    item.isActive
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                  }`}
+                >
+                  {item.isActive ? "Active" : "Inactive"}
+                </span>
+
+                <span
+                  className={`inline-block rounded-full px-2 py-0.5 text-xs ${
+                    item.isPublic !== false
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {item.isPublic !== false ? "Public" : "Private"}
+                </span>
+              </div>
             </div>
 
             <div className="flex shrink-0 gap-1">

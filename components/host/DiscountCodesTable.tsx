@@ -51,7 +51,9 @@ const DiscountCodesTable = ({
 
           <TableHead>Discount</TableHead>
           <TableHead>Validity</TableHead>
+
           <TableHead>Usage</TableHead>
+          <TableHead>Visibility</TableHead>
 
           <TableHead>Status</TableHead>
           <TableHead>Actions</TableHead>
@@ -89,6 +91,19 @@ const DiscountCodesTable = ({
               </TableCell>
 
               <TableCell>{formatDiscountCodeUsage(item)}</TableCell>
+
+              <TableCell>
+                <span
+                  className={cn(
+                    "inline-block rounded-full px-2 py-1 text-xs",
+                    item.isPublic !== false
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {item.isPublic !== false ? "Public" : "Private"}
+                </span>
+              </TableCell>
 
               <TableCell>
                 <div className="flex items-center gap-2">
