@@ -153,6 +153,7 @@ const EditEventForm = ({ eventId }: EditEventFormProps) => {
   return (
     <EventFormBase
       mode="edit"
+      eventId={eventId}
       onSubmit={(payload) => mutation.mutate(payload)}
       isSubmitting={mutation.isPending}
     />

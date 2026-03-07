@@ -77,12 +77,13 @@ export interface DiscountCodeResponse {
   updatedAt: string;
 }
 
-/** Create payload. experienceId/experienceType omitted. */
+/** Create payload. experienceId optional (e.g. when creating from event form Step 4 edit flow). */
 export interface CreateDiscountCodePayload {
   code: string;
   type: DiscountType;
   amount: number;
   currency: "INR";
+  experienceId?: string;
   maxUsage?: number;
   startsAt?: string;
   expiresAt?: string;
@@ -101,13 +102,21 @@ export interface UpdateDiscountCodePayload {
   isPublic?: boolean;
 }
 
+/** List discount codes for the current host. Optional experienceId filters by event. */
 export async function listDiscountCodes(
-  token: string
+  token: string,
+  experienceId?: string
 ): Promise<DiscountCodeResponse[]> {
+  const params =
+    experienceId?.trim() !== ""
+      ? { experienceId: experienceId!.trim() }
+      : undefined;
+
   const { data } = await axios.get<ApiResponse<DiscountCodeResponse[]>>(
     DISCOUNT_CODES_BASE(),
     {
       headers: { Authorization: `Bearer ${token}` },
+      params,
     }
   );
 

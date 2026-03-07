@@ -103,7 +103,7 @@ export const buildEventCreatePayload = (
 };
 
 /** Step 3 – Tickets (shown only when not isFreeRsvp). Per ticket: Title (label), Price, Spots, Description. Back + Next. */
-const Step4Pricing = () => {
+const Step3Pricing = () => {
   const { tickets, setTickets, prevStep, nextStep } = useEventFormStore();
 
   const isSubmitting = false;
@@ -290,4 +290,4 @@ const Step4Pricing = () => {
   );
 };
 
-export default Step4Pricing;
+export default Step3Pricing;

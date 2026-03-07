@@ -9,9 +9,9 @@ import type { CreateEventPayload } from "@/types";
 
 import Step1Media from "./steps/Step1Media";
 import Step2EventDetails from "./steps/Step2EventDetails";
-import Step3Faqs from "./steps/Step3Faqs";
+import Step3Pricing from "./steps/Step3Pricing";
 import Step3TicketsSkip from "./steps/Step3TicketsSkip";
-import Step4Pricing from "./steps/Step4Pricing";
+import Step4OneLastStep from "./steps/Step4OneLastStep";
 
 /** Step order: 1 = Media, 2 = Event details, 3 = Tickets, 4 = FAQs + questions + coupons. */
 const STEP_NAMES = [
@@ -35,12 +35,15 @@ export interface EventFormBaseProps {
   mode: EventFormMode;
   onSubmit: (payload: CreateEventPayload) => void;
   isSubmitting: boolean;
+  /** For edit mode: event id (used in Step 4 to list/create coupons for this event). */
+  eventId?: string;
 }
 
 const EventFormBase = ({
   mode,
   onSubmit,
   isSubmitting,
+  eventId,
 }: EventFormBaseProps) => {
   const router = useRouter();
   const { step, basics } = useEventFormStore();
@@ -75,10 +78,12 @@ const EventFormBase = ({
         {step === 2 && <Step2EventDetails mode={mode} />}
 
         {step === 3 &&
-          (basics.isFreeRsvp ? <Step3TicketsSkip /> : <Step4Pricing />)}
+          (basics.isFreeRsvp ? <Step3TicketsSkip /> : <Step3Pricing />)}
 
         {step === 4 && (
-          <Step3Faqs
+          <Step4OneLastStep
+            mode={mode}
+            eventId={eventId}
             onSubmit={onSubmit}
             submitLabel={submitLabel}
             submitLoadingLabel={submitLoadingLabel}
