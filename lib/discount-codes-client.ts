@@ -107,10 +107,8 @@ export async function listDiscountCodes(
   token: string,
   experienceId?: string
 ): Promise<DiscountCodeResponse[]> {
-  const params =
-    experienceId?.trim() !== ""
-      ? { experienceId: experienceId!.trim() }
-      : undefined;
+  const trimmed = experienceId?.trim();
+  const params = trimmed ? { experienceId: trimmed } : undefined;
 
   const { data } = await axios.get<ApiResponse<DiscountCodeResponse[]>>(
     DISCOUNT_CODES_BASE(),
