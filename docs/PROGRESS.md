@@ -93,7 +93,7 @@
 ### Other
 
 - [x] **Checkout / landing:** Ticket display uses `label` from API (EventPricingBar, CheckoutTicketSelection, OrderSummaryCard); event form labels say "Title". Event totalSpots/spotsAvailable (virtuals) already used in EventLandingPage, CheckoutContent, EditEventForm, leads, etc. No change needed.
-- [ ] **Leads / analytics:** When backend moves to ticket-level spots and virtuals, event response will still expose totalSpots and spotsAvailable (virtuals). Leads/analytics that show "spots booked / totalSpots" or per-ticket breakdown will need ticket.totalSpots / ticket.spotsAvailable when that’s added to API responses.
+- [x] **Leads / analytics:** Event leads detail uses event.totalSpots and event.spotsAvailable (virtuals). Backend getLeadsDetail now returns `tickets` (code, label, totalSpots, spotsAvailable per ticket). Leads detail page shows event-level "X remaining · Y total" and a per-ticket breakdown when detail.tickets is present (e.g. "Standard: 5 left · 10 total").
 
 ---
 

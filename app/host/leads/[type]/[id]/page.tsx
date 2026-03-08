@@ -200,6 +200,16 @@ export default function HostLeadsDetailPage() {
           <p className="text-muted-foreground mt-0.5 text-xs">
             {detail.spotsAvailable} remaining · {detail.totalSpots} total
           </p>
+
+          {detail.tickets && detail.tickets.length > 0 && (
+            <ul className="text-muted-foreground mt-2 list-none space-y-1 text-xs">
+              {detail.tickets.map((t) => (
+                <li key={t.code}>
+                  {t.label}: {t.spotsAvailable} left · {t.totalSpots} total
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="border-border bg-card flex flex-col rounded-xl border p-4 shadow-sm">

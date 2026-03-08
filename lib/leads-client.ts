@@ -37,6 +37,14 @@ export interface LeadsBooking {
   createdAt: string;
 }
 
+/** Per-ticket capacity in leads detail (totalSpots, spotsAvailable per ticket). */
+export interface LeadsDetailTicket {
+  code: string;
+  label: string;
+  totalSpots: number;
+  spotsAvailable: number;
+}
+
 /** Event leads detail: event + stats + bookings. */
 export interface EventLeadsDetail {
   id: string;
@@ -50,6 +58,8 @@ export interface EventLeadsDetail {
   totalSpots: number;
   spotsBooked: number;
   amountCollected: number;
+  /** Per-ticket capacity (totalSpots, spotsAvailable per ticket). Present when backend supports ticket-level spots. */
+  tickets?: LeadsDetailTicket[];
   createdAt: string;
   updatedAt: string;
   bookings: LeadsBooking[];
