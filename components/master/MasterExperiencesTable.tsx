@@ -150,7 +150,7 @@ export default function MasterExperiencesTable({
                       value={APPROVAL_STATUSES.APPROVED}
                       className="text-black dark:text-white"
                     >
-                      Approved
+                      Active
                     </option>
 
                     <option

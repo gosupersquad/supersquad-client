@@ -32,7 +32,7 @@ const ApprovalBadge = ({
 
   const label =
     status === "approved"
-      ? "Approved"
+      ? "Active"
       : status === "rejected"
         ? "Rejected"
         : "Pending";
