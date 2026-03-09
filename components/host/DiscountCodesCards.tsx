@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Pencil, Ticket, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,12 @@ import {
   formatDiscountCodeUsage,
   formatDiscountCodeValidity,
 } from "@/lib/utils";
+
+function getLinkedEventTitle(item: DiscountCodeResponse): string | null {
+  const ref = item.experienceId;
+  if (!ref || typeof ref === "string") return null;
+  return ref.title?.trim() ?? null;
+}
 
 interface DiscountCodesCardsProps {
   codes: DiscountCodeResponse[];
@@ -52,6 +58,13 @@ const DiscountCodesCards = ({
 
                 <span>Usage: {formatDiscountCodeUsage(item)}</span>
               </div>
+
+              {getLinkedEventTitle(item) && (
+                <p className="text-muted-foreground mt-1.5 flex items-center gap-1.5 text-sm">
+                  <Ticket className="size-3.5 shrink-0" />
+                  <span>Event: {getLinkedEventTitle(item)}</span>
+                </p>
+              )}
 
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <span

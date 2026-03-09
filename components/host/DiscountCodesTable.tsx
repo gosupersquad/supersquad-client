@@ -25,6 +25,12 @@ import {
   formatDiscountCodeValidity,
 } from "@/lib/utils";
 
+function getLinkedEventTitle(item: DiscountCodeResponse): string | null {
+  const ref = item.experienceId;
+  if (!ref || typeof ref === "string") return null;
+  return ref.title?.trim() ?? null;
+}
+
 interface DiscountCodesTableProps {
   codes: DiscountCodeResponse[];
   onToggleStatus: (id: string) => void;
@@ -48,13 +54,11 @@ const DiscountCodesTable = ({
         <TableRow>
           <TableHead>Code</TableHead>
           <TableHead>Type</TableHead>
-
           <TableHead>Discount</TableHead>
           <TableHead>Validity</TableHead>
-
           <TableHead>Usage</TableHead>
+          <TableHead>Event</TableHead>
           <TableHead>Visibility</TableHead>
-
           <TableHead>Status</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
@@ -91,6 +95,10 @@ const DiscountCodesTable = ({
               </TableCell>
 
               <TableCell>{formatDiscountCodeUsage(item)}</TableCell>
+
+              <TableCell className="text-muted-foreground text-sm">
+                {getLinkedEventTitle(item) ?? "—"}
+              </TableCell>
 
               <TableCell>
                 <span

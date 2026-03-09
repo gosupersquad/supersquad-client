@@ -59,6 +59,15 @@ export async function validateDiscountCode(
   return data.data;
 }
 
+/** When list API populates experienceId, it returns this shape. */
+export interface DiscountCodeExperienceRef {
+  _id: string;
+  id?: string;
+  title?: string;
+  totalSpots?: number;
+  spotsAvailable?: number;
+}
+
 export interface DiscountCodeResponse {
   _id: string;
   hostId: string;
@@ -66,6 +75,9 @@ export interface DiscountCodeResponse {
   type: DiscountType;
   amount: number;
   currency: string;
+  experienceType?: string;
+  /** Event id (string) or populated ref with title when linked to an event. */
+  experienceId?: string | DiscountCodeExperienceRef;
   maxUsage?: number;
   usedCount?: number;
   startsAt?: string;
