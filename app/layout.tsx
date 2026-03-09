@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 
 import QueryProvider from "@/components/QueryProvider";
 import ThemeProvider from "@/components/ThemeProvider";
+import SplashScreen from "@/components/SplashScreen";
 
 import "./globals.css";
 
@@ -38,6 +39,7 @@ export default function RootLayout({
       >
         <QueryProvider>
           <ThemeProvider>
+            <SplashScreen />
             {children}
             <Toaster position="top-center" toastOptions={{ duration: 4000 }} />
           </ThemeProvider>
