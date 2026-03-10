@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 interface FooterActionBtnProps {
   href: string;
   icon: React.ReactNode;
-  label: string;
+  label?: string;
 }
 
 /**
@@ -24,7 +24,7 @@ const FooterActionBtn = ({ href, icon, label }: FooterActionBtnProps) => {
     >
       <Link href={href}>
         {icon}
-        <span>{label}</span>
+        {label ? <span>{label}</span> : null}
       </Link>
     </Button>
   );

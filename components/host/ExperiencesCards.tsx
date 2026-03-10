@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, ExternalLink, Pencil } from "lucide-react";
+import { BarChart3, Eye, Pencil } from "lucide-react";
 
 import EventCard from "@/components/host/EventCard";
 import type { EventResponse } from "@/lib/experiences-client";
@@ -30,20 +30,20 @@ export default function ExperiencesCards({ events }: ExperiencesCardsProps) {
             <FooterActionBtn
               href={`/host/leads/event/${cardData.id}`}
               icon={<BarChart3 className="size-4" />}
-              label="Analytics"
+              // label="Analytics"
             />
 
             <FooterActionBtn
               href={`/host/experiences/${cardData.id}/edit?type=event`}
               icon={<Pencil className="size-4" />}
-              label="Edit"
+              // label="Edit"
             />
 
             {viewLiveHref ? (
               <FooterActionBtn
                 href={viewLiveHref}
-                icon={<ExternalLink className="size-4" />}
-                label="View"
+                icon={<Eye className="size-4" />}
+                // label="View"
               />
             ) : null}
           </>
