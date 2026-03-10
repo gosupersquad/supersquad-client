@@ -43,6 +43,7 @@ export default function ExperiencesCards({ events }: ExperiencesCardsProps) {
               <FooterActionBtn
                 href={viewLiveHref}
                 icon={<Eye className="size-4" />}
+                linkProps={{ target: "_blank" }}
                 // label="View"
               />
             ) : null}
