@@ -102,16 +102,16 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
       >
         <div className="bg-border grid w-full grid-cols-3 gap-px">
           {MOBILE_NAV_ITEMS.map(({ label, href, icon: Icon, useAvatar }) => {
-            const isActive =
-              pathname === href ||
-              pathname.startsWith(href.split("?")[0] + "/") ||
-              pathname === href.split("?")[0];
-
-            console.log("🚀 ~ HostShell ~ isActive:", {
-              isActive,
-              pathname,
-              href,
-            });
+            const baseHref = href.split("?")[0];
+            let isActive =
+              pathname === baseHref || pathname.startsWith(baseHref + "/");
+            // On create page, only "Create" is active — not "Experiences"
+            if (
+              baseHref === "/host/experiences" &&
+              pathname.startsWith("/host/experiences/new")
+            ) {
+              isActive = false;
+            }
 
             const iconClass = cn(
               "size-7 transition-colors shrink-0",
@@ -152,7 +152,9 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
                     Icon && <Icon className={iconClass} aria-hidden />
                   )}
 
-                  {label && <span className="text-xs">{label}</span>}
+                  {label != null && label !== "" && (
+                    <span className="text-xs">{label}</span>
+                  )}
                 </Link>
               </Button>
             );
