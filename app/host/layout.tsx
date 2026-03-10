@@ -9,7 +9,7 @@ import { ROLES } from "@/lib/constants";
 import { useAuthStore } from "@/store/auth-store";
 
 const LOGIN_PATH = "/host/login";
-export const DASHBOARD_PATH = "/host/dashboard";
+export const EXPERIENCES_PATH = "/host/experiences";
 export const MASTER_PATH = "/admin/master";
 
 const HostLayout = ({ children }: { children: React.ReactNode }) => {
@@ -41,7 +41,7 @@ const HostLayout = ({ children }: { children: React.ReactNode }) => {
 
     // 🚫 Authenticated user on login page → redirect by role
     if (isAuthenticated && isLoginPage) {
-      router.replace(role === ROLES.MASTER ? MASTER_PATH : DASHBOARD_PATH);
+      router.replace(role === ROLES.MASTER ? MASTER_PATH : EXPERIENCES_PATH);
     }
   }, [mounted, pathname, token, role, router]);
 

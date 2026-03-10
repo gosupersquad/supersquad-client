@@ -1,6 +1,7 @@
 "use client";
 
-import { FileText, LayoutGrid, LogOut, Map, Percent, User } from "lucide-react";
+import { FileText, LogOut, Map, Percent, Plus, User } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -12,29 +13,34 @@ import { useAuthStore } from "@/store/auth-store";
 const SIDEBAR_TITLE = "Supersquad Admin";
 
 type NavItem = {
-  label: string;
+  /** If present, rendered below icon in mobile bar; omit for icon-only. */
+  label?: string;
   href: string;
-  icon: React.ElementType;
+  icon?: React.ElementType;
+  /** When true, show host avatar instead of icon (mobile bar only). */
+  useAvatar?: boolean;
 };
 
 // Desktop sidebar nav (Phase 1: Experiences, Discount codes, Leads)
-const NAV_ITEMS: NavItem[] = [
+const NAV_ITEMS: (NavItem & { icon: React.ElementType })[] = [
   { label: "Experiences", href: "/host/experiences", icon: Map },
   { label: "Discount codes", href: "/host/discount-codes", icon: Percent },
   { label: "Leads", href: "/host/leads", icon: FileText },
 ];
 
-// Mobile bottom bar: Experiences, More (Leads/Coupons etc), Account
+// Mobile bottom bar: Experiences, Create (Plus), Profile (avatar). Set label to show text.
 const MOBILE_NAV_ITEMS: NavItem[] = [
-  { label: "Experiences", href: "/host/experiences", icon: Map },
-  { label: "More", href: "/host/more", icon: LayoutGrid },
-  { label: "Account", href: "/host/account", icon: User },
+  { href: "/host/experiences", icon: Map },
+  { href: "/host/experiences/new?type=event", icon: Plus },
+  { href: "/host/account", useAvatar: true },
 ];
 
 const HostShell = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const router = useRouter();
+
   const clearAuth = useAuthStore((s) => s.clearAuth);
+  const user = useAuthStore((s) => s.user);
 
   const handleLogout = () => {
     clearAuth();
@@ -89,19 +95,27 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
       {/* Main content: full width on mobile (pb for bottom bar), offset by sidebar on desktop */}
       <main className="flex-1 pb-16 md:ml-72 md:pb-0">{children}</main>
 
-      {/* Mobile bottom bar: Experiences, Account (logout on Account page; future: edit host) */}
+      {/* Mobile bottom bar: Experiences, Create, Profile (avatar) */}
       <nav
         className="border-border bg-background fixed inset-x-0 bottom-0 z-40 flex border-t md:hidden"
         aria-label="Mobile navigation"
       >
         <div className="bg-border grid w-full grid-cols-3 gap-px">
-          {MOBILE_NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+          {MOBILE_NAV_ITEMS.map(({ label, href, icon: Icon, useAvatar }) => {
             const isActive =
-              pathname === href || pathname.startsWith(href + "/");
-            // Active tab: filled/heavier look (primary color + fill where icon supports it)
+              pathname === href ||
+              pathname.startsWith(href.split("?")[0] + "/") ||
+              pathname === href.split("?")[0];
+
+            console.log("🚀 ~ HostShell ~ isActive:", {
+              isActive,
+              pathname,
+              href,
+            });
+
             const iconClass = cn(
-              "size-5 transition-colors",
-              isActive
+              "size-7 transition-colors shrink-0",
+              isActive && !useAvatar
                 ? "fill-primary text-primary stroke-[2.5]"
                 : "text-muted-foreground",
             );
@@ -120,8 +134,25 @@ const HostShell = ({ children }: { children: React.ReactNode }) => {
                   href={href}
                   className="flex flex-col items-center justify-center gap-1"
                 >
-                  <Icon className={iconClass} aria-hidden />
-                  <span className="text-xs">{label}</span>
+                  {useAvatar ? (
+                    user?.image ? (
+                      <span className="bg-muted relative size-9 overflow-hidden rounded-full">
+                        <Image
+                          src={user.image}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="36px"
+                        />
+                      </span>
+                    ) : (
+                      <User className={cn("size-7", iconClass)} aria-hidden />
+                    )
+                  ) : (
+                    Icon && <Icon className={iconClass} aria-hidden />
+                  )}
+
+                  {label && <span className="text-xs">{label}</span>}
                 </Link>
               </Button>
             );

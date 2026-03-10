@@ -8,7 +8,7 @@ import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
 
-import { DASHBOARD_PATH, MASTER_PATH } from "@/app/host/layout";
+import { EXPERIENCES_PATH, MASTER_PATH } from "@/app/host/layout";
 import RequiredMark from "@/components/custom/required-mark";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,7 +66,7 @@ const HostLoginForm = () => {
 
       toast.success("Signed in successfully");
       router.replace(
-        result.role === ROLES.MASTER ? MASTER_PATH : DASHBOARD_PATH,
+        result.role === ROLES.MASTER ? MASTER_PATH : EXPERIENCES_PATH,
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Invalid email or password");

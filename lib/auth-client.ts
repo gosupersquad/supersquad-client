@@ -12,6 +12,7 @@ export interface LoginResult {
     name: string;
     username: string;
     email: string;
+    image: string | null;
   };
   role: AuthRole;
 }

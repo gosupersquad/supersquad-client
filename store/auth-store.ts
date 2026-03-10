@@ -8,6 +8,7 @@ export interface HostUser {
   name: string;
   username: string;
   email: string;
+  image: string | null;
 }
 
 interface AuthState {
