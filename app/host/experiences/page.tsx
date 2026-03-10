@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Fuse from "fuse.js";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { listEvents, toggleEventStatus } from "@/lib/experiences-client";
 import { useAuthStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 const EXPERIENCES_QUERY_KEY = ["experiences"];
 
@@ -128,10 +129,22 @@ const HostExperiencesPage = () => {
       </div>
 
       {filteredEvents.length === 0 ? (
-        <div className="text-muted-foreground py-8 text-center">
-          {events.length === 0
-            ? "No events yet. Create your first event to get started."
-            : "No events match your search."}
+        <div className="text-muted-foreground mt-50 py-8 text-center">
+          {events.length === 0 ? (
+            <div className="">
+              <p>No events yet. Create your first event to get started.</p>
+
+              <Button
+                className="mt-4"
+                onClick={() => router.push("/host/experiences/new?type=event")}
+              >
+                <Plus className="size-4" />
+                Create event
+              </Button>
+            </div>
+          ) : (
+            "No events match your search."
+          )}
         </div>
       ) : (
         <>
