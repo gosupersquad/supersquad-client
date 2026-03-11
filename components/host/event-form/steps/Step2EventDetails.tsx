@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   formatDateTimeToISO,
   parseISOToDateTime,
@@ -65,8 +66,9 @@ export interface Step2EventDetailsProps {
 }
 
 /**
- * Step 2 – Event details: Event name, Venue (location), Start/End date+time,
- * Description. If isFreeRsvp: one "Spots" input → basics.freeSpots. Back / Next.
+ * Step 2 – Event details: Free RSVP toggle, Event name, Venue (location),
+ * Start/End date+time, Description. If isFreeRsvp: one "Spots" input →
+ * basics.freeSpots. Back / Next.
  */
 const Step2EventDetails = ({ mode }: Step2EventDetailsProps) => {
   const { basics, setBasics, setStep, nextStep, prevStep } =
@@ -269,6 +271,23 @@ const Step2EventDetails = ({ mode }: Step2EventDetailsProps) => {
             }}
           />
         </div>
+
+        <Field
+          orientation="horizontal"
+          className="border-border flex items-center justify-between gap-4 rounded-lg border p-4"
+        >
+          <FieldLabel className="text-muted-foreground font-normal">
+            Free RSVP — no payment required; guests reserve a spot and go
+            straight to confirmation.
+          </FieldLabel>
+
+          <Switch
+            checked={isFreeRsvp}
+            onCheckedChange={(checked) => {
+              setBasics({ isFreeRsvp: checked === true });
+            }}
+          />
+        </Field>
 
         {isFreeRsvp && (
           <Controller
