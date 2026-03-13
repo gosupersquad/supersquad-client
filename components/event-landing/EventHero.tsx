@@ -113,8 +113,8 @@ const EventHero = ({ title, media }: { title: string; media: MediaItem[] }) => {
       </div>
 
       {/* Mobile only: title after carousel, above host info */}
-      <div className="flex px-4 pt-4 md:hidden md:px-0">
-        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+      <div className="flex pt-4">
+        <h1 className="text-3xl font-bold">{title}</h1>
       </div>
     </div>
   );
