@@ -87,7 +87,7 @@ const EventDetails = ({
 
       {description && (
         <div className="prose prose-sm dark:prose-invert max-w-none">
-          <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+          <p className="leading-relaxed whitespace-pre-wrap text-white/75">
             {description}
           </p>
         </div>

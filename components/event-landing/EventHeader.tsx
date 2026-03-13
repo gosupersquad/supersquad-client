@@ -8,9 +8,9 @@ import { Button } from "../ui/button";
 
 const EventHeader = () => {
   return (
-    <header className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-10 mt-2 mb-1 flex items-center justify-between py-4 backdrop-blur">
+    <header className="sticky top-0 z-10 mt-2 mb-1 flex items-center justify-between py-4 backdrop-blur">
       <Link
-        href="/"
+        href="#"
         className="text-foreground text-lg font-semibold tracking-tight"
       >
         <Image
