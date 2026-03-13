@@ -29,7 +29,7 @@ const EventLandingPage = ({
     event.approvalStatus === "pending" || event.approvalStatus === "rejected";
 
   return (
-    <div className="bg-background text-foreground min-h-screen overflow-x-hidden">
+    <div className="bg-background text-foreground min-h-screen overflow-x-hidden px-6">
       {showApprovalAlert && (
         <div
           className="sticky top-0 z-50 flex items-center justify-center gap-2 border-b border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm font-medium text-amber-800 dark:text-amber-200"
@@ -56,7 +56,7 @@ const EventLandingPage = ({
 
       <EventHeader />
 
-      <div className="mx-auto max-w-6xl pb-4 md:px-6">
+      <div className="mx-auto max-w-6xl pb-4">
         <main className="min-w-0 space-y-10 pb-24 md:py-8 md:pb-16">
           <EventHero title={event.title} media={event.media} />
 

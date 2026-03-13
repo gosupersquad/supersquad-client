@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import {
@@ -50,28 +51,21 @@ const EventHero = ({ title, media }: { title: string; media: MediaItem[] }) => {
 
   return (
     <div className="space-y-4">
-      {/* Desktop: title above carousel */}
-      <div className="hidden md:block">
-        <h1 className="text-2xl font-semibold tracking-tight md:text-4xl">
-          {title}
-        </h1>
-      </div>
-
       {/* Carousel */}
-      <div className="h-[75vh] w-full md:h-auto">
+      <div className="h-[50vh] w-full">
         <div className="relative h-full w-full">
           <Carousel
             setApi={setApi}
             opts={{ loop: media.length > 1 }}
-            className="h-full w-full md:h-auto"
+            className="h-full w-full"
           >
-            <CarouselContent className="ml-0 h-full md:h-auto">
+            <CarouselContent className="ml-0 h-full">
               {media.map((item, index) => (
                 <CarouselItem
                   key={`${item.url}-${index}`}
-                  className="h-full pl-0 md:h-auto"
+                  className="h-full pl-0"
                 >
-                  <div className="bg-muted h-[75vh] w-full overflow-hidden md:aspect-16/10 md:h-auto md:rounded-2xl">
+                  <div className="bg-muted relative h-[50vh] w-full overflow-hidden rounded-2xl">
                     {item.type === "video" ? (
                       <video
                         src={item.url}
@@ -83,10 +77,13 @@ const EventHero = ({ title, media }: { title: string; media: MediaItem[] }) => {
                         preload="metadata"
                       />
                     ) : (
-                      <img
+                      <Image
                         src={item.url}
                         alt="event media"
-                        className="h-full w-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="100vw"
+                        priority={index === 0}
                       />
                     )}
                   </div>
@@ -94,8 +91,9 @@ const EventHero = ({ title, media }: { title: string; media: MediaItem[] }) => {
               ))}
             </CarouselContent>
 
+            {/* Dots indicator for carousel slides */}
             {media.length > 1 && (
-              <div className="absolute bottom-4 left-4 z-10 flex gap-1.5 md:relative md:bottom-0 md:left-0 md:mt-3 md:justify-center">
+              <div className="absolute inset-x-0 bottom-4 z-10 flex justify-center gap-1.5">
                 {media.map((_, i) => (
                   <button
                     key={i}
@@ -111,22 +109,12 @@ const EventHero = ({ title, media }: { title: string; media: MediaItem[] }) => {
               </div>
             )}
           </Carousel>
-
-          {/* Gradient overlay: fades to page bg #121212 */}
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-[1]"
-            style={{
-              height: "50%",
-              background:
-                "linear-gradient(180deg, transparent 0%, rgba(18, 18, 18, 0.5) 60%, #121212 100%)",
-            }}
-          />
         </div>
       </div>
 
       {/* Mobile only: title after carousel, above host info */}
       <div className="flex px-4 pt-4 md:hidden md:px-0">
-        <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
       </div>
     </div>
   );
