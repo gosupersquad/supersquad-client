@@ -12,7 +12,7 @@ const EventFaqs = ({ faqs }: { faqs: ExperienceFAQ[] }) => {
   if (!faqs?.length) return null;
 
   return (
-    <section className="space-y-4">
+    <section className="mt-6 space-y-4">
       <h2 className="text-xl font-semibold">FAQs</h2>
 
       <Accordion type="single" collapsible className="w-full">

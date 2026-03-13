@@ -1,108 +1,97 @@
 "use client";
 
-import { format, parseISO } from "date-fns";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { format } from "date-fns";
+import { CalendarDays } from "lucide-react";
+import Image from "next/image";
+import { Separator } from "../ui/separator";
 
 const EventDetails = ({
   location,
   startDate,
   endDate,
-  dateDisplayText,
   description,
 }: {
   location: string;
   startDate: string;
   endDate: string;
-  dateDisplayText?: string;
   description: string;
 }) => {
-  let dateLabel = dateDisplayText?.trim();
-
-  if (!dateLabel) {
-    try {
-      const start = parseISO(startDate.slice(0, 10));
-      const end = parseISO(endDate.slice(0, 10));
-
-      if (start.getTime() === end.getTime()) {
-        dateLabel = format(start, "d MMMM ''yy");
-      } else {
-        dateLabel = `${format(start, "d MMM")} – ${format(end, "d MMM ''yy")}`;
-      }
-    } catch {
-      dateLabel = startDate;
-    }
-  }
-
-  let timeLabel = "";
+  // Single line for date + time, e.g. "Sat, Mar 14, 26 10:00 AM"
+  let dateTimeLine = startDate;
   try {
     const start = new Date(startDate);
-
+    dateTimeLine = format(start, "EEE, MMM d, ''yy");
     if (start.getHours() !== 0 || start.getMinutes() !== 0) {
-      timeLabel = format(start, "h:mm a");
+      dateTimeLine += ` ${format(start, "h:mm a")}`;
       const end = new Date(endDate);
-
       if (end.getHours() !== 0 || end.getMinutes() !== 0) {
-        timeLabel += ` – ${format(end, "h:mm a")}`;
+        dateTimeLine += ` – ${format(end, "h:mm a")}`;
       }
     }
   } catch {
-    // ignore
+    // keep dateTimeLine as is
   }
+
+  const mapsSearchUrl =
+    location &&
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
 
   return (
     <section className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-            <MapPin className="size-4 shrink-0" />
-            <span>Location</span>
+      <div className="space-y-4">
+        {/* Dates row: calendar icon + date/time */}
+        <div className="flex items-center gap-3 text-base">
+          <div className="bg-muted flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl">
+            <CalendarDays className="text-foreground size-6" />
           </div>
 
-          <p className="font-semibold text-foreground">{location}</p>
+          <p className="text-foreground text-sm">{dateTimeLine}</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-            <Calendar className="size-4 shrink-0" />
-            <span>Dates</span>
-          </div>
+        {/* Location row: Google Maps icon + underlined link */}
+        {location && (
+          <div className="flex items-center gap-3 text-base">
+            <div className="relative">
+              <Image
+                src="/icons/google-maps.svg"
+                alt="google maps"
+                width={44}
+                height={44}
+                className="size-11 object-contain"
+              />
 
-          <p className="font-semibold text-foreground">{dateLabel}</p>
-        </div>
-      </div>
+              {/* white dot, slightly bigger than black, and below black */}
+              <div className="absolute top-1/2 left-1/2 z-20 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-lg shadow-black/50" />
 
-      <div className="space-y-3">
-        <ul className="space-y-2 text-sm text-muted-foreground">
-          {location && (
-            <li className="flex items-center gap-2">
-              <MapPin className="size-4 shrink-0" />
-              <span>Location: {location}</span>
-            </li>
-          )}
+              {/* black dot in center */}
+              <div className="absolute top-1/2 left-1/2 z-30 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black" />
+            </div>
 
-          {dateLabel && (
-            <li className="flex items-center gap-2">
-              <Calendar className="size-4 shrink-0" />
-              <span>Date: {dateLabel}</span>
-            </li>
-          )}
-
-          {timeLabel && (
-            <li className="flex items-center gap-2">
-              <Clock className="size-4 shrink-0" />
-              <span>Time: {timeLabel}</span>
-            </li>
-          )}
-        </ul>
-
-        {description && (
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">
-              {description}
-            </p>
+            {mapsSearchUrl ? (
+              <a
+                href={mapsSearchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground text-sm underline hover:opacity-80"
+              >
+                {location}
+              </a>
+            ) : (
+              <p className="text-foreground text-sm">{location}</p>
+            )}
           </div>
         )}
       </div>
+
+      <Separator className="my-6" />
+
+      {description && (
+        <div className="prose prose-sm dark:prose-invert max-w-none">
+          <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+            {description}
+          </p>
+        </div>
+      )}
     </section>
   );
 };

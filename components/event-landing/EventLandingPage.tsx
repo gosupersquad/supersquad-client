@@ -4,6 +4,7 @@ import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 import type { PublicEvent } from "@/types";
+import { Separator } from "@/components/ui/separator";
 
 import EventDetails from "./EventDetails";
 import EventFaqs from "./EventFaqs";
@@ -29,7 +30,7 @@ const EventLandingPage = ({
     event.approvalStatus === "pending" || event.approvalStatus === "rejected";
 
   return (
-    <div className="bg-background text-foreground min-h-screen overflow-x-hidden px-6">
+    <div className="bg-background text-foreground mx-auto min-h-screen max-w-6xl overflow-x-hidden px-6">
       {showApprovalAlert && (
         <div
           className="sticky top-0 z-50 flex items-center justify-center gap-2 border-b border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm font-medium text-amber-800 dark:text-amber-200"
@@ -56,19 +57,22 @@ const EventLandingPage = ({
 
       <EventHeader />
 
-      <div className="mx-auto max-w-6xl pb-4">
+      <div className="pb-4">
         <main className="min-w-0 pb-24 md:py-8 md:pb-16">
           <EventHero title={event.title} media={event.media} />
 
           <EventHostInfo host={host} shareTitle={event.title} />
 
+          <Separator className="my-6" />
+
           <EventDetails
             location={event.location}
             startDate={event.startDate}
             endDate={event.endDate}
-            dateDisplayText={event.dateDisplayText}
             description={event.description}
           />
+
+          {/* Spoilers section */}
 
           <EventFaqs faqs={event.faqs} />
 
