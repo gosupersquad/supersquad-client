@@ -57,24 +57,22 @@ const EventLandingPage = ({
       <EventHeader />
 
       <div className="mx-auto max-w-6xl pb-4">
-        <main className="min-w-0 space-y-10 pb-24 md:py-8 md:pb-16">
+        <main className="min-w-0 pb-24 md:py-8 md:pb-16">
           <EventHero title={event.title} media={event.media} />
 
-          <div className="space-y-10 px-4 md:px-0">
-            <EventHostInfo host={host} shareTitle={event.title} />
+          <EventHostInfo host={host} shareTitle={event.title} />
 
-            <EventDetails
-              location={event.location}
-              startDate={event.startDate}
-              endDate={event.endDate}
-              dateDisplayText={event.dateDisplayText}
-              description={event.description}
-            />
+          <EventDetails
+            location={event.location}
+            startDate={event.startDate}
+            endDate={event.endDate}
+            dateDisplayText={event.dateDisplayText}
+            description={event.description}
+          />
 
-            <EventFaqs faqs={event.faqs} />
+          <EventFaqs faqs={event.faqs} />
 
-            <EventFooter />
-          </div>
+          <EventFooter />
         </main>
       </div>
 
