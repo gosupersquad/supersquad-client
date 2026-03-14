@@ -14,6 +14,7 @@ import EventHeader from "./EventHeader";
 import EventHero from "./EventHero";
 import EventHostInfo from "./EventHostInfo";
 import EventPricingBar from "./EventPricingBar";
+import EventSponsors from "./EventSponsors";
 
 interface EventLandingPageProps {
   event: PublicEvent;
@@ -39,7 +40,7 @@ const EventLandingPage = ({
         <EventHeader />
 
         <div className="pb-4">
-          <main className="min-w-0 pb-24 md:py-8 md:pb-16">
+          <main className="min-w-0 pb-24 md:pb-16">
             <EventHero title={event.title} media={event.media} />
 
             <EventHostInfo host={host} shareTitle={event.title} />
@@ -54,6 +55,7 @@ const EventLandingPage = ({
             />
 
             {/* Spoilers section */}
+            <EventSponsors sponsors={event.sponsors} />
 
             <EventFaqs faqs={event.faqs} />
 
@@ -82,8 +84,8 @@ const EventLandingBlurBackground = ({
   if (!firstMedia?.url) return null;
 
   return (
-    <div className="fixed inset-x-0 top-0 z-0 h-[70vh] overflow-hidden opacity-35">
-      <div className="absolute inset-0 scale-110 blur-3xl">
+    <div className="fixed inset-x-0 top-0 z-0 h-[70vh] overflow-hidden opacity-45">
+      <div className="absolute inset-0 scale-110 blur-xl">
         {firstMedia.type === "image" ? (
           <Image
             src={firstMedia.url}
@@ -103,7 +105,9 @@ const EventLandingBlurBackground = ({
           />
         )}
       </div>
+
       <div className="absolute inset-0 bg-black/40" aria-hidden />
+
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-[#121212] to-transparent"
         aria-hidden

@@ -136,6 +136,7 @@ export interface PublicEvent {
   /** Present when fetched with auth (owner/master). Used for sticky approval alert. */
   approvalStatus?: ApprovalStatus
   rejectedReason?: string;
+  sponsors: { name: string, logo: string }[];
 }
 
 // --- Booking (for checkout; mirrors server) ---

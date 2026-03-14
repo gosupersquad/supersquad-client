@@ -178,3 +178,26 @@ export function toEventCardData(event: EventLike): EventCardData {
     spotsAvailable: event.spotsAvailable,
   }
 }
+
+export function getDominantColor(imageObject: HTMLImageElement) {
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return null;
+  }
+
+  // Draw the image to a 1x1 pixel canvas
+  context.drawImage(imageObject, 0, 0, 1, 1);
+
+  // Get the pixel color data
+  const imageData = context.getImageData(0, 0, 1, 1).data;
+  const [r, g, b, a] = imageData;
+
+  // Convert to HEX
+  const hex =
+    "#" +
+    ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+
+  return { r, g, b, a, hex };
+}
