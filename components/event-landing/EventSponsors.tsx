@@ -62,7 +62,7 @@ const EventSponsors = ({ sponsors }: EventSponsorsProps) => {
 
     const logoSizeClass = isPrimary ? "size-36" : "size-20 md:size-36";
     const textSizeClass = isPrimary
-      ? "text-2xl font-bold"
+      ? "text-2xl md:text-base font-bold"
       : "text-base font-semibold";
 
     return (
