@@ -1,12 +1,13 @@
 "use client";
 
 import { AlertCircle } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
-import type { MediaItem, PublicEvent } from "@/types";
 import { Separator } from "@/components/ui/separator";
+import type { MediaItem, PublicEvent } from "@/types";
 
+import EventContactHost from "./EventContactHost";
 import EventDetails from "./EventDetails";
 import EventFaqs from "./EventFaqs";
 import EventFooter from "./EventFooter";
@@ -54,10 +55,11 @@ const EventLandingPage = ({
               description={event.description}
             />
 
-            {/* Spoilers section */}
             <EventSponsors sponsors={event.sponsors} />
 
             <EventFaqs faqs={event.faqs} />
+
+            <EventContactHost host={host} />
 
             <EventFooter />
           </main>

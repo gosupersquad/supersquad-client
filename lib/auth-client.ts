@@ -13,6 +13,7 @@ export interface LoginResult {
     username: string;
     email: string;
     image: string | null;
+    whatsappContactLink?: string;
   };
   role: AuthRole;
 }

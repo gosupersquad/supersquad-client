@@ -111,6 +111,8 @@ export interface PublicEventHost {
   username: string;
   image?: string;
   bio?: string;
+  /** Full WhatsApp link provided by host (e.g. https://wa.me/919876543210?text=...). */
+  whatsappContactLink?: string;
   instagram?: { url?: string; followerCount?: number };
 }
 
